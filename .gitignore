@@ -1,0 +1,4 @@
+.env
+vol/moodle/data/
+vol/moodle/html/
+vol/postgresql/data/

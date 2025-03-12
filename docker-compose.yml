@@ -1,0 +1,57 @@
+services:
+  web:
+    # build: ./docker-files/moodle
+    image: antonio24073/moodle:4.5
+    container_name: moodle_web
+    ports:
+      - "8080:80"
+    environment:
+      - MOODLE_DB_TYPE=pgsql
+      - MOODLE_DB_HOST=db
+      - MOODLE_DB_NAME=moodle
+      - MOODLE_DB_USER=moodleuser
+      - MOODLE_DB_PASSWORD=meeF9av3geegh9
+      - MOODLE_DB_PREFIX=mdl_
+      - MOODLE_WWWROOT=http://0.0.0.0:8080
+      - MOODLE_DATAROOT=/var/www/html/moodledata
+      - MOODLE_ADMIN=admin
+      - MOODLE_PASSWORD_SALT=geiTheiz4yo7tanaeyoo9KohwohdAeyuaxohp3hon3
+      - MOODLE_TIMEZONE=America/Sao_Paulo
+    volumes:
+      - ./vol/moodle/html:/var/www/html
+      - ./vol/moodle/moodledata:/var/www/moodledata
+      # - ./vol/moodle/php.ini:/etc/php/8.2/cli/php.ini 
+    depends_on:
+      - db
+    networks:
+      - moodle_network
+
+  db:
+    image: postgres:13
+    container_name: moodle_db
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=meeF9av3geegh9
+      - POSTGRES_DB=moodle
+      - POSTGRES_USER=moodleuser
+    volumes:
+      - ./vol/postgresql/data:/var/lib/postgresql/data
+    networks:
+      - moodle_network
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: moodle_pgadmin
+    restart: always
+    ports:
+      - "8081:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: meeF9av3geegh9
+    depends_on:
+      - db
+    networks:
+      - moodle_network
+
+networks:
+  moodle_network:
