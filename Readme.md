@@ -60,12 +60,6 @@ make up
 make perm
 ```
 
-### Install Moodle if not installed
-
-```bash
-make install
-```
-
 ### Add (developer) linux permissions
 
 Don't jump this step, because you will need to edit the `config.php` file
@@ -75,6 +69,12 @@ make perm_dev
 ```
 
 Change this back if you don't need to edit the files.
+
+### Install Moodle if not installed
+
+```bash
+make install
+```
 
 ### Configuring the config.php file
 
