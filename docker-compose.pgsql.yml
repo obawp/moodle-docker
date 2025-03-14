@@ -1,0 +1,46 @@
+services:
+  web:
+    image: antonio24073/moodle:4.5-${WEBSERVER}
+    container_name: moodle_web
+    ports:
+      - "80:80"
+    volumes:
+      - ./vol/moodle/html:/var/www/html
+      - ./vol/moodle/config.php:/var/www/html/config.php
+      - ./vol/moodle/data:/var/www/moodledata
+      - ./vol/moodle/moodle.nginx:/etc/nginx/sites-available/moodle
+    depends_on:
+      - db
+    networks:
+      - moodle_network
+
+  db:
+    image: postgres:13
+    container_name: moodle_db
+    restart: always
+    environment:
+      - POSTGRES_DB=moodle
+      - POSTGRES_USER=moodleuser
+      - POSTGRES_PASSWORD=meeF9av3geegh9
+      - TZ=America/Sao_Paulo
+    volumes:
+      - ./vol/pgsql/data:/var/lib/postgresql/data
+    networks:
+      - moodle_network
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: moodle_pgadmin
+    restart: always
+    ports:
+      - "8081:80"
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@example.com
+      - PGADMIN_DEFAULT_PASSWORD=rox9tae4UePhah
+    depends_on:
+      - db
+    networks:
+      - moodle_network
+
+networks:
+  moodle_network:
