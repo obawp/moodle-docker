@@ -104,3 +104,11 @@ Be careful with the visibility of the repository, whether it is public or privat
 ```bash
 make login
 ```
+
+### Push
+
+After build, you can push it:
+
+```bash
+make push
+```
