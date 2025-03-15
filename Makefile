@@ -32,6 +32,7 @@ rmdir:
 	- sudo rm -Rf ./vol/moodle/html
 	- sudo rm -Rf ./vol/moodle/data
 	- sudo rm -Rf ./vol/mysql/data
+	- sudo rm -Rf ./vol/pgsql/data
 
 up:
 	- docker compose -p ${STACK} -f "./docker-compose.${DBTYPE}.yml" up -d
@@ -51,7 +52,10 @@ perm:
 	-  docker exec -u 0 ${STACK}_web find /var/www/moodledata -type f -exec chmod 0660 {} \;
 
 perm_dev:
-	-  sudo chown antonio:www-data -R ./vol/moodle/config.php
+	-  sudo chown antonio:www-data -R ./vol/moodle/config.mysql.php
+	-  sudo chown antonio:www-data -R ./vol/moodle/config.pgsql.php
+	-  sudo chmod -R 0770 ./vol/moodle/config.mysql.php
+	-  sudo chmod -R 0770 ./vol/moodle/config.pgsql.php
 	-  sudo chown antonio:www-data -R ./vol/moodle/html
 	-  sudo chmod -R 0770 ./vol/moodle/html
 	-  sudo chmod -R 0770 ./vol/moodle/data

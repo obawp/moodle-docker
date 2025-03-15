@@ -6,9 +6,8 @@ services:
       - "80:80"
     volumes:
       - ./vol/moodle/html:/var/www/html
-      - ./vol/moodle/config.php:/var/www/html/config.php
+      - ./vol/moodle/config.mysql.php:/var/www/html/config.php
       - ./vol/moodle/data:/var/www/moodledata
-      - ./vol/moodle/moodle.nginx:/etc/nginx/sites-available/moodle
     depends_on:
       - db
     networks:
@@ -29,7 +28,7 @@ services:
     volumes:
       - ./vol/mysql/data:/var/lib/mysql
       - ./vol/mysql/my.cnf:/etc/my.cnf
-      - ./vol/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql  # Initialize the database with the custom SQL script
+      # - ./vol/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql  # Initialize the database with the custom SQL script
     networks:
       - moodle_network
 

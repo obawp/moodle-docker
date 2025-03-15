@@ -6,9 +6,8 @@ services:
       - "80:80"
     volumes:
       - ./vol/moodle/html:/var/www/html
-      - ./vol/moodle/config.php:/var/www/html/config.php
+      - ./vol/moodle/config.pgsql.php:/var/www/html/config.php
       - ./vol/moodle/data:/var/www/moodledata
-      - ./vol/moodle/moodle.nginx:/etc/nginx/sites-available/moodle
     depends_on:
       - db
     networks:
@@ -33,7 +32,7 @@ services:
     container_name: moodle_pgadmin
     restart: always
     ports:
-      - "8081:80"
+      - "8082:80"
     environment:
       - PGADMIN_DEFAULT_EMAIL=admin@example.com
       - PGADMIN_DEFAULT_PASSWORD=rox9tae4UePhah

@@ -57,6 +57,7 @@ RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/8.3/c
 # RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/8.3/cgi/php.ini
 
 # Enable Nginx configuration
+COPY moodle.nginx /etc/nginx/sites-available/moodle
 RUN ln -s /etc/nginx/sites-available/moodle /etc/nginx/sites-enabled/
 RUN rm -f /etc/nginx/sites-enabled/default
 
