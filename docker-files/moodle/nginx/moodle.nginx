@@ -4,43 +4,34 @@ server {
     root /var/www/html;
     index index.php index.html index.htm;
 
-    # Hide all dot files but allow "Well-Known URIs" as per RFC 5785
-    location ~ /\.(?!well-known).* {
-        return 404;
-    }
-    
-    # This should be after the php fpm rule and very close to the last nginx ruleset.
-    # Don't allow direct access to various internal files. See MDL-69333
-    location ~ (/vendor/|/node_modules/|composer\.json|/readme|/README|readme\.txt|/upgrade\.txt|/UPGRADING\.md|db/install\.xml|/fixtures/|/behat/|phpunit\.xml|\.lock|environment\.xml) {
-        deny all;
-        return 404;
-    }
-    
+    # Main location block
     location / {
         try_files $uri /r.php;
     }
 
+    # PHP processing
     location ~ \.php(/|$) {
         # Split the path info based on URI.
         fastcgi_split_path_info ^(.+\.php)(/.*)$;
 
-        # Note: Store the original path_info. It will be wiped out in a moment by try_files.
+        # Store the original path_info
         set $path_info $fastcgi_path_info;
 
-        # Look for the php file. If not round then jump to @routed.
+        # Look for the PHP file. If not found, jump to @routed.
         try_files $fastcgi_script_name $fastcgi_script_name/;
 
-        # File was found - pass to fastcgi.
+        # Pass to FastCGI
         fastcgi_pass   unix:/run/php/php8.3-fpm.sock;
         include        fastcgi_params;
 
-        # Re-apply the path_info after including fastcgi_params.
+        # Reapply the path_info after including fastcgi_params.
         fastcgi_param PATH_INFO $path_info;
         fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
         fastcgi_param DOCUMENT_ROOT $realpath_root;
     }
 
-    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|otf|eot|ttf|svg|mp3|mp4|avi|mov|flv|wmv|webm)$ {
+    # Static files caching
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|otf|eot|mp3|mp4|avi|mov|flv|wmv|webm)$ {
         root /var/www/html;
         try_files $uri /index.php?$query_string;
         expires max;
@@ -48,6 +39,18 @@ server {
         access_log off;
     }
 
+    # Restrict direct access to sensitive files
+    location ~ (/vendor/|/node_modules/|composer\.json|/readme|/README|readme\.txt|/upgrade\.txt|/UPGRADING\.md|db/install\.xml|/fixtures/|/behat/|phpunit\.xml|\.lock|environment\.xml) {
+        deny all;
+        return 404;
+    }
+
+    # Restrict access to dot files, except ".well-known"
+    location ~ /\.(?!well-known).* {
+        return 404;
+    }
+
+    # Restrict access to moodledata directory
     location ^~ /moodledata/ {
         deny all;
         return 403;

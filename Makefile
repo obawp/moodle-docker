@@ -68,5 +68,5 @@ rm:
 	- docker rm ${STACK}_aux -f
 	- docker compose -p ${STACK} -f "./docker-compose.${DBTYPE}.yml" down
 
-purge_cache:
+purge_caches:
 	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web /usr/bin/php purge_caches.php
