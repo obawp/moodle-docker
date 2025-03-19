@@ -22,10 +22,21 @@ pull:
 run:
 	- docker run -d --name ${STACK}_aux ${REPO}-${WEBSERVER}
 
+
 mkdir:
-	- mkdir -p ./vol/moodle/html
-	- mkdir -p ./vol/moodle/data
-	- mkdir -p ./vol/${DBTYPE}/data
+	- sudo mkdir -p ./vol/moodle/html
+	- sudo mkdir -p ./vol/moodle/data
+	- sudo mkdir -p ./vol/${DBTYPE}/data
+	- sudo chown $$USER:www-data ./vol/
+	- sudo chown $$USER:www-data ./vol/moodle/
+	- sudo chown $$USER:www-data ./vol/mysql/
+	- sudo chown $$USER:www-data ./vol/moodle/config.mysql.php
+	- sudo chown $$USER:www-data ./vol/moodle/config.pgsql.php
+	- sudo chmod 640 ./vol/moodle/config.mysql.php
+	- sudo chmod 640 ./vol/moodle/config.pgsql.php
+	- sudo chown $$USER:www-data ./vol/moodle/html
+	- sudo chown $$USER:www-data ./vol/moodle/data
+	- sudo chown $$USER:www-data ./vol/${DBTYPE}/data
 	- docker cp ${STACK}_aux:/var/www/html ./vol/moodle/
 
 rmdir:
@@ -52,15 +63,15 @@ perm:
 	-  docker exec -u 0 ${STACK}_web find /var/www/moodledata -type f -exec chmod 0660 {} \;
 
 perm_dev:
-	-  sudo chown antonio:www-data ./vol/moodle/config.mysql.php
-	-  sudo chown antonio:www-data ./vol/moodle/config.pgsql.php
+	-  sudo chown $$USER:www-data ./vol/moodle/config.mysql.php
+	-  sudo chown $$USER:www-data ./vol/moodle/config.pgsql.php
 	-  sudo chmod 0660 ./vol/moodle/config.mysql.php
 	-  sudo chmod 0660 ./vol/moodle/config.pgsql.php
-	-  sudo chown antonio:www-data -R ./vol/moodle/html
-	-  find ./vol/moodle/html -type d -exec chmod 0770 {} \;
-	-  find ./vol/moodle/html -type f -exec chmod 0660 {} \;
-	-  find ./vol/moodle/data -type d -exec chmod 0770 {} \;
-	-  find ./vol/moodle/data -type f -exec chmod 0660 {} \;
+	-  sudo chown $$USER:www-data -R ./vol/moodle/html
+	-  sudo find ./vol/moodle/html -type d -exec chmod 0770 {} \;
+	-  sudo find ./vol/moodle/html -type f -exec chmod 0660 {} \;
+	-  sudo find ./vol/moodle/data -type d -exec chmod 0770 {} \;
+	-  sudo find ./vol/moodle/data -type f -exec chmod 0660 {} \;
 	-  sudo chown www-data:www-data -R ./vol/moodle/data
 
 perm_db:

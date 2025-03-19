@@ -3,27 +3,28 @@ server {
     server_name localhost;
     root /var/www/html;
     index index.php index.html index.htm;
+    error_page 404 /error/index.php;    error_page 403 =404 /error/index.php;
 
     # PHP processing
-    location ~ \.php(/|$) {
-        # Split the path info based on URI.
-        fastcgi_split_path_info ^(.+\.php)(/.*)$;
-
-        # Store the original path_info
-        set $path_info $fastcgi_path_info;
-
-        # Look for the PHP file. If not found, jump to @routed.
-        try_files $fastcgi_script_name $fastcgi_script_name/;
-
-        # Pass to FastCGI
-        fastcgi_pass   unix:/run/php/php8.3-fpm.sock;
-        include        fastcgi_params;
-
-        # Reapply the path_info after including fastcgi_params.
-        fastcgi_param PATH_INFO $path_info;
-        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
-        fastcgi_param DOCUMENT_ROOT $realpath_root;
+    location ~ [^/]\.php(/|$) {
+        fastcgi_split_path_info  ^(.+\.php)(/.+)$;
+        fastcgi_index            index.php;
+        fastcgi_pass             unix:/run/php/php8.3-fpm.sock;
+        include                  fastcgi_params;
+        fastcgi_param   PATH_INFO       $fastcgi_path_info;
+        fastcgi_param   SCRIPT_FILENAME $document_root$fastcgi_script_name;
     }
+
+    #location ~ ^(.+\.php)(.*)$ {
+    #    root /usr/share/nginx/html/moodle/;
+    #    fastcgi_split_path_info  ^(.+\.php)(.*)$;
+    #    fastcgi_index            index.php;
+    #    fastcgi_pass             unix:/run/php/php8.3-fpm.sock;
+    #    include /etc/nginx/mime.types;
+    #    include                  fastcgi_params;
+    #    fastcgi_param   PATH_INFO       $fastcgi_path_info;
+    #    fastcgi_param   SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    #}
 
     # Static files caching
     location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|otf|eot|mp3|mp4|avi|mov|flv|wmv|webm)$ {
