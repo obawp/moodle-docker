@@ -17,6 +17,8 @@ services:
     image: mysql:8.0
     container_name: moodle_db
     restart: always
+    ports:
+      - "3306:3306"
     environment:
       - MYSQL_ROOT_PASSWORD=vaed3ui4yae4Vu
       - MYSQL_DATABASE=moodle

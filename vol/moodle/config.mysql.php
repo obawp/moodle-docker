@@ -51,6 +51,11 @@ $CFG->timezone = 'America/Sao_Paulo';
 // $CFG->proxyhost  = '';
 // $CFG->proxyport  = 0;
 
+$CFG->xsendfile = 'X-Accel-Redirect';
+$CFG->xsendfilealiases = array(
+    '/dataroot/' => $CFG->dataroot
+);
+
 // Debugging settings (not for production use)
 @error_reporting(E_ALL | E_STRICT);
 @ini_set('display_errors', '1');

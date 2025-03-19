@@ -55,4 +55,11 @@ server {
         deny all;
         return 403;
     }
+    
+    location /dataroot/ {
+        internal;
+        alias /var/www/moodledata/;
+        deny all; 
+        return 404;
+    }
 }

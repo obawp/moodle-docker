@@ -45,20 +45,22 @@ cron: #install
 
 perm:
 	-  docker exec -u 0 ${STACK}_web chown www-data:www-data -R /var/www/html/
-	-  docker exec -u 0 ${STACK}_web chmod -R 0750 /var/www/html
+	-  docker exec -u 0 ${STACK}_web find /var/www/html -type d -exec chmod 0750 {} \;
 	-  docker exec -u 0 ${STACK}_web find /var/www/html -type f -exec chmod 0640 {} \;
 	-  docker exec -u 0 ${STACK}_web chown www-data:www-data -R /var/www/moodledata
-	-  docker exec -u 0 ${STACK}_web chmod -R 0770 /var/www/moodledata
+	-  docker exec -u 0 ${STACK}_web find /var/www/moodledata -type d -exec chmod 0770 {} \;
 	-  docker exec -u 0 ${STACK}_web find /var/www/moodledata -type f -exec chmod 0660 {} \;
 
 perm_dev:
-	-  sudo chown antonio:www-data -R ./vol/moodle/config.mysql.php
-	-  sudo chown antonio:www-data -R ./vol/moodle/config.pgsql.php
-	-  sudo chmod -R 0770 ./vol/moodle/config.mysql.php
-	-  sudo chmod -R 0770 ./vol/moodle/config.pgsql.php
+	-  sudo chown antonio:www-data ./vol/moodle/config.mysql.php
+	-  sudo chown antonio:www-data ./vol/moodle/config.pgsql.php
+	-  sudo chmod 0660 ./vol/moodle/config.mysql.php
+	-  sudo chmod 0660 ./vol/moodle/config.pgsql.php
 	-  sudo chown antonio:www-data -R ./vol/moodle/html
-	-  sudo chmod -R 0770 ./vol/moodle/html
-	-  sudo chmod -R 0770 ./vol/moodle/data
+	-  find ./vol/moodle/html -type d -exec chmod 0770 {} \;
+	-  find ./vol/moodle/html -type f -exec chmod 0660 {} \;
+	-  find ./vol/moodle/data -type d -exec chmod 0770 {} \;
+	-  find ./vol/moodle/data -type f -exec chmod 0660 {} \;
 	-  sudo chown www-data:www-data -R ./vol/moodle/data
 
 perm_db:
