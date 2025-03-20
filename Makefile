@@ -83,3 +83,6 @@ rm:
 
 purge_caches:
 	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web /usr/bin/php purge_caches.php
+
+upgrade:
+	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web /usr/bin/php upgrade.php

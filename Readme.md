@@ -97,7 +97,9 @@ To PhpMyAdmin ou PgAdmin use `your.url:8081`
 
 Create a repository in the Docker Hub.
 
-Be careful with the visibility of the repository, whether it is public or private
+Be careful with the visibility of the repository, whether it is public or private.
+
+**If you do it without change the visibility in docker hub, it will be public.**
 
 ### Do the Docker Hub Login
 
