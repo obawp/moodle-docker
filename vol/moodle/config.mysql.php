@@ -51,6 +51,7 @@ $CFG->timezone = 'America/Sao_Paulo';
 // $CFG->proxyhost  = '';
 // $CFG->proxyport  = 0;
 
+// X-Sendfile settings (Nginx only)
 $CFG->xsendfile = 'X-Accel-Redirect';
 $CFG->xsendfilealiases = array(
     '/dataroot/' => $CFG->dataroot

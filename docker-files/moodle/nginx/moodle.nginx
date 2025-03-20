@@ -45,7 +45,7 @@ server {
         return 404;
     }
 
-    # Restrict access to moodledata directory
+    # Restrict access to moodledata directory (not needed for the current project)
     location ^~ /moodledata/ {
         deny all;
         return 403;

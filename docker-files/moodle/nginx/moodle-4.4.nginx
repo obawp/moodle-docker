@@ -15,6 +15,7 @@ server {
         fastcgi_param   SCRIPT_FILENAME $document_root$fastcgi_script_name;
     }
 
+    # if not working enable the below code instead
     #location ~ ^(.+\.php)(.*)$ {
     #    root /usr/share/nginx/html/moodle/;
     #    fastcgi_split_path_info  ^(.+\.php)(.*)$;
@@ -46,7 +47,7 @@ server {
         return 404;
     }
 
-    # Restrict access to moodledata directory
+    # Restrict access to moodledata directory (not needed for the current project)
     location ^~ /moodledata/ {
         deny all;
         return 403;
