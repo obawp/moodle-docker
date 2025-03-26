@@ -84,6 +84,10 @@ COPY moodle.nginx /etc/nginx/sites-available/moodle
 RUN ln -s /etc/nginx/sites-available/moodle /etc/nginx/sites-enabled/
 RUN rm -f /etc/nginx/sites-enabled/default
 
+RUN apt-add-repository ppa:zabuch/ppa
+RUN apt-get update
+RUN apt-get install moosh
+
 # Expose Nginx port
 EXPOSE 80
 

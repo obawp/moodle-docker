@@ -39,7 +39,7 @@ $CFG->cookiesecure  = false;
 $CFG->cookiehttponly = true;
 
 // Moodle language settings
-$CFG->lang = 'en';
+// $CFG->lang = 'en';
 
 // Security settings
 $CFG->passwordsaltmain = 'geiTheiz4yo7tanaeyoo9KohwohdAeyuaxohp3hon3';

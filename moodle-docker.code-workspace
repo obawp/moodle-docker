@@ -1,0 +1,21 @@
+{
+	"folders": [
+		{
+			"name": "moodle-docker",
+			"path": "."
+		},
+		{
+			"name": "aablock",
+			"path": "vol/moodle/html/blocks/aablock"
+		},
+		{
+			"name": "boostchild",
+			"path": "vol/moodle/html/theme/boostchild"
+		},
+		{
+			"name": "message",
+			"path": "vol/moodle/html/local/message"
+		}
+	],
+	"settings": {}
+}

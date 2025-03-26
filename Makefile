@@ -74,6 +74,11 @@ perm_dev:
 	-  sudo find ./vol/moodle/data -type f -exec chmod 0660 {} \;
 	-  sudo chown www-data:www-data -R ./vol/moodle/data
 
+perm_dev_dir:
+	-  sudo chown $$USER:www-data -R ./vol/moodle/html/${WORK_DIR}
+	-  sudo find ./vol/moodle/html/${WORK_DIR} -type d -exec chmod 0770 {} \;
+	-  sudo find ./vol/moodle/html/${WORK_DIR} -type f -exec chmod 0660 {} \;
+
 perm_db:
 	-  docker exec -u 0 ${STACK}_db chown -R mysql:mysql /var/lib/mysql
 

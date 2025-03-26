@@ -82,6 +82,10 @@ RUN chown www-data:www-data -R /var/www/moodledata
 RUN chmod -R 0770 /var/www/moodledata
 RUN find /var/www/moodledata -type f -exec chmod 0660 {} \;
 
+
+RUN apt-add-repository ppa:zabuch/ppa
+RUN apt-get update
+RUN apt-get install moosh
 # Apache config
 # COPY moodle.apache /etc/apache2/sites-available/moodle.conf
 # RUN a2ensite moodle
