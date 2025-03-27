@@ -40,10 +40,10 @@ mkdir:
 	- docker cp ${STACK}_aux:/var/www/html ./vol/moodle/
 
 rmdir:
-	- sudo rm -Rf ./vol/moodle/html
-	- sudo rm -Rf ./vol/moodle/data
-	- sudo rm -Rf ./vol/mysql/data
-	- sudo rm -Rf ./vol/pgsql/data
+	- sudo rm -Rf ./vol/moodle/html/*
+	- sudo rm -Rf ./vol/moodle/data/*
+	- sudo rm -Rf ./vol/mysql/data/*
+	- sudo rm -Rf ./vol/pgsql/data/*
 
 up:
 	- docker compose -p ${STACK} -f "./docker-compose.${DBTYPE}.yml" up -d
@@ -81,6 +81,25 @@ perm_dev_dir:
 
 perm_db:
 	-  docker exec -u 0 ${STACK}_db chown -R mysql:mysql /var/lib/mysql
+
+phpu_mkdir:
+	- sudo mkdir -p ./vol/phpu/data
+	- sudo mkdir -p ./vol/phpu/${DBTYPE}
+	- sudo chown $$USER:www-data ./vol/phpu/
+
+phpu_perm:
+	- sudo chown -R $$USER:www-data ./vol/phpu/data/
+	- sudo chmod 0770 ./vol/phpu/data/
+	- sudo find ./vol/phpu/data -type d -exec chmod 0770 {} \;
+	- sudo find ./vol/phpu/data -type f -exec chmod 0660 {} \;
+
+phpu_install:
+	-  docker exec -u www-data -w /var/www/html/ ${STACK}_web /usr/bin/php admin/tool/phpunit/cli/init.php
+
+phpu_rmdir:
+	- sudo rm -Rf ./vol/phpu/data/*
+	- sudo rm -Rf ./vol/phpu/${DBTYPE}/data/*
+
 
 rm:
 	- docker rm ${STACK}_aux -f

@@ -8,6 +8,7 @@ services:
       - ./vol/moodle/html:/var/www/html
       - ./vol/moodle/config.mysql.php:/var/www/html/config.php
       - ./vol/moodle/data:/var/www/moodledata
+      - ./vol/phpu/data:/var/www/phpu_moodledata
     depends_on:
       - db
     networks:
@@ -48,6 +49,26 @@ services:
       - MYSQL_ROOT_PASSWORD=rootpassword
     depends_on:
       - db
+    networks:
+      - moodle_network
+  phpu_db:
+    image: mysql:8.0
+    container_name: phpu_db
+    restart: always
+    ports:
+      - "3307:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=aecaathah9heiP
+      - MYSQL_DATABASE=phpu
+      - MYSQL_USER=phpu
+      - MYSQL_PASSWORD=aecaathah9heiP
+      - TZ=America/Sao_Paulo
+      - --character-set-server=utf8mb4 
+      - --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - ./vol/phpu/mysql/data:/var/lib/mysql
+      - ./vol/phpu/mysql/my.cnf:/etc/my.cnf
+      - ./vol/phpu/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql  # Initialize the database with the custom SQL script
     networks:
       - moodle_network
 

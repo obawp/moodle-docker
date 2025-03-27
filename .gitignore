@@ -3,3 +3,5 @@ vol/moodle/data/
 vol/moodle/html/
 vol/pgsql/data/
 vol/mysql/data/
+vol/phpu/data/
+vol/phpu/mysql/data/

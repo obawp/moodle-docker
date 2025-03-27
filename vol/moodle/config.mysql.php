@@ -63,5 +63,16 @@ $CFG->xsendfilealiases = array(
 $CFG->debug = (E_ALL | E_STRICT);
 $CFG->debugdisplay = 1;
 
+
+$CFG->phpunit_prefix = 'phpu_';
+$CFG->phpunit_dataroot = '/var/www/phpu_moodledata';
+$CFG->phpunit_dbtype    = 'mysqli';      // 'pgsql', 'mariadb', 'mysqli', 'mssql', 'sqlsrv' or 'oci'
+$CFG->phpunit_dblibrary = 'native';     // 'native' only at the moment
+$CFG->phpunit_dbhost    = 'phpu_db';  // eg 'localhost' or 'db.isp.com' or IP
+$CFG->phpunit_dbname    = 'phpu';     // database name, eg moodle
+$CFG->phpunit_dbuser    = 'phpu';   // your database username
+$CFG->phpunit_dbpass    = 'aecaathah9heiP';   // your database password
+
+
 // Include Moodle's setup function
 require_once(__DIR__ . '/lib/setup.php');
