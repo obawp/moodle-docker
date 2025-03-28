@@ -28,6 +28,9 @@ mkdir:
 	- sudo mkdir -p ./vol/mariadb/data
 	- sudo mkdir -p ./vol/mysql/data
 	- sudo mkdir -p ./vol/pgsql/data
+	- sudo mkdir -p ./vol/mariadb/backup
+	- sudo mkdir -p ./vol/mysql/backup
+	- sudo mkdir -p ./vol/pgsql/backup
 	- sudo chown $$USER:www-data ./vol/
 	- sudo chown $$USER:www-data ./vol/moodle/
 	- sudo chown $$USER:www-data ./vol/mariadb/
@@ -135,63 +138,5 @@ purge_caches:
 upgrade:
 	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web /usr/bin/php upgrade.php
 
-install_plugins:
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-list
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-install mod_attendance
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-install mod_attendanceregister
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-install mod_checklist
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-install mod_choicegroup
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-install mod_coursecertificate
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-install mod_customcert
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-install mod_googlemeet
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-install mod_hvp
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-install mod_scheduler
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-install mod_simplecertificate
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-install mod_subcourse
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-install block_completion_progress
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-install block_configurable_reports
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-install block_course_contacts
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-install block_course_modulenavigation
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-install block_dedication
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-install block_enrolmenttimer
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-install block_myprogress
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-install block_sharing_cart
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-install filter_embedquestion
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-install filter_multilang2
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-install enrol_coursecompleted
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-install tool_certificate
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-install tool_redirects
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-install tool_trigger
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-install availability_othercompleted
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-install availability_relativedate
-
-
-uninstall_plugins:
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-list
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-uninstall mod_attendance
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-uninstall mod_attendanceregister
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-uninstall mod_checklist
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-uninstall mod_choicegroup
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-uninstall mod_coursecertificate
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-uninstall mod_customcert
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-uninstall mod_googlemeet
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-uninstall mod_hvp
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-uninstall mod_scheduler
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-uninstall mod_simplecertificate
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-uninstall mod_subcourse
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-uninstall block_completion_progress
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-uninstall block_configurable_reports
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-uninstall block_course_contacts
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-uninstall block_course_modulenavigation
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-uninstall block_dedication
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-uninstall block_enrolmenttimer
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-uninstall block_myprogress
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-uninstall block_sharing_cart
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-uninstall filter_embedquestion
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-uninstall filter_multilang2
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-uninstall enrol_coursecompleted
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-uninstall tool_certificate
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-uninstall tool_redirects
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-uninstall tool_trigger
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-uninstall availability_othercompleted
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web moosh plugin-uninstall availability_relativedate
+wg:
+	- make --no-print-directory -f wg.mk

@@ -37,10 +37,6 @@ RUN apt-get install -y php8.3-redis
 RUN apt-get install -y php8.3-pgsql
 RUN apt-get install -y php8.3-imap
 
-# fix to "Required locale 'en_AU.UTF-8' is not installed."
-RUN apt-get install -y language-pack-en
-RUN locale-gen en_AU.UTF-8
-
 # Enable Apache modules
 RUN a2enmod rewrite
 RUN a2enmod php8.3
@@ -48,6 +44,10 @@ RUN a2enmod php8.3
 # Install Nodejs and build-essential
 RUN apt-get install -y nodejs
 RUN apt-get install -y build-essential
+
+# fix to "Required locale 'en_AU.UTF-8' is not installed."
+RUN apt-get install -y language-pack-en
+RUN locale-gen en_AU.UTF-8
 
 # Clean up APT
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*

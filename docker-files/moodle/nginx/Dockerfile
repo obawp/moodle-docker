@@ -41,6 +41,10 @@ RUN apt-get install -y php8.3-imap
 RUN apt-get install -y nodejs
 RUN apt-get install -y build-essential
 
+# fix to "Required locale 'en_AU.UTF-8' is not installed."
+RUN apt-get install -y language-pack-en
+RUN locale-gen en_AU.UTF-8
+
 # Clean up APT
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
@@ -84,10 +88,6 @@ RUN echo "security.limit_extensions = .php" >> /etc/php/8.3/fpm/pool.d/www.conf
 COPY moodle.nginx /etc/nginx/sites-available/moodle
 RUN ln -s /etc/nginx/sites-available/moodle /etc/nginx/sites-enabled/
 RUN rm -f /etc/nginx/sites-enabled/default
-
-# fix to "Required locale 'en_AU.UTF-8' is not installed."
-RUN apt-get install -y language-pack-en
-RUN locale-gen en_AU.UTF-8
 
 # Install moosh
 RUN apt-add-repository ppa:zabuch/ppa
