@@ -139,4 +139,4 @@ upgrade:
 	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web /usr/bin/php upgrade.php
 
 wg:
-	- make --no-print-directory -f wg.mk
+	- make --no-print-directory -f ./wg/Makefile

@@ -19,6 +19,7 @@ RUN apt-get install -y apache2
 RUN add-apt-repository ppa:ondrej/php
 
 # Install PHP 8.3 and related extensions
+RUN apt-get update -y
 RUN apt-get install -y php8.3
 RUN apt-get install -y php8.3-cli
 RUN apt-get install -y php8.3-mysqlnd
