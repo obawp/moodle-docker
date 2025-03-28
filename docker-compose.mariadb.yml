@@ -1,6 +1,6 @@
 services:
   web:
-    image: antonio24073/moodle:4.5-${WEBSERVER}
+    image: ${REPO}-${WEBSERVER}
     container_name: moodle_web
     ports:
       - "80:80"
