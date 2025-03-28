@@ -6,7 +6,7 @@ services:
       - "80:80"
     volumes:
       - ./vol/moodle/html:/var/www/html
-      - ./vol/moodle/config.mysql.php:/var/www/html/config.php
+      - ./vol/moodle/config.mariadb.php:/var/www/html/config.php
       - ./vol/moodle/data:/var/www/moodledata
       - ./vol/phpu/data:/var/www/phpu_moodledata
     depends_on:
@@ -15,23 +15,23 @@ services:
       - moodle_network
 
   db:
-    image: mysql:8.0
+    image: mariadb:10.6
     container_name: moodle_db
     restart: always
     ports:
       - "3306:3306"
     environment:
-      - MYSQL_ROOT_PASSWORD=vaed3ui4yae4Vu
-      - MYSQL_DATABASE=moodle
-      - MYSQL_USER=moodleuser
-      - MYSQL_PASSWORD=meeF9av3geegh9
+      - MARIADB_ROOT_PASSWORD=vaed3ui4yae4Vu
+      - MARIADB_DATABASE=moodle
+      - MARIADB_USER=moodleuser
+      - MARIADB_PASSWORD=meeF9av3geegh9
       - TZ=America/Sao_Paulo
       - --character-set-server=utf8mb4 
       - --collation-server=utf8mb4_unicode_ci
     volumes:
-      - ./vol/mysql/data:/var/lib/mysql
-      - ./vol/mysql/my.cnf:/etc/my.cnf
-      - ./vol/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql  # Initialize the database with the custom SQL script
+      - ./vol/mariadb/data:/var/lib/mariadb
+      - ./vol/mariadb/my.cnf:/etc/my.cnf
+      - ./vol/mariadb/init.sql:/docker-entrypoint-initdb.d/init.sql  # Initialize the database with the custom SQL script
     networks:
       - moodle_network
 
@@ -46,30 +46,30 @@ services:
       - PMA_USER=moodleuser
       - PMA_PASSWORD=meeF9av3geegh9
       - PMA_DATABASE=moodle
-      - MYSQL_ROOT_PASSWORD=rootpassword
+      - MARIADB_ROOT_PASSWORD=rootpassword
     depends_on:
       - db
     networks:
       - moodle_network
 
   phpu_db:
-    image: mysql:8.0
+    image: mariadb:10.6
     container_name: phpunit_db
     restart: always
     ports:
       - "3307:3306"
     environment:
-      - MYSQL_ROOT_PASSWORD=waiX4Xeih3uwed
-      - MYSQL_DATABASE=phpu
-      - MYSQL_USER=phpu
-      - MYSQL_PASSWORD=aecaathah9heiP
+      - MARIADB_ROOT_PASSWORD=waiX4Xeih3uwed
+      - MARIADB_DATABASE=phpu
+      - MARIADB_USER=phpu
+      - MARIADB_PASSWORD=aecaathah9heiP
       - TZ=America/Sao_Paulo
       - --character-set-server=utf8mb4 
       - --collation-server=utf8mb4_unicode_ci
     volumes:
-      - ./vol/phpu/mysql/data:/var/lib/mysql
-      - ./vol/phpu/mysql/my.cnf:/etc/my.cnf
-      - ./vol/phpu/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql  # Initialize the database with the custom SQL script
+      - ./vol/phpu/mariadb/data:/var/lib/mariadb
+      - ./vol/phpu/mariadb/my.cnf:/etc/my.cnf
+      - ./vol/phpu/mariadb/init.sql:/docker-entrypoint-initdb.d/init.sql  # Initialize the database with the custom SQL script
     networks:
       - moodle_network
 

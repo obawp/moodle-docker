@@ -37,6 +37,10 @@ RUN apt-get install -y php8.3-redis
 RUN apt-get install -y php8.3-pgsql
 RUN apt-get install -y php8.3-imap
 
+# fix to "Required locale 'en_AU.UTF-8' is not installed."
+RUN apt-get install -y language-pack-en
+RUN locale-gen en_AU.UTF-8
+
 # Enable Apache modules
 RUN a2enmod rewrite
 RUN a2enmod php8.3
@@ -60,6 +64,9 @@ RUN git config --global --add safe.directory /var/www/html
 # Update PHP settings
 RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/8.3/apache2/php.ini
 RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/8.3/cli/php.ini
+RUN sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 10M/g' /etc/php/8.3/apache2/php.ini
+RUN sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 10M/g' /etc/php/8.3/cli/php.ini
+
 
 # Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
@@ -93,15 +100,20 @@ RUN find /var/www/phpu_moodledata -type f -exec chmod 0660 {} \;
 RUN apt-add-repository ppa:zabuch/ppa
 RUN apt-get update -y
 RUN apt-get install -y moosh
-
-# fix to "Required locale 'en_AU.UTF-8' is not installed."
-RUN apt-get install -y language-pack-en
-RUN locale-gen en_AU.UTF-8
+RUN chown root:www-data -R /usr/bin/moosh
+RUN chmod 750 /usr/bin/moosh
+RUN mkdir /var/www/.moosh/
+# RUN ln -s /usr/bin/moosh /var/www/.moosh/moosh 
+RUN find /var/www/.moosh/ -type d -exec chmod 0750 {} \;
+RUN find /var/www/.moosh/ -type f -exec chmod 0640 {} \;
+RUN chown www-data:www-data -R /var/www/.moosh/
 
 # fix to composer requirement in the phpunit installation
 RUN mkdir /var/www/.config/
 RUN ln -s /usr/local/bin/composer /var/www/.config/composer 
-RUN chown www-data:www-data -R /var/www/.config/
+RUN find /var/www/.config/ -type d -exec chmod 0750 {} \;
+RUN find /var/www/.config/ -type f -exec chmod 0640 {} \;
+RUN chown root:www-data -R /var/www/.config/
 
 # Apache config
 # COPY moodle.apache /etc/apache2/sites-available/moodle.conf

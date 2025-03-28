@@ -23,8 +23,6 @@ $CFG->dboptions = array(
 );
 
 // Moodle's webroot and dataroot
-// $CFG->serverurl = 'http://172.18.0.4:80';
-// $CFG->wwwroot   = 'http://172.18.0.4:80';
 $CFG->serverurl = 'http://moodle.local:80';
 $CFG->wwwroot   = 'http://moodle.local:80';
 $CFG->dataroot  = '/var/www/moodledata';
@@ -56,6 +54,16 @@ $CFG->timezone = 'America/Sao_Paulo';
 @ini_set('display_errors', '1');
 $CFG->debug = (E_ALL | E_STRICT);
 $CFG->debugdisplay = 1;
+
+
+$CFG->phpunit_prefix = 'phpu_';
+$CFG->phpunit_dataroot = '/var/www/phpu_moodledata';
+$CFG->phpunit_dbtype    = 'mariadb';      // 'pgsql', 'mariadb', 'mysqli', 'mssql', 'sqlsrv' or 'oci'
+$CFG->phpunit_dblibrary = 'native';     // 'native' only at the moment
+$CFG->phpunit_dbhost    = 'phpu_db';  // eg 'localhost' or 'db.isp.com' or IP
+$CFG->phpunit_dbname    = 'phpu';     // database name, eg moodle
+$CFG->phpunit_dbuser    = 'phpu';   // your database username
+$CFG->phpunit_dbpass    = 'aecaathah9heiP';   // your database password
 
 // Include Moodle's setup function
 require_once(__DIR__ . '/lib/setup.php');

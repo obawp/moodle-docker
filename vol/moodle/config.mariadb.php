@@ -5,7 +5,7 @@ global $CFG;
 $CFG = new stdClass();
 
 // Database settings
-$CFG->dbtype    = 'mysqli';
+$CFG->dbtype    = 'mariadb';
 $CFG->dblibrary = 'native';
 $CFG->dbhost    = 'db';
 $CFG->dbname    = 'moodle';
@@ -64,7 +64,7 @@ $CFG->debugdisplay = 1;
 
 $CFG->phpunit_prefix = 'phpu_';
 $CFG->phpunit_dataroot = '/var/www/phpu_moodledata';
-$CFG->phpunit_dbtype    = 'mysqli';      // 'pgsql', 'mariadb', 'mysqli', 'mssql', 'sqlsrv' or 'oci'
+$CFG->phpunit_dbtype    = 'mariadb';      // 'pgsql', 'mariadb', 'mysqli', 'mssql', 'sqlsrv' or 'oci'
 $CFG->phpunit_dblibrary = 'native';     // 'native' only at the moment
 $CFG->phpunit_dbhost    = 'phpu_db';  // eg 'localhost' or 'db.isp.com' or IP
 $CFG->phpunit_dbname    = 'phpu';     // database name, eg moodle

@@ -85,19 +85,26 @@ COPY moodle.nginx /etc/nginx/sites-available/moodle
 RUN ln -s /etc/nginx/sites-available/moodle /etc/nginx/sites-enabled/
 RUN rm -f /etc/nginx/sites-enabled/default
 
-# Install moosh
-RUN apt-add-repository ppa:zabuch/ppa
-RUN apt-get update
-RUN apt-get install moosh
-
 # fix to "Required locale 'en_AU.UTF-8' is not installed."
 RUN apt-get install -y language-pack-en
 RUN locale-gen en_AU.UTF-8
 
+# Install moosh
+RUN apt-add-repository ppa:zabuch/ppa
+RUN apt-get update -y
+RUN apt-get install -y moosh
+RUN chown root:www-data -R /usr/bin/moosh
+RUN chmod 750 /usr/bin/moosh
+RUN mkdir /var/www/.moosh/
+# RUN ln -s /usr/bin/moosh /var/www/.moosh/moosh 
+RUN chmod 0640 -R /var/www/.moosh/
+RUN chown root:www-data -R /var/www/.moosh/
+
 # fix to composer requirement in the phpunit installation
 RUN mkdir /var/www/.config/
 RUN ln -s /usr/local/bin/composer /var/www/.config/composer 
-RUN chown www-data:www-data -R /var/www/.config/
+RUN chmod 0640 -R /var/www/.config/
+RUN chown root:www-data -R /var/www/.config/
 
 # Expose Nginx port
 EXPOSE 80
