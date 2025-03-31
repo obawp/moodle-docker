@@ -27,7 +27,7 @@ Supported:
 ## Configuring
 
 - Create your `.env` based in `.env.example` file
-- Change the `docker-compose.your_webserver.yml` passwords that are exposed in this git repository (and in your `.env` and later in your `vol/moodle/config.php`).
+- Change the passwords that are exposed in this git repository.
 
 ## Usage
 

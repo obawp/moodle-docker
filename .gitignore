@@ -11,4 +11,5 @@ vol/phpu/mariadb/data/
 vol/phpu/mysql/data/
 vol/phpu/pgsql/data/
 
+moodle-docker.code-workspace
 wg
