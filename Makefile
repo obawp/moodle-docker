@@ -142,8 +142,12 @@ purge_caches:
 upgrade:
 	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_moodle_web /usr/bin/php upgrade.php
 
-wg:
-	- make --no-print-directory -f ./wg/Makefile
 
-backup:
-	- docker exec -u 0 ${STACK}_moodle_db mariadb-backup --backup --target-dir=/var/mariadb/backup/ --user=root --password=mypassword
+restore_bkp:
+	- make --no-print-directory -f ./wg/Makefile restore_bkp
+
+install_plugins:
+	- make --no-print-directory -f ./wg/Makefile install_plugins
+
+uninstall_plugins:
+	- make --no-print-directory -f ./wg/Makefile uninstall_plugins

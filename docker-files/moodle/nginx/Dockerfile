@@ -15,28 +15,30 @@ RUN apt-get install -y git
 RUN apt-get install -y curl
 RUN apt-get install -y nginx
 
+# Install PHP 7.4 and related extensions
 # Add PHP repository
 RUN add-apt-repository ppa:ondrej/php
 
-# Install PHP 8.3 and related extensions
+# Install PHP 7.4 and related extensions
 RUN apt-get update -y
-RUN apt-get install -y php8.3-fpm
-RUN apt-get install -y php8.3-cli
-RUN apt-get install -y php8.3-mysqlnd
-RUN apt-get install -y php8.3-xml
-RUN apt-get install -y php8.3-mbstring
-RUN apt-get install -y php8.3-curl
-RUN apt-get install -y php8.3-zip
-RUN apt-get install -y php8.3-gd
-RUN apt-get install -y php8.3-soap
-RUN apt-get install -y php8.3-intl
-RUN apt-get install -y php8.3-bcmath
-RUN apt-get install -y php8.3-ldap
-RUN apt-get install -y php8.3-readline
-RUN apt-get install -y php8.3-opcache
-RUN apt-get install -y php8.3-redis
-RUN apt-get install -y php8.3-pgsql
-RUN apt-get install -y php8.3-imap
+RUN apt-get install -y php7.4-fpm
+RUN apt-get install -y php7.4-cli
+RUN apt-get install -y php7.4-mysqlnd
+RUN apt-get install -y php7.4-xml
+RUN apt-get install -y php7.4-mbstring
+RUN apt-get install -y php7.4-curl
+RUN apt-get install -y php7.4-zip
+RUN apt-get install -y php7.4-gd
+RUN apt-get install -y php7.4-soap
+RUN apt-get install -y php7.4-intl
+RUN apt-get install -y php7.4-bcmath
+RUN apt-get install -y php7.4-ldap
+RUN apt-get install -y php7.4-readline
+RUN apt-get install -y php7.4-opcache
+RUN apt-get install -y php7.4-redis
+RUN apt-get install -y php7.4-pgsql
+RUN apt-get install -y php7.4-imap
+RUN apt-get install -y php7.4-exif
 
 # Install Nodejs and build-essential
 RUN apt-get install -y nodejs
@@ -58,12 +60,17 @@ WORKDIR /var/www/html
 RUN git clone -b MOODLE_405_STABLE git://git.moodle.org/moodle.git /var/www/html
 RUN git config --global --add safe.directory /var/www/html
 
-RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/8.3/fpm/php.ini
-RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/8.3/cli/php.ini
-RUN sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 10M/g' /etc/php/8.3/fpm/php.ini
-RUN sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 10M/g' /etc/php/8.3/cli/php.ini
-# RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/8.3/cgi/php.ini
+RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/7.4/fpm/php.ini
+RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/7.4/cli/php.ini
+RUN sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 10M/g' /etc/php/7.4/fpm/php.ini
+RUN sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 10M/g' /etc/php/7.4/cli/php.ini
 
+# PHP Sodium
+RUN apt update -y
+RUN apt install -y libsodium-dev php7.4-dev php-pear
+RUN pecl install -f libsodium
+RUN sed -i -e 's/;extension=sodium/extension=sodium/g' /etc/php/7.4/apache2/php.ini
+RUN sed -i -e 's/;extension=sodium/extension=sodium/g' /etc/php/7.4/cli/php.ini
 
 # Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
@@ -73,6 +80,9 @@ RUN cd /var/www/html && composer install --no-dev
 RUN curl -sL https://deb.nodesource.com/setup_22.x | sudo -E bash -
 RUN apt-get install -y nodejs
 RUN apt-get install -y build-essential
+RUN npm install -g npm@8.19.4
+RUN npm install -g n
+RUN n 16.20.2
 RUN npm i
     
 # Setting permissions
@@ -87,7 +97,7 @@ RUN find /var/www/moodledata -type d -exec chmod 0770 {} \;
 RUN find /var/www/moodledata -type f -exec chmod 0660 {} \;
 
 # Nginx configuration
-RUN echo "security.limit_extensions = .php" >> /etc/php/8.3/fpm/pool.d/www.conf
+RUN echo "security.limit_extensions = .php" >> /etc/php/7.4/fpm/pool.d/www.conf
 COPY moodle.nginx /etc/nginx/sites-available/moodle
 RUN ln -s /etc/nginx/sites-available/moodle /etc/nginx/sites-enabled/
 RUN rm -f /etc/nginx/sites-enabled/default
@@ -109,12 +119,13 @@ RUN ln -s /usr/local/bin/composer /var/www/.config/composer
 RUN chmod 0640 -R /var/www/.config/
 RUN chown root:www-data -R /var/www/.config/
 
-RUN sed -i -e 's/;clear_env = no/clear_env = no/g' /etc/php/8.3/fpm/pool.d/www.conf
+RUN sed -i -e 's/;clear_env = no/clear_env = no/g' /etc/php/7.4/fpm/pool.d/www.conf
 
 # Expose Nginx port
+
 EXPOSE 80
 
-RUN echo "sh -c \"/etc/init.d/php8.3-fpm start && exec nginx -g 'daemon off;'\"" >> /cmd.sh
+RUN echo "sh -c \"/etc/init.d/php7.4-fpm start && exec nginx -g 'daemon off;'\"" >> /cmd.sh
 
 # Start services
 CMD ["sh", " /cmd.sh"]
