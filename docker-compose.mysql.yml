@@ -3,12 +3,33 @@ services:
     image: ${REPO}-${WEBSERVER}
     container_name: ${STACK}_moodle_web
     ports:
-      - "${WEB_PORT}:80"
+      - "${WEB_PORT}:${WEB_PORT}"
     volumes:
       - ./vol/moodle/html:/var/www/html
       - ./vol/moodle/config.mysql.php:/var/www/html/config.php
-      - ./vol/moodle/data:/var/www/moodledata
+      - ${MOODLEDATA_DIR}:/var/www/moodledata
       - ./vol/phpu/data:/var/www/phpu_moodledata
+    environment:
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_PREFIX=${MYSQL_PREFIX}
+      - MYSQL_PORT=${MYSQL_PORT}
+      - SERVERURL=${SERVERURL}
+      - WWWROOT=${WWWROOT}
+      - SERVERURL=${SERVERURL}
+      - WWWROOT=${WWWROOT}
+      - PHPU_MYSQL_PREFIX=${PHPU_MYSQL_PREFIX}
+      - PHPU_MYSQL_DATABASE=${PHPU_MYSQL_DATABASE}
+      - PHPU_MYSQL_USER=${PHPU_MYSQL_USER}
+      - PHPU_MYSQL_PASSWORD=${PHPU_MYSQL_PASSWORD}
+    command: > 
+      sh -c "
+      sed -i -e 's/Listen 80/Listen ${WEB_PORT}/g' /etc/apache2/ports.conf || true &&
+      sed -i -e 's/<VirtualHost *: 80>/<VirtualHost *: ${WEB_PORT}>/g' /etc/apache2/sites-enabled/000-default.conf || true &&
+      sed -i -e 's/listen 80;/listen ${WEB_PORT};/g' /etc/nginx/sites-available/moodle || true &&
+      sh /cmd.sh
+      "
     depends_on:
       - db
     networks:

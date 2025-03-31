@@ -21,7 +21,7 @@ if (!function_exists('getenv_docker')) {
 }
 
 // Database settings
-$CFG->dbtype    =  'mariadb';
+$CFG->dbtype    =  'mysqli';
 $CFG->dblibrary =  'native';
 $CFG->dbhost    = 'db';
 $CFG->dbname    = getenv_docker('MYSQL_DATABASE', 'moodle');
@@ -45,6 +45,8 @@ $CFG->wwwroot   = getenv_docker('WWWROOT', 'http://moodle.local:80');
 $CFG->dataroot  = '/var/www/moodledata';
 $CFG->dirroot   = '/var/www/html';
 $CFG->themedir  = $CFG->dirroot . '/theme';
+$CFG->routerconfigured = false;
+$CFG->directorypermissions = 02770;
 
 $CFG->admin = "admin";
 
@@ -52,6 +54,7 @@ $CFG->admin = "admin";
 $CFG->cookiepath    = '/var/www/moodledata/sessions/';
 $CFG->cookiesecure  = false;
 $CFG->cookiehttponly = true;
+// $CFG->cookiehttponly = false;
 
 // Moodle language settings
 // $CFG->lang = 'en';

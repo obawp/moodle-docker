@@ -24,16 +24,16 @@ if (!function_exists('getenv_docker')) {
 $CFG->dbtype    =  'pgsql';
 $CFG->dblibrary =  'native';
 $CFG->dbhost    = 'db';
-$CFG->dbname    = getenv_docker('MYSQL_DATABASE', 'moodle');
-$CFG->dbuser    = getenv_docker('MYSQL_USER', 'moodleuser');
-$CFG->dbpass    = getenv_docker('MYSQL_PASSWORD', 'meeF9av3geegh9');
-$CFG->prefix    = getenv_docker('MYSQL_PREFIX', 'mdl_');
-$CFG->dbport    = getenv_docker('MYSQL_PORT', '5432');
+$CFG->dbname    = getenv_docker('PGSQL_DB', 'moodle');
+$CFG->dbuser    = getenv_docker('PGSQL_USER', 'moodleuser');
+$CFG->dbpass    = getenv_docker('PGSQL_PASSWORD', 'meeF9av3geegh9');
+$CFG->prefix    = getenv_docker('PGSQL_PREFIX', 'mdl_');
+$CFG->dbport    = getenv_docker('PGSQL_PORT', '5432');
 
 $CFG->dboptions = array(
     'dbpersist' => false,
     'dbsocket'  => false,
-    'dbport'    => getenv_docker('MYSQL_PORT', '5432'),
+    'dbport'    => getenv_docker('PGSQL_PORT', '5432'),
     'dbhandlesoptions' => false,
     'dbcollation' => 'utf8mb4_unicode_ci'
 );
@@ -45,6 +45,8 @@ $CFG->wwwroot   = getenv_docker('WWWROOT', 'http://moodle.local:80');
 $CFG->dataroot  = '/var/www/moodledata';
 $CFG->dirroot   = '/var/www/html';
 $CFG->themedir  = $CFG->dirroot . '/theme';
+$CFG->routerconfigured = false;
+$CFG->directorypermissions = 02770;
 
 $CFG->admin = "admin";
 
@@ -52,6 +54,7 @@ $CFG->admin = "admin";
 $CFG->cookiepath    = '/var/www/moodledata/sessions/';
 $CFG->cookiesecure  = false;
 $CFG->cookiehttponly = true;
+// $CFG->cookiehttponly = false;
 
 // Moodle language settings
 // $CFG->lang = 'en';
@@ -79,14 +82,14 @@ $CFG->debug = (E_ALL | E_STRICT);
 $CFG->debugdisplay = 1;
 
 
-$CFG->phpunit_prefix =    getenv_docker('PHPU_MYSQL_PREFIX','phpu_');
+$CFG->phpunit_prefix =    getenv_docker('PHPU_PGSQL_PREFIX','phpu_');
 $CFG->phpunit_dataroot =  '/var/www/phpu_moodledata';
 $CFG->phpunit_dbtype    = 'mariadb';
 $CFG->phpunit_dblibrary = 'native';
 $CFG->phpunit_dbhost    = 'phpu_db';
-$CFG->phpunit_dbname    = getenv_docker('PHPU_MYSQL_DATABASE','phpu');
-$CFG->phpunit_dbuser    = getenv_docker('PHPU_MYSQL_USER','phpu');
-$CFG->phpunit_dbpass    = getenv_docker('PHPU_MYSQL_PASSWORD','aecaathah9heiP');
+$CFG->phpunit_dbname    = getenv_docker('PHPU_PGSQL_DB','phpu');
+$CFG->phpunit_dbuser    = getenv_docker('PHPU_PGSQL_USER','phpu');
+$CFG->phpunit_dbpass    = getenv_docker('PHPU_PGSQL_PASSWORD','aecaathah9heiP');
 
 
 // Include Moodle's setup function

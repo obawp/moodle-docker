@@ -3,11 +3,33 @@ services:
     image: ${REPO}-${WEBSERVER}
     container_name: ${STACK}_moodle_web
     ports:
-      - "${WEB_PORT}:80"
+      - "${WEB_PORT}:${WEB_PORT}"
     volumes:
       - ./vol/moodle/html:/var/www/html
       - ./vol/moodle/config.pgsql.php:/var/www/html/config.php
-      - ./vol/moodle/data:/var/www/moodledata
+      - ${MOODLEDATA_DIR}:/var/www/moodledata
+      - ./vol/phpu/data:/var/www/phpu_moodledata
+    environment:
+      - PGSQL_DB=${PGSQL_DB}
+      - PGSQL_USER=${PGSQL_USER}
+      - PGSQL_PASSWORD=${PGSQL_PASSWORD}
+      - PGSQL_PREFIX=${PGSQL_PREFIX}
+      - PGSQL_PORT=${PGSQL_PORT}
+      - SERVERURL=${SERVERURL}
+      - WWWROOT=${WWWROOT}
+      - SERVERURL=${SERVERURL}
+      - WWWROOT=${WWWROOT}
+      - PHPU_PGSQL_PREFIX=${PHPU_PGSQL_PREFIX}
+      - PHPU_PGSQL_DB=${PHPU_PGSQL_DB}
+      - PHPU_PGSQL_USER=${PHPU_PGSQL_USER}
+      - PHPU_PGSQL_PASSWORD=${PHPU_PGSQL_PASSWORD}
+    command: > 
+      sh -c "
+      sed -i -e 's/Listen 80/Listen ${WEB_PORT}/g' /etc/apache2/ports.conf || true &&
+      sed -i -e 's/<VirtualHost *: 80>/<VirtualHost *: ${WEB_PORT}>/g' /etc/apache2/sites-enabled/000-default.conf || true &&
+      sed -i -e 's/listen 80;/listen ${WEB_PORT};/g' /etc/nginx/sites-available/moodle || true &&
+      sh /cmd.sh
+      "
     depends_on:
       - db
     networks:
@@ -18,9 +40,9 @@ services:
     container_name: ${STACK}_moodle_db
     restart: always
     ports:
-      - "${PGSQL_DB_PORT}:5432"
+      - "${PGSQL_PORT}:5432"
     environment:
-      - POSTGRES_DB=${PGSQL_DATABASE}
+      - POSTGRES_DB=${PGSQL_DB}
       - POSTGRES_USER=${PGSQL_USER}
       - POSTGRES_PASSWORD=${PGSQL_PASSWORD}
       - TZ=${PGSQL_TZ}
@@ -35,9 +57,9 @@ services:
     container_name: ${STACK}_moodle_phpunit_db
     restart: always
     ports:
-      - "${PGSQL_PHPU_DB_PORT}:5432"
+      - "${PHPU_PGSQL_PORT}:5432"
     environment:
-      - POSTGRES_DB=${PHPU_PGSQL_DATABASE}
+      - POSTGRES_DB=${PHPU_PGSQL_DB}
       - POSTGRES_USER=${PHPU_PGSQL_USER}
       - POSTGRES_PASSWORD=${PHPU_PGSQL_PASSWORD}
       - TZ=${PHPU_PGSQL_TZ}

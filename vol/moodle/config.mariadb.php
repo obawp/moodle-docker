@@ -40,11 +40,8 @@ $CFG->dboptions = array(
 
 
 // Moodle's webroot and dataroot
-
-
 $CFG->serverurl = getenv_docker('SERVERURL', 'http://moodle.local:80');
 $CFG->wwwroot   = getenv_docker('WWWROOT', 'http://moodle.local:80');
-
 $CFG->dataroot  = '/var/www/moodledata';
 $CFG->dirroot   = '/var/www/html';
 $CFG->themedir  = $CFG->dirroot . '/theme';
