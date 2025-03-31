@@ -23,13 +23,16 @@ $CFG->dboptions = array(
 );
 
 // Moodle's webroot and dataroot
-$CFG->serverurl = 'http://moodle.local:80';
-$CFG->wwwroot   = 'http://moodle.local:80';
+$CFG->serverurl = 'http://moodle.local';
+$CFG->wwwroot   = 'http://moodle.local';
 $CFG->dataroot  = '/var/www/moodledata';
 $CFG->dirroot   = '/var/www/html';
 $CFG->themedir  = $CFG->dirroot . '/theme';
 
 $CFG->admin = "admin";
+
+// $CFG->theme = 'boost'; 
+
 
 // Moodle's cookie settings
 $CFG->cookiepath    = '/var/www/moodledata/sessions/';

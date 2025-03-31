@@ -29,9 +29,9 @@ services:
       - --character-set-server=utf8mb4 
       - --collation-server=utf8mb4_unicode_ci
     volumes:
-      - ./vol/mariadb/data:/var/lib/mariadb
+      - ./vol/mariadb/data:/var/lib/mysql
       - ./vol/mariadb/my.cnf:/etc/my.cnf
-      - ./vol/mariadb/init.sql:/docker-entrypoint-initdb.d/init.sql  # Initialize the database with the custom SQL script
+      - ./vol/mariadb/init.sql:/docker-entrypoint-initdb.d/init.sql 
     networks:
       - moodle_network
 
@@ -69,7 +69,7 @@ services:
     volumes:
       - ./vol/phpu/mariadb/data:/var/lib/mariadb
       - ./vol/phpu/mariadb/my.cnf:/etc/my.cnf
-      - ./vol/phpu/mariadb/init.sql:/docker-entrypoint-initdb.d/init.sql  # Initialize the database with the custom SQL script
+      - ./vol/phpu/mariadb/init.sql:/docker-entrypoint-initdb.d/init.sql  
     networks:
       - moodle_network
 

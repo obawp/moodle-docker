@@ -18,28 +18,30 @@ RUN apt-get install -y apache2
 # Add PHP repository
 RUN add-apt-repository ppa:ondrej/php
 
-# Install PHP 8.3 and related extensions
-RUN apt-get install -y php8.3
-RUN apt-get install -y php8.3-cli
-RUN apt-get install -y php8.3-mysqlnd
-RUN apt-get install -y php8.3-xml
-RUN apt-get install -y php8.3-mbstring
-RUN apt-get install -y php8.3-curl
-RUN apt-get install -y php8.3-zip
-RUN apt-get install -y php8.3-gd
-RUN apt-get install -y php8.3-soap
-RUN apt-get install -y php8.3-intl
-RUN apt-get install -y php8.3-bcmath
-RUN apt-get install -y php8.3-ldap
-RUN apt-get install -y php8.3-readline
-RUN apt-get install -y php8.3-opcache
-RUN apt-get install -y php8.3-redis
-RUN apt-get install -y php8.3-pgsql
-RUN apt-get install -y php8.3-imap
+# Install PHP 7.4 and related extensions
+RUN apt-get update -y
+RUN apt-get install -y php7.4
+RUN apt-get install -y php7.4-cli
+RUN apt-get install -y php7.4-mysqlnd
+RUN apt-get install -y php7.4-xml
+RUN apt-get install -y php7.4-mbstring
+RUN apt-get install -y php7.4-curl
+RUN apt-get install -y php7.4-zip
+RUN apt-get install -y php7.4-gd
+RUN apt-get install -y php7.4-soap
+RUN apt-get install -y php7.4-intl
+RUN apt-get install -y php7.4-bcmath
+RUN apt-get install -y php7.4-ldap
+RUN apt-get install -y php7.4-readline
+RUN apt-get install -y php7.4-opcache
+RUN apt-get install -y php7.4-redis
+RUN apt-get install -y php7.4-pgsql
+RUN apt-get install -y php7.4-imap
+RUN apt-get install -y php7.4-exif
 
 # Enable Apache modules
 RUN a2enmod rewrite
-RUN a2enmod php8.3
+RUN a2enmod php7.4
 
 # Install Nodejs and build-essential
 RUN apt-get install -y nodejs
@@ -58,15 +60,21 @@ RUN rm -Rf /var/www/html/*
 WORKDIR /var/www/html
 
 # Clone Moodle repository
-RUN git clone -b MOODLE_405_STABLE git://git.moodle.org/moodle.git /var/www/html
+RUN git clone -b MOODLE_400_STABLE git://git.moodle.org/moodle.git /var/www/html
 RUN git config --global --add safe.directory /var/www/html
 
 # Update PHP settings
-RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/8.3/apache2/php.ini
-RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/8.3/cli/php.ini
-RUN sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 10M/g' /etc/php/8.3/apache2/php.ini
-RUN sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 10M/g' /etc/php/8.3/cli/php.ini
+RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/7.4/apache2/php.ini
+RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/7.4/cli/php.ini
+RUN sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 10M/g' /etc/php/7.4/apache2/php.ini
+RUN sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 10M/g' /etc/php/7.4/cli/php.ini
 
+# PHP Sodium
+RUN apt update -y
+RUN apt install -y libsodium-dev php7.4-dev php-pear
+RUN pecl install -f libsodium
+RUN sed -i -e 's/;extension=sodium/extension=sodium/g' /etc/php/7.4/apache2/php.ini
+RUN sed -i -e 's/;extension=sodium/extension=sodium/g' /etc/php/7.4/cli/php.ini
 
 # Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
@@ -77,6 +85,9 @@ RUN composer dump-autoload
 RUN curl -sL https://deb.nodesource.com/setup_22.x | sudo -E bash -
 RUN apt-get install -y nodejs
 RUN apt-get install -y build-essential
+RUN npm install -g npm@8.19.4
+RUN npm install -g n
+RUN n 16.20.2
 RUN npm i
     
 # Setting permissions

@@ -31,6 +31,7 @@ mkdir:
 	- sudo mkdir -p ./vol/mariadb/backup
 	- sudo mkdir -p ./vol/mysql/backup
 	- sudo mkdir -p ./vol/pgsql/backup
+
 	- sudo chown $$USER:www-data ./vol/
 	- sudo chown $$USER:www-data ./vol/moodle/
 	- sudo chown $$USER:www-data ./vol/mariadb/
@@ -138,5 +139,11 @@ purge_caches:
 upgrade:
 	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_web /usr/bin/php upgrade.php
 
-wg:
-	- make --no-print-directory -f wg.mk
+restore_bkp:
+	- make --no-print-directory -f ./wg/Makefile restore_bkp
+
+install_plugins:
+	- make --no-print-directory -f ./wg/Makefile install_plugins
+
+uninstall_plugins:
+	- make --no-print-directory -f ./wg/Makefile uninstall_plugins
