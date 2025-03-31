@@ -82,14 +82,17 @@ $CFG->debug = (E_ALL | E_STRICT);
 $CFG->debugdisplay = 1;
 
 
-$CFG->phpunit_prefix =    getenv_docker('PHPU_MYSQL_PREFIX','phpu_');
-$CFG->phpunit_dataroot =  '/var/www/phpu_moodledata';
-$CFG->phpunit_dbtype    = 'mariadb';
-$CFG->phpunit_dblibrary = 'native';
-$CFG->phpunit_dbhost    = 'phpu_db';
-$CFG->phpunit_dbname    = getenv_docker('PHPU_MYSQL_DATABASE','phpu');
-$CFG->phpunit_dbuser    = getenv_docker('PHPU_MYSQL_USER','phpu');
-$CFG->phpunit_dbpass    = getenv_docker('PHPU_MYSQL_PASSWORD','aecaathah9heiP');
+$phpu_enabled = getenv_docker('PHPU_ENABLED', false);
+if($phpu_enabled){
+	$CFG->phpunit_prefix =    getenv_docker('PHPU_MYSQL_PREFIX','phpu_');
+	$CFG->phpunit_dataroot =  '/var/www/phpu_moodledata';
+	$CFG->phpunit_dbtype    = 'mariadb';
+	$CFG->phpunit_dblibrary = 'native';
+	$CFG->phpunit_dbhost    = 'phpu_db';
+	$CFG->phpunit_dbname    = getenv_docker('PHPU_MYSQL_DATABASE','phpu');
+	$CFG->phpunit_dbuser    = getenv_docker('PHPU_MYSQL_USER','phpu');
+	$CFG->phpunit_dbpass    = getenv_docker('PHPU_MYSQL_PASSWORD','aecaathah9heiP');
+}
 
 
 // Include Moodle's setup function
