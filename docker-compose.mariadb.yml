@@ -1,14 +1,35 @@
 services:
   web:
     image: ${REPO}-${WEBSERVER}
-    container_name: moodle_web
+    container_name: ${STACK}_moodle_web
     ports:
-      - "80:80"
+      - "${WEB_PORT}:${WEB_PORT}"
     volumes:
       - ./vol/moodle/html:/var/www/html
       - ./vol/moodle/config.mariadb.php:/var/www/html/config.php
-      - ./vol/moodle/data:/var/www/moodledata
+      - ${MOODLEDATA_DIR}:/var/www/moodledata
       - ./vol/phpu/data:/var/www/phpu_moodledata
+    environment:
+      - MARIADB_DATABASE=${MARIADB_DATABASE}
+      - MARIADB_USER=${MARIADB_USER}
+      - MARIADB_PASSWORD=${MARIADB_PASSWORD}
+      - MARIADB_PREFIX=${MARIADB_PREFIX}
+      - MARIADB_PORT=${MARIADB_PORT}
+      - SERVERURL=${SERVERURL}
+      - WWWROOT=${WWWROOT}
+      - SERVERURL=${SERVERURL}
+      - WWWROOT=${WWWROOT}
+      - PHPU_MARIADB_PREFIX=${PHPU_MARIADB_PREFIX}
+      - PHPU_MARIADB_DATABASE=${PHPU_MARIADB_DATABASE}
+      - PHPU_MARIADB_USER=${PHPU_MARIADB_USER}
+      - PHPU_MARIADB_PASSWORD=${PHPU_MARIADB_PASSWORD}
+    command: > 
+      sh -c "
+      sed -i -e 's/Listen 80/Listen ${WEB_PORT}/g' /etc/apache2/ports.conf || true &&
+      sed -i -e 's/<VirtualHost *: 80>/<VirtualHost *: ${WEB_PORT}>/g' /etc/apache2/sites-enabled/000-default.conf || true &&
+      sed -i -e 's/listen 80;/listen ${WEB_PORT};/g' /etc/nginx/sites-available/moodle || true &&
+      sh /cmd.sh
+      "
     depends_on:
       - db
     networks:
@@ -16,37 +37,38 @@ services:
 
   db:
     image: mariadb:10.6
-    container_name: moodle_db
+    container_name: ${STACK}_moodle_db
     restart: always
     ports:
-      - "3306:3306"
+      - "${MARIADB_DB_PORT}:3306"
     environment:
-      - MARIADB_ROOT_PASSWORD=vaed3ui4yae4Vu
-      - MARIADB_DATABASE=moodle
-      - MARIADB_USER=moodleuser
-      - MARIADB_PASSWORD=meeF9av3geegh9
-      - TZ=America/Sao_Paulo
+      - MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
+      - MARIADB_DATABASE=${MARIADB_DATABASE}
+      - MARIADB_USER=${MARIADB_USER}
+      - MARIADB_PASSWORD=${MARIADB_PASSWORD}
+      - TZ=${MARIADB_TZ}
       - --character-set-server=utf8mb4 
       - --collation-server=utf8mb4_unicode_ci
     volumes:
-      - ./vol/mariadb/data:/var/lib/mariadb
+      - ./vol/mariadb/data:/var/lib/mysql
       - ./vol/mariadb/my.cnf:/etc/my.cnf
-      - ./vol/mariadb/init.sql:/docker-entrypoint-initdb.d/init.sql  # Initialize the database with the custom SQL script
+      - ./vol/mariadb/init.sql:/docker-entrypoint-initdb.d/init.sql
+      # - ./backup/mariadb:/var/mariadb/backup/
     networks:
       - moodle_network
 
   pma:
     image: phpmyadmin/phpmyadmin
-    container_name: moodle_phpmyadmin
+    container_name: ${STACK}_moodle_phpmyadmin
     restart: always
     ports:
-      - "8081:80"
+      - "${MARIADB_PMA_PORT}:80"
     environment:
       - PMA_HOST=db
-      - PMA_USER=moodleuser
-      - PMA_PASSWORD=meeF9av3geegh9
-      - PMA_DATABASE=moodle
-      - MARIADB_ROOT_PASSWORD=rootpassword
+      - PMA_USER=${MARIADB_PMA_USER}
+      - PMA_PASSWORD=${MARIADB_PMA_PASSWORD}
+      - PMA_DATABASE=${MARIADB_PMA_DATABASE}
+      - MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
     depends_on:
       - db
     networks:
@@ -54,39 +76,39 @@ services:
 
   phpu_db:
     image: mariadb:10.6
-    container_name: phpunit_db
+    container_name: ${STACK}_moodle_phpunit_db
     restart: always
     ports:
-      - "3307:3306"
+      - "${MARIADB_PHPU_DB_PORT}:3306"
     environment:
-      - MARIADB_ROOT_PASSWORD=waiX4Xeih3uwed
-      - MARIADB_DATABASE=phpu
-      - MARIADB_USER=phpu
-      - MARIADB_PASSWORD=aecaathah9heiP
-      - TZ=America/Sao_Paulo
+      - MARIADB_ROOT_PASSWORD=${PHPU_MARIADB_ROOT_PASSWORD}
+      - MARIADB_DATABASE=${PHPU_MARIADB_DATABASE}
+      - MARIADB_USER=${PHPU_MARIADB_USER}
+      - MARIADB_PASSWORD=${PHPU_MARIADB_PASSWORD}
+      - TZ=${PHPU_MARIADB_TZ}
       - --character-set-server=utf8mb4 
       - --collation-server=utf8mb4_unicode_ci
     volumes:
       - ./vol/phpu/mariadb/data:/var/lib/mariadb
       - ./vol/phpu/mariadb/my.cnf:/etc/my.cnf
-      - ./vol/phpu/mariadb/init.sql:/docker-entrypoint-initdb.d/init.sql  # Initialize the database with the custom SQL script
+      - ./vol/phpu/mariadb/init.sql:/docker-entrypoint-initdb.d/init.sql 
     networks:
       - moodle_network
 
   phpu_pma:
     image: phpmyadmin/phpmyadmin
-    container_name: phpunit_phpmyadmin
+    container_name: ${STACK}_moodle_phpunit_phpmyadmin
     restart: always
     ports:
-      - "8082:80"
+      - "${MARIADB_PHPU_PMA_PORT}:80"
     environment:
       - PMA_HOST=phpu_db
-      - PMA_DATABASE=phpu
-      - PMA_USER=phpu
-      - PMA_PASSWORD=aecaathah9heiP
-      - MARIADB_ROOT_PASSWORD=waiX4Xeih3uwed
+      - PMA_DATABASE=${PHPU_MARIADB_PMA_DATABASE}
+      - PMA_USER=${PHPU_MARIADB_PMA_USER}
+      - PMA_PASSWORD=${PHPU_MARIADB_PMA_PASSWORD}
+      - MARIADB_ROOT_PASSWORD=${PHPU_MARIADB_ROOT_PASSWORD}
     depends_on:
-      - db
+      - phpu_db
     networks:
       - moodle_network
 

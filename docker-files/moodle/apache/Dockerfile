@@ -116,6 +116,10 @@ RUN find /var/www/.config/ -type d -exec chmod 0750 {} \;
 RUN find /var/www/.config/ -type f -exec chmod 0640 {} \;
 RUN chown root:www-data -R /var/www/.config/
 
+# RUN sed -i -e 's/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=1/g' /etc/php/8.3/apache2/php.ini
+# RUN sed -i -e 's/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=1/g' /etc/php/8.3/cli/php.ini
+
+
 # Apache config
 # COPY moodle.apache /etc/apache2/sites-available/moodle.conf
 # RUN a2ensite moodle
@@ -126,3 +130,9 @@ EXPOSE 80
 
 # Start services
 CMD ["apache2ctl", "-D", "FOREGROUND"]
+
+
+RUN echo "apache2ctl -D FOREGROUND" >> /cmd.sh
+
+# Start services
+CMD ["sh", " /cmd.sh"]

@@ -1,9 +1,9 @@
 services:
   web:
     image: ${REPO}-${WEBSERVER}
-    container_name: moodle_web
+    container_name: ${STACK}_moodle_web
     ports:
-      - "80:80"
+      - "${WEB_PORT}:80"
     volumes:
       - ./vol/moodle/html:/var/www/html
       - ./vol/moodle/config.pgsql.php:/var/www/html/config.php
@@ -15,31 +15,85 @@ services:
 
   db:
     image: postgres:13
-    container_name: moodle_db
+    container_name: ${STACK}_moodle_db
     restart: always
+    ports:
+      - "${PGSQL_DB_PORT}:5432"
     environment:
-      - POSTGRES_DB=moodle
-      - POSTGRES_USER=moodleuser
-      - POSTGRES_PASSWORD=meeF9av3geegh9
-      - TZ=America/Sao_Paulo
+      - POSTGRES_DB=${PGSQL_DATABASE}
+      - POSTGRES_USER=${PGSQL_USER}
+      - POSTGRES_PASSWORD=${PGSQL_PASSWORD}
+      - TZ=${PGSQL_TZ}
     volumes:
       - ./vol/pgsql/data:/var/lib/postgresql/data
+      - ./vol/pgsql/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - moodle_network
 
-  pgadmin:
-    image: dpage/pgadmin4
-    container_name: moodle_pgadmin
+  phpu_db:
+    image: postgres:13
+    container_name: ${STACK}_moodle_phpunit_db
     restart: always
     ports:
-      - "8082:80"
+      - "${PGSQL_PHPU_DB_PORT}:5432"
     environment:
-      - PGADMIN_DEFAULT_EMAIL=admin@example.com
-      - PGADMIN_DEFAULT_PASSWORD=rox9tae4UePhah
-    depends_on:
-      - db
+      - POSTGRES_DB=${PHPU_PGSQL_DATABASE}
+      - POSTGRES_USER=${PHPU_PGSQL_USER}
+      - POSTGRES_PASSWORD=${PHPU_PGSQL_PASSWORD}
+      - TZ=${PHPU_PGSQL_TZ}
+    volumes:
+      - ./vol/phpu/pgsql/data:/var/lib/postgresql/data
+      - ./vol/phpu/pgsql/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - moodle_network
+    
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: ${STACK}_moodle_pgadmin_db
+    ports:
+      - "${PGSQL_PGA_PORT}:80"
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
+      - PGADMIN_CONFIG_SERVER_MODE=False
+      - PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED=False
+    entrypoint: /bin/sh -c "chmod 600 /pgpass; /entrypoint.sh;"
+    user: root
+    depends_on:
+      - db
+      - phpu_db
+    configs:
+      - source: servers.json
+        target: /pgadmin4/servers.json
+      - source: pgpass
+        target: /pgpass
+
+configs:
+  pgpass:
+    content: |
+      db:${PGSQL_PORT}:*:${PGSQL_USER}:${PGSQL_PASSWORD}
+      db:${PHPU_PGSQL_PORT}:*:${PHPU_PGSQL_USER}:${PHPU_PGSQL_PASSWORD}
+  servers.json:
+    content: |
+      {"Servers": {"1": {
+        "Group": "Servers",
+        "Name": "Moodle DB",
+        "Host": "db",
+        "Port": ${PGSQL_PORT},
+        "MaintenanceDB": "${PGSQL_DB}",
+        "Username": "${PGSQL_USER}",
+        "PassFile": "/pgpass",
+        "SSLMode": "prefer"
+      },"2": {
+        "Group": "Servers",
+        "Name": "PHPU DB",
+        "Host": "db",
+        "Port": ${PHPU_PGSQL_PORT},
+        "MaintenanceDB": "${PHPU_PGSQL_DB}",
+        "Username": "${PHPU_PGSQL_USER}",
+        "PassFile": "/pgpass",
+        "SSLMode": "prefer"
+      }}}
 
 networks:
   moodle_network:

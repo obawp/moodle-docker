@@ -60,6 +60,8 @@ RUN git config --global --add safe.directory /var/www/html
 
 RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/8.3/fpm/php.ini
 RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/8.3/cli/php.ini
+RUN sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 10M/g' /etc/php/8.3/fpm/php.ini
+RUN sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 10M/g' /etc/php/8.3/cli/php.ini
 # RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/8.3/cgi/php.ini
 
 
@@ -107,8 +109,12 @@ RUN ln -s /usr/local/bin/composer /var/www/.config/composer
 RUN chmod 0640 -R /var/www/.config/
 RUN chown root:www-data -R /var/www/.config/
 
+RUN sed -i -e 's/;clear_env = no/clear_env = no/g' /etc/php/8.3/fpm/pool.d/www.conf
+
 # Expose Nginx port
 EXPOSE 80
 
+RUN echo "sh -c \"/etc/init.d/php8.3-fpm start && exec nginx -g 'daemon off;'\"" >> /cmd.sh
+
 # Start services
-CMD ["sh", "-c", "service php8.3-fpm start && exec nginx -g 'daemon off;'"]
+CMD ["sh", " /cmd.sh"]
