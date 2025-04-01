@@ -128,6 +128,7 @@ RUN chown root:www-data -R /var/www/.config/
 EXPOSE 80
 
 RUN echo "apache2ctl -D FOREGROUND" >> /cmd.sh
+RUN chmod +x /cmd.sh
 
 # Start services
-CMD ["sh", " /cmd.sh"]
+CMD ["sh", "/cmd.sh"]

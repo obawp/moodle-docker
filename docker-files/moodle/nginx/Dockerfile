@@ -115,6 +115,7 @@ RUN sed -i -e 's/;clear_env = no/clear_env = no/g' /etc/php/8.3/fpm/pool.d/www.c
 EXPOSE 80
 
 RUN echo "sh -c \"/etc/init.d/php8.3-fpm start && exec nginx -g 'daemon off;'\"" >> /cmd.sh
+RUN chmod +x /cmd.sh
 
 # Start services
-CMD ["sh", " /cmd.sh"]
+CMD ["sh", "/cmd.sh"]
