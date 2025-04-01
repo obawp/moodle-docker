@@ -86,7 +86,7 @@ $phpu_enabled = getenv_docker('PHPU_ENABLED', false);
 if($phpu_enabled){
 	$CFG->phpunit_prefix =    getenv_docker('PHPU_PGSQL_PREFIX','phpu_');
 	$CFG->phpunit_dataroot =  '/var/www/phpu_moodledata';
-	$CFG->phpunit_dbtype    = 'mariadb';
+	$CFG->phpunit_dbtype    = 'pgsql';
 	$CFG->phpunit_dblibrary = 'native';
 	$CFG->phpunit_dbhost    = 'phpu_db';
 	$CFG->phpunit_dbname    = getenv_docker('PHPU_PGSQL_DB','phpu');

@@ -1,28 +1,17 @@
 server {
     listen 80;
-    server_name localhost;
+    server_name moodle.local;
     root /var/www/html;
     index index.php index.html index.htm;
+    error_page 404 /error/index.php;    error_page 403 =404 /error/index.php;
 
-    # PHP processing
-    location ~ \.php(/|$) {
-        # Split the path info based on URI.
-        fastcgi_split_path_info ^(.+\.php)(/.*)$;
-
-        # Store the original path_info
-        set $path_info $fastcgi_path_info;
-
-        # Look for the PHP file. If not found, jump to @routed.
-        try_files $fastcgi_script_name $fastcgi_script_name/;
-
-        # Pass to FastCGI
-        fastcgi_pass   unix:/run/php/php8.3-fpm.sock;
-        include        fastcgi_params;
-
-        # Reapply the path_info after including fastcgi_params.
-        fastcgi_param PATH_INFO $path_info;
-        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
-        fastcgi_param DOCUMENT_ROOT $realpath_root;
+    location ~ [^/]\.php(/|$) {
+        fastcgi_split_path_info  ^(.+\.php)(/.+)$;
+        fastcgi_index            index.php;
+        fastcgi_pass             unix:/run/php/php7.4-fpm.sock;
+        include                  fastcgi_params;
+        fastcgi_param   PATH_INFO       $fastcgi_path_info;
+        fastcgi_param   SCRIPT_FILENAME $document_root$fastcgi_script_name;
     }
 
     # Static files caching
@@ -34,14 +23,15 @@ server {
         access_log off;
     }
 
-    # Restrict direct access to sensitive files
-    location ~ (/vendor/|/node_modules/|composer\.json|/readme|/README|readme\.txt|/upgrade\.txt|/UPGRADING\.md|db/install\.xml|/fixtures/|/behat/|phpunit\.xml|\.lock|environment\.xml) {
-        deny all;
+    # Hide all dot files but allow "Well-Known URIs" as per RFC 5785
+    location ~ /\.(?!well-known).* {
         return 404;
     }
-
-    # Restrict access to dot files, except ".well-known"
-    location ~ /\.(?!well-known).* {
+    
+    # This should be after the php fpm rule and very close to the last nginx ruleset.
+    # Don't allow direct access to various internal files. See MDL-69333
+    location ~ (/vendor/|/node_modules/|composer\.json|/readme|/README|readme\.txt|/upgrade\.txt|db/install\.xml|/fixtures/|/behat/|phpunit\.xml|\.lock|environment\.xml) {
+        deny all;
         return 404;
     }
 
@@ -57,4 +47,5 @@ server {
         deny all; 
         return 404;
     }
+
 }

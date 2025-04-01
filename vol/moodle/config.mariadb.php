@@ -42,6 +42,8 @@ $CFG->dboptions = array(
 // Moodle's webroot and dataroot
 $CFG->serverurl = getenv_docker('SERVERURL', 'http://moodle.local:80');
 $CFG->wwwroot   = getenv_docker('WWWROOT', 'http://moodle.local:80');
+$CFG->serverurl = 'http://moodle.local';
+$CFG->wwwroot   = 'http://moodle.local';
 $CFG->dataroot  = '/var/www/moodledata';
 $CFG->dirroot   = '/var/www/html';
 $CFG->themedir  = $CFG->dirroot . '/theme';
@@ -50,14 +52,15 @@ $CFG->directorypermissions = 02770;
 
 $CFG->admin = "admin";
 
-// $CFG->theme = 'boost'; 
+$CFG->theme = 'boost'; 
 
 
 // Moodle's cookie settings
 $CFG->cookiepath    = '/var/www/moodledata/sessions/';
 $CFG->cookiesecure  = false;
-$CFG->cookiehttponly = true;
-// $CFG->cookiehttponly = false;
+// $CFG->cookiehttponly = true;
+$CFG->cookiehttponly = false;
+$CFG->slasharguments = false;
 
 // Moodle language settings
 // $CFG->lang = 'en';

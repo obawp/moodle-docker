@@ -126,15 +126,19 @@ RUN find /var/www/.config/ -type d -exec chmod 0750 {} \;
 RUN find /var/www/.config/ -type f -exec chmod 0640 {} \;
 RUN chown root:www-data -R /var/www/.config/
 
-# RUN sed -i -e 's/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=1/g' /etc/php/7.4/apache2/php.ini
-# RUN sed -i -e 's/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=1/g' /etc/php/7.4/cli/php.ini
-
 # Apache config
 # COPY moodle.apache /etc/apache2/sites-available/moodle.conf
 # RUN a2ensite moodle
 # RUN a2dissite 000-default
 
-RUN sed -i -e 's/;clear_env = no/clear_env = no/g' /etc/php/7.4/fpm/pool.d/www.conf
+
+# https://docs.moodle.org/400/en/Apache
+RUN sed -i -e 's/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=1/g' /etc/php/7.4/apache2/php.ini
+RUN sed -i -e 's/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=1/g' /etc/php/7.4/cli/php.ini
+# RUN echo -e "\nAcceptPathInfo On\n" >> /etc/httpd/httpd.conf
+RUN find -type d -exec ln -s $PWD/php.ini {}/php.ini \;
+COPY .htaccess /var/www/html
+RUN chmod 640 /var/www/html/.htaccess
 
 # Expose Apache port
 EXPOSE 80

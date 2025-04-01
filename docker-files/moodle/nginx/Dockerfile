@@ -57,7 +57,7 @@ RUN rm -Rf /var/www/html/*
 WORKDIR /var/www/html
 
 # Clone Moodle repository
-RUN git clone -b MOODLE_405_STABLE git://git.moodle.org/moodle.git /var/www/html
+RUN git clone -b MOODLE_400_STABLE git://git.moodle.org/moodle.git /var/www/html
 RUN git config --global --add safe.directory /var/www/html
 
 RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/7.4/fpm/php.ini
@@ -69,8 +69,8 @@ RUN sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 10M/g' /etc/php/
 RUN apt update -y
 RUN apt install -y libsodium-dev php7.4-dev php-pear
 RUN pecl install -f libsodium
-RUN sed -i -e 's/;extension=sodium/extension=sodium/g' /etc/php/7.4/apache2/php.ini
-RUN sed -i -e 's/;extension=sodium/extension=sodium/g' /etc/php/7.4/cli/php.ini
+# RUN sed -i -e 's/;extension=sodium/extension=sodium/g' /etc/php/7.4/fpm/php.ini
+# RUN sed -i -e 's/;extension=sodium/extension=sodium/g' /etc/php/7.4/cli/php.ini
 
 # Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
@@ -96,12 +96,6 @@ RUN chown www-data:www-data -R /var/www/moodledata
 RUN find /var/www/moodledata -type d -exec chmod 0770 {} \;
 RUN find /var/www/moodledata -type f -exec chmod 0660 {} \;
 
-# Nginx configuration
-RUN echo "security.limit_extensions = .php" >> /etc/php/7.4/fpm/pool.d/www.conf
-COPY moodle.nginx /etc/nginx/sites-available/moodle
-RUN ln -s /etc/nginx/sites-available/moodle /etc/nginx/sites-enabled/
-RUN rm -f /etc/nginx/sites-enabled/default
-
 # Install moosh
 RUN apt-add-repository ppa:zabuch/ppa
 RUN apt-get update -y
@@ -119,6 +113,13 @@ RUN ln -s /usr/local/bin/composer /var/www/.config/composer
 RUN chmod 0640 -R /var/www/.config/
 RUN chown root:www-data -R /var/www/.config/
 
+
+# Nginx configuration
+# https://docs.moodle.org/400/en/Nginx
+RUN echo "security.limit_extensions = .php" >> /etc/php/7.4/fpm/pool.d/www.conf
+COPY moodle.nginx /etc/nginx/sites-available/moodle
+RUN ln -s /etc/nginx/sites-available/moodle /etc/nginx/sites-enabled/
+RUN rm -f /etc/nginx/sites-enabled/default
 RUN sed -i -e 's/;clear_env = no/clear_env = no/g' /etc/php/7.4/fpm/pool.d/www.conf
 
 # Expose Nginx port
