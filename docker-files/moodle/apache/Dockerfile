@@ -110,14 +110,19 @@ RUN find /var/www/.moosh/ -type f -exec chmod 0640 {} \;
 RUN chown www-data:www-data -R /var/www/.moosh/
 
 # fix to composer requirement in the phpunit installation
-RUN mkdir /var/www/.config/
-RUN ln -s /usr/local/bin/composer /var/www/.config/composer 
+RUN mkdir -p /var/www/.config/composer
 RUN find /var/www/.config/ -type d -exec chmod 0750 {} \;
 RUN find /var/www/.config/ -type f -exec chmod 0640 {} \;
-RUN chown root:www-data -R /var/www/.config/
+RUN chown www-data:www-data -R /var/www/.config/
+RUN chown www-data:www-data /usr/local/bin/composer
 
 # RUN sed -i -e 's/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=1/g' /etc/php/8.3/apache2/php.ini
 # RUN sed -i -e 's/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=1/g' /etc/php/8.3/cli/php.ini
+# RUN find -type d -exec ln -s $PWD/php.ini {}/php.ini \;
+COPY .htaccess /var/www/html
+RUN chmod 640 /var/www/html/.htaccess
+
+RUN apt-get install -y redis-server
 
 # Apache config
 # COPY moodle.apache /etc/apache2/sites-available/moodle.conf
@@ -127,7 +132,7 @@ RUN chown root:www-data -R /var/www/.config/
 # Expose Apache port
 EXPOSE 80
 
-RUN echo "apache2ctl -D FOREGROUND" >> /cmd.sh
+RUN echo "apache2ctl -D FOREGROUND & redis-server" >> /cmd.sh
 RUN chmod +x /cmd.sh
 
 # Start services

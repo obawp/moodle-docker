@@ -104,10 +104,11 @@ RUN chmod 0640 -R /var/www/.moosh/
 RUN chown root:www-data -R /var/www/.moosh/
 
 # fix to composer requirement in the phpunit installation
-RUN mkdir /var/www/.config/
-RUN ln -s /usr/local/bin/composer /var/www/.config/composer 
-RUN chmod 0640 -R /var/www/.config/
-RUN chown root:www-data -R /var/www/.config/
+RUN mkdir -p /var/www/.config/composer
+RUN find /var/www/.config/ -type d -exec chmod 0750 {} \;
+RUN find /var/www/.config/ -type f -exec chmod 0640 {} \;
+RUN chown www-data:www-data -R /var/www/.config/
+RUN chown www-data:www-data /usr/local/bin/composer
 
 RUN sed -i -e 's/;clear_env = no/clear_env = no/g' /etc/php/8.3/fpm/pool.d/www.conf
 
