@@ -23,3 +23,9 @@ RewriteRule "(\/upgrade\.txt)" - [F]
 RewriteRule "(phpunit\.xml\.dist)" - [F]
 RewriteRule "(\/tests\/behat\/)" - [F]
 RewriteRule "(\/fixtures\/)" - [F]
+
+RewriteRule ^UPGRADING\.md - [F,L]
+RewriteRule ^vendor/bin/behat - [F,L]
+RewriteRule ^node_modules/cli/cli\.js - [F,L]
+RewriteRule ^reportbuilder/UPGRADING\.md - [F,L]
+

@@ -56,9 +56,6 @@ mkdir:
 rmdir:
 	- sudo rm -Rf ./vol/moodle/html/ 
 	- sudo rm -Rf ./vol/moodle/data/
-	- sudo rm -Rf ./vol/mariadb/data/
-	- sudo rm -Rf ./vol/mysql/data/
-	- sudo rm -Rf ./vol/pgsql/data/
 
 rmdir_db:
 	- sudo rm -Rf ./vol/mariadb/data/
@@ -87,6 +84,8 @@ perm:
 	-  sudo chmod 0660 ./vol/moodle/config.pgsql.php
 	-  docker exec -u 0 ${STACK}_moodle_web find /var/www/html -type d -exec chmod 0750 {} \;
 	-  docker exec -u 0 ${STACK}_moodle_web find /var/www/html -type f -exec chmod 0640 {} \;
+
+perm_moodledata:
 	-  docker exec -u 0 ${STACK}_moodle_web chown www-data:www-data -R /var/www/moodledata
 	-  docker exec -u 0 ${STACK}_moodle_web find /var/www/moodledata -type d -exec chmod 0770 {} \;
 	-  docker exec -u 0 ${STACK}_moodle_web find /var/www/moodledata -type f -exec chmod 0660 {} \;
@@ -125,6 +124,7 @@ phpu_perm:
 	- sudo find ./vol/phpu/data -type f -exec chmod 0660 {} \;
 
 phpu_install:
+	-  docker exec -u www-data -w /var/www/html/ ${STACK}_moodle_web composer install
 	-  docker exec -u www-data -w /var/www/html/ ${STACK}_moodle_web /usr/bin/php admin/tool/phpunit/cli/init.php
 
 phpu_rmdir:

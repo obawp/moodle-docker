@@ -47,14 +47,16 @@ $CFG->dirroot   = '/var/www/html';
 $CFG->themedir  = $CFG->dirroot . '/theme';
 $CFG->routerconfigured = false;
 $CFG->directorypermissions = 02770;
+$CFG->preventexecpath = true;
+
 
 $CFG->admin = "admin";
 
 // Moodle's cookie settings
-$CFG->cookiepath    = '/var/www/moodledata/sessions/';
+$CFG->cookiepath    = $CFG->dataroot .'/sessions/';
 $CFG->cookiesecure  = false;
-$CFG->cookiehttponly = true;
-// $CFG->cookiehttponly = false;
+// $CFG->cookiehttponly = true;
+$CFG->cookiehttponly = false;
 
 // Moodle language settings
 // $CFG->lang = 'en';

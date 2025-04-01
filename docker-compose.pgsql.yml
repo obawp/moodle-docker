@@ -29,6 +29,9 @@ services:
       sed -i -e 's/Listen 80/Listen ${WEB_PORT}/g' /etc/apache2/ports.conf || true &&
       sed -i -e 's/<VirtualHost *: 80>/<VirtualHost *: ${WEB_PORT}>/g' /etc/apache2/sites-enabled/000-default.conf || true &&
       sed -i -e 's/listen 80;/listen ${WEB_PORT};/g' /etc/nginx/sites-available/moodle || true &&
+      echo \"<Directory /var/www/html>
+          AllowOverride All
+      </Directory>\" >> /etc/apache2/sites-enabled/000-default.conf &&
       sh /cmd.sh
       "
     depends_on:
@@ -80,7 +83,10 @@ services:
       - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
       - PGADMIN_CONFIG_SERVER_MODE=False
       - PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED=False
-    entrypoint: /bin/sh -c "chmod 600 /pgpass; /entrypoint.sh;"
+    entrypoint: > 
+      sh -c "
+      chmod 600 /pgpass; /entrypoint.sh;
+      "
     user: root
     depends_on:
       - db
@@ -90,19 +96,21 @@ services:
         target: /pgadmin4/servers.json
       - source: pgpass
         target: /pgpass
+    networks:
+      - moodle_network
 
 configs:
   pgpass:
     content: |
-      db:${PGSQL_PORT}:*:${PGSQL_USER}:${PGSQL_PASSWORD}
-      db:${PHPU_PGSQL_PORT}:*:${PHPU_PGSQL_USER}:${PHPU_PGSQL_PASSWORD}
+      db:5432:${PGSQL_DB}:${PGSQL_USER}:${PGSQL_PASSWORD}
+      phpu_db:5432:${PHPU_PGSQL_DB}:${PHPU_PGSQL_USER}:${PHPU_PGSQL_PASSWORD}
   servers.json:
     content: |
       {"Servers": {"1": {
         "Group": "Servers",
         "Name": "Moodle DB",
         "Host": "db",
-        "Port": ${PGSQL_PORT},
+        "Port": 5432,
         "MaintenanceDB": "${PGSQL_DB}",
         "Username": "${PGSQL_USER}",
         "PassFile": "/pgpass",
@@ -110,8 +118,8 @@ configs:
       },"2": {
         "Group": "Servers",
         "Name": "PHPU DB",
-        "Host": "db",
-        "Port": ${PHPU_PGSQL_PORT},
+        "Host": "phpu_db",
+        "Port": 5432,
         "MaintenanceDB": "${PHPU_PGSQL_DB}",
         "Username": "${PHPU_PGSQL_USER}",
         "PassFile": "/pgpass",

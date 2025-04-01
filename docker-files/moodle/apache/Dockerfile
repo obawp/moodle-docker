@@ -18,30 +18,30 @@ RUN apt-get install -y apache2
 # Add PHP repository
 RUN add-apt-repository ppa:ondrej/php
 
-# Install PHP 7.4 and related extensions
+# Install PHP 8.0 and related extensions
 RUN apt-get update -y
-RUN apt-get install -y php7.4
-RUN apt-get install -y php7.4-cli
-RUN apt-get install -y php7.4-mysqlnd
-RUN apt-get install -y php7.4-xml
-RUN apt-get install -y php7.4-mbstring
-RUN apt-get install -y php7.4-curl
-RUN apt-get install -y php7.4-zip
-RUN apt-get install -y php7.4-gd
-RUN apt-get install -y php7.4-soap
-RUN apt-get install -y php7.4-intl
-RUN apt-get install -y php7.4-bcmath
-RUN apt-get install -y php7.4-ldap
-RUN apt-get install -y php7.4-readline
-RUN apt-get install -y php7.4-opcache
-RUN apt-get install -y php7.4-redis
-RUN apt-get install -y php7.4-pgsql
-RUN apt-get install -y php7.4-imap
-RUN apt-get install -y php7.4-exif
+RUN apt-get install -y php8.1
+RUN apt-get install -y php8.1-cli
+RUN apt-get install -y php8.1-mysqlnd
+RUN apt-get install -y php8.1-xml
+RUN apt-get install -y php8.1-mbstring
+RUN apt-get install -y php8.1-curl
+RUN apt-get install -y php8.1-zip
+RUN apt-get install -y php8.1-gd
+RUN apt-get install -y php8.1-soap
+RUN apt-get install -y php8.1-intl
+RUN apt-get install -y php8.1-bcmath
+RUN apt-get install -y php8.1-ldap
+RUN apt-get install -y php8.1-readline
+RUN apt-get install -y php8.1-opcache
+RUN apt-get install -y php8.1-redis
+RUN apt-get install -y php8.1-pgsql
+RUN apt-get install -y php8.1-imap
+RUN apt-get install -y php8.1-exif
 
 # Enable Apache modules
 RUN a2enmod rewrite
-RUN a2enmod php7.4
+RUN a2enmod php8.0
 
 # Install Nodejs and build-essential
 RUN apt-get install -y nodejs
@@ -60,21 +60,21 @@ RUN rm -Rf /var/www/html/*
 WORKDIR /var/www/html
 
 # Clone Moodle repository
-RUN git clone -b MOODLE_400_STABLE git://git.moodle.org/moodle.git /var/www/html
+RUN git clone -b MOODLE_401_STABLE git://git.moodle.org/moodle.git /var/www/html
 RUN git config --global --add safe.directory /var/www/html
 
 # Update PHP settings
-RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/7.4/apache2/php.ini
-RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/7.4/cli/php.ini
-RUN sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 10M/g' /etc/php/7.4/apache2/php.ini
-RUN sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 10M/g' /etc/php/7.4/cli/php.ini
+RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/8.0/apache2/php.ini
+RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/8.0/cli/php.ini
+RUN sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 10M/g' /etc/php/8.0/apache2/php.ini
+RUN sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 10M/g' /etc/php/8.0/cli/php.ini
 
 # PHP Sodium
 RUN apt update -y
-RUN apt install -y libsodium-dev php7.4-dev php-pear
+RUN apt install -y libsodium-dev php8.0-dev php-pear
 RUN pecl install -f libsodium
-RUN sed -i -e 's/;extension=sodium/extension=sodium/g' /etc/php/7.4/apache2/php.ini
-RUN sed -i -e 's/;extension=sodium/extension=sodium/g' /etc/php/7.4/cli/php.ini
+RUN sed -i -e 's/;extension=sodium/extension=sodium/g' /etc/php/8.0/apache2/php.ini
+RUN sed -i -e 's/;extension=sodium/extension=sodium/g' /etc/php/8.0/cli/php.ini
 
 # Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
@@ -85,9 +85,9 @@ RUN composer dump-autoload
 RUN curl -sL https://deb.nodesource.com/setup_22.x | sudo -E bash -
 RUN apt-get install -y nodejs
 RUN apt-get install -y build-essential
-RUN npm install -g npm@8.19.4
-RUN npm install -g n
-RUN n 16.20.2
+# RUN npm install -g npm@10.9.2
+# RUN npm install -g n
+# RUN n 22.14.0
 RUN npm i
     
 # Setting permissions
@@ -120,30 +120,32 @@ RUN find /var/www/.moosh/ -type f -exec chmod 0640 {} \;
 RUN chown www-data:www-data -R /var/www/.moosh/
 
 # fix to composer requirement in the phpunit installation
-RUN mkdir /var/www/.config/
-RUN ln -s /usr/local/bin/composer /var/www/.config/composer 
+RUN mkdir -p /var/www/.config/composer
 RUN find /var/www/.config/ -type d -exec chmod 0750 {} \;
 RUN find /var/www/.config/ -type f -exec chmod 0640 {} \;
-RUN chown root:www-data -R /var/www/.config/
+RUN chown www-data:www-data -R /var/www/.config/
+RUN chown www-data:www-data /usr/local/bin/composer
+
+# https://docs.moodle.org/400/en/Apache
+RUN sed -i -e 's/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/g' /etc/php/8.0/apache2/php.ini
+RUN sed -i -e 's/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/g' /etc/php/8.0/cli/php.ini
+# RUN echo -e "\nAcceptPathInfo On\n" >> /etc/httpd/httpd.conf
+RUN find -type d -exec ln -s $PWD/php.ini {}/php.ini \;
+COPY .htaccess /var/www/html
+RUN chmod 640 /var/www/html/.htaccess
+
+RUN apt-get install -y redis-server
 
 # Apache config
 # COPY moodle.apache /etc/apache2/sites-available/moodle.conf
 # RUN a2ensite moodle
 # RUN a2dissite 000-default
 
-
-# https://docs.moodle.org/400/en/Apache
-RUN sed -i -e 's/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=1/g' /etc/php/7.4/apache2/php.ini
-RUN sed -i -e 's/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=1/g' /etc/php/7.4/cli/php.ini
-# RUN echo -e "\nAcceptPathInfo On\n" >> /etc/httpd/httpd.conf
-RUN find -type d -exec ln -s $PWD/php.ini {}/php.ini \;
-COPY .htaccess /var/www/html
-RUN chmod 640 /var/www/html/.htaccess
-
 # Expose Apache port
 EXPOSE 80
 
-RUN echo "apache2ctl -D FOREGROUND" >> /cmd.sh
+RUN echo "apache2ctl -D FOREGROUND & redis-server" >> /cmd.sh
+RUN chmod +x /cmd.sh
 
 # Start services
-CMD ["sh", " /cmd.sh"]
+CMD ["sh", "/cmd.sh"]
