@@ -51,7 +51,7 @@ $CFG->directorypermissions = 02770;
 $CFG->admin = "admin";
 
 // Moodle's cookie settings
-$CFG->cookiepath    = '/var/www/moodledata/sessions/';
+$CFG->cookiepath    = $CFG->dataroot .'/sessions/';
 $CFG->cookiesecure  = false;
 $CFG->cookiehttponly = true;
 // $CFG->cookiehttponly = false;

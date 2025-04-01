@@ -68,6 +68,12 @@ RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/8.3/c
 RUN sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 10M/g' /etc/php/8.3/apache2/php.ini
 RUN sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 10M/g' /etc/php/8.3/cli/php.ini
 
+# PHP Sodium
+RUN apt update -y
+RUN apt install -y libsodium-dev php8.0-dev php-pear
+RUN pecl install -f libsodium
+RUN sed -i -e 's/;extension=sodium/extension=sodium/g' /etc/php/8.0/apache2/php.ini
+RUN sed -i -e 's/;extension=sodium/extension=sodium/g' /etc/php/8.0/cli/php.ini
 
 # Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
@@ -78,6 +84,9 @@ RUN composer dump-autoload
 RUN curl -sL https://deb.nodesource.com/setup_22.x | sudo -E bash -
 RUN apt-get install -y nodejs
 RUN apt-get install -y build-essential
+# RUN npm install -g npm@10.9.2
+# RUN npm install -g n
+# RUN n 22.14.0
 RUN npm i
     
 # Setting permissions
@@ -116,9 +125,11 @@ RUN find /var/www/.config/ -type f -exec chmod 0640 {} \;
 RUN chown www-data:www-data -R /var/www/.config/
 RUN chown www-data:www-data /usr/local/bin/composer
 
-# RUN sed -i -e 's/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=1/g' /etc/php/8.3/apache2/php.ini
-# RUN sed -i -e 's/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=1/g' /etc/php/8.3/cli/php.ini
-# RUN find -type d -exec ln -s $PWD/php.ini {}/php.ini \;
+# https://docs.moodle.org/405/en/Apache
+RUN sed -i -e 's/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/g' /etc/php/8.0/apache2/php.ini
+RUN sed -i -e 's/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/g' /etc/php/8.0/cli/php.ini
+# RUN echo -e "\nAcceptPathInfo On\n" >> /etc/httpd/httpd.conf
+RUN find -type d -exec ln -s $PWD/php.ini {}/php.ini \;
 COPY .htaccess /var/www/html
 RUN chmod 640 /var/www/html/.htaccess
 
