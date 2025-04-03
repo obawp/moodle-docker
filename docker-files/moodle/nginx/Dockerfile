@@ -112,11 +112,15 @@ RUN chown www-data:www-data /usr/local/bin/composer
 
 RUN sed -i -e 's/;clear_env = no/clear_env = no/g' /etc/php/8.3/fpm/pool.d/www.conf
 
+# redis is needed for some plugin in my installation (and not to be installed outside this container)
+# but it can be removed, if you don't use. 
+RUN apt-get install -y redis-server
+
+RUN echo "sh -c \"/etc/init.d/php8.3-fpm start && exec nginx -g 'daemon off;' & redis-server\"" >> /cmd.sh
+RUN chmod +x /cmd.sh
+
 # Expose Nginx port
 EXPOSE 80
-
-RUN echo "sh -c \"/etc/init.d/php8.3-fpm start && exec nginx -g 'daemon off;'\"" >> /cmd.sh
-RUN chmod +x /cmd.sh
 
 # Start services
 CMD ["sh", "/cmd.sh"]

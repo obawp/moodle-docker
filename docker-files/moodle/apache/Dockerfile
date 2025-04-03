@@ -133,6 +133,8 @@ RUN find -type d -exec ln -s $PWD/php.ini {}/php.ini \;
 COPY .htaccess /var/www/html
 RUN chmod 640 /var/www/html/.htaccess
 
+# redis is needed for some plugin in my installation (and not to be installed outside this container)
+# but it can be removed, if you don't use. 
 RUN apt-get install -y redis-server
 
 # Apache config
