@@ -58,21 +58,32 @@ WORKDIR /var/www/html
 RUN git clone -b MOODLE_405_STABLE git://git.moodle.org/moodle.git /var/www/html
 RUN git config --global --add safe.directory /var/www/html
 
+# Update PHP settings
 RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/8.3/fpm/php.ini
 RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/8.3/cli/php.ini
 RUN sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 10M/g' /etc/php/8.3/fpm/php.ini
 RUN sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 10M/g' /etc/php/8.3/cli/php.ini
 # RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/8.3/cgi/php.ini
 
+# PHP Sodium
+RUN apt update -y
+RUN apt install -y libsodium-dev php8.3-dev php-pear
+RUN pecl install -f libsodium
+RUN sed -i -e 's/;extension=sodium/extension=sodium/g' /etc/php/8.3/apache2/php.ini
+RUN sed -i -e 's/;extension=sodium/extension=sodium/g' /etc/php/8.3/cli/php.ini
 
 # Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-RUN cd /var/www/html && composer install --no-dev
+RUN composer update
+RUN composer dump-autoload
 
 ## Nodejs
 RUN curl -sL https://deb.nodesource.com/setup_22.x | sudo -E bash -
 RUN apt-get install -y nodejs
 RUN apt-get install -y build-essential
+# RUN npm install -g npm@10.9.2
+# RUN npm install -g n
+# RUN n 22.14.0
 RUN npm i
     
 # Setting permissions
@@ -86,11 +97,18 @@ RUN chown www-data:www-data -R /var/www/moodledata
 RUN find /var/www/moodledata -type d -exec chmod 0770 {} \;
 RUN find /var/www/moodledata -type f -exec chmod 0660 {} \;
 
+# Creating phpu_moodledata folder
+RUN mkdir /var/www/phpu_moodledata
+RUN chown www-data:www-data -R /var/www/phpu_moodledata
+RUN find /var/www/phpu_moodledata -type d -exec chmod 0770 {} \;
+RUN find /var/www/phpu_moodledata -type f -exec chmod 0660 {} \;
+
 # Nginx configuration
 RUN echo "security.limit_extensions = .php" >> /etc/php/8.3/fpm/pool.d/www.conf
 COPY moodle.nginx /etc/nginx/sites-available/moodle
 RUN ln -s /etc/nginx/sites-available/moodle /etc/nginx/sites-enabled/
 RUN rm -f /etc/nginx/sites-enabled/default
+RUN sed -i -e 's/;clear_env = no/clear_env = no/g' /etc/php/8.3/fpm/pool.d/www.conf
 
 # Install moosh
 RUN apt-add-repository ppa:zabuch/ppa
@@ -100,8 +118,10 @@ RUN chown root:www-data -R /usr/bin/moosh
 RUN chmod 750 /usr/bin/moosh
 RUN mkdir /var/www/.moosh/
 # RUN ln -s /usr/bin/moosh /var/www/.moosh/moosh 
-RUN chmod 0640 -R /var/www/.moosh/
-RUN chown root:www-data -R /var/www/.moosh/
+RUN chmod 0750 /var/www/.moosh/
+RUN find /var/www/.moosh/ -type d -exec chmod 0750 {} \;
+RUN find /var/www/.moosh/ -type f -exec chmod 0640 {} \;
+RUN chown www-data:www-data -R /var/www/.moosh/
 
 # fix to composer requirement in the phpunit installation
 RUN mkdir -p /var/www/.config/composer
@@ -110,17 +130,15 @@ RUN find /var/www/.config/ -type f -exec chmod 0640 {} \;
 RUN chown www-data:www-data -R /var/www/.config/
 RUN chown www-data:www-data /usr/local/bin/composer
 
-RUN sed -i -e 's/;clear_env = no/clear_env = no/g' /etc/php/8.3/fpm/pool.d/www.conf
-
 # redis is needed for some plugin in my installation (and not to be installed outside this container)
 # but it can be removed, if you don't use. 
 RUN apt-get install -y redis-server
 
-RUN echo "sh -c \"/etc/init.d/php8.3-fpm start && exec nginx -g 'daemon off;' & redis-server\"" >> /cmd.sh
-RUN chmod +x /cmd.sh
-
 # Expose Nginx port
 EXPOSE 80
+
+RUN echo "sh -c \"/etc/init.d/php8.3-fpm start && exec nginx -g 'daemon off;' & redis-server\"" >> /cmd.sh
+RUN chmod +x /cmd.sh
 
 # Start services
 CMD ["sh", "/cmd.sh"]

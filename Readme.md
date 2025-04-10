@@ -1,6 +1,6 @@
 ## What's this?
 
-This is a fast, simple and clean install for Moodle with docker in few steps. 
+This is a fast, simple and clean install for Moodle with docker in few steps.
 
 ## Demonstration
 

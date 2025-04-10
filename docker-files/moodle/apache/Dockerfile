@@ -70,10 +70,10 @@ RUN sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 10M/g' /etc/php/
 
 # PHP Sodium
 RUN apt update -y
-RUN apt install -y libsodium-dev php8.0-dev php-pear
+RUN apt install -y libsodium-dev php8.3-dev php-pear
 RUN pecl install -f libsodium
-RUN sed -i -e 's/;extension=sodium/extension=sodium/g' /etc/php/8.0/apache2/php.ini
-RUN sed -i -e 's/;extension=sodium/extension=sodium/g' /etc/php/8.0/cli/php.ini
+RUN sed -i -e 's/;extension=sodium/extension=sodium/g' /etc/php/8.3/apache2/php.ini
+RUN sed -i -e 's/;extension=sodium/extension=sodium/g' /etc/php/8.3/cli/php.ini
 
 # Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
@@ -114,6 +114,7 @@ RUN chown root:www-data -R /usr/bin/moosh
 RUN chmod 750 /usr/bin/moosh
 RUN mkdir /var/www/.moosh/
 # RUN ln -s /usr/bin/moosh /var/www/.moosh/moosh 
+RUN chmod 0750 /var/www/.moosh/
 RUN find /var/www/.moosh/ -type d -exec chmod 0750 {} \;
 RUN find /var/www/.moosh/ -type f -exec chmod 0640 {} \;
 RUN chown www-data:www-data -R /var/www/.moosh/
@@ -126,8 +127,8 @@ RUN chown www-data:www-data -R /var/www/.config/
 RUN chown www-data:www-data /usr/local/bin/composer
 
 # https://docs.moodle.org/405/en/Apache
-RUN sed -i -e 's/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/g' /etc/php/8.0/apache2/php.ini
-RUN sed -i -e 's/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/g' /etc/php/8.0/cli/php.ini
+RUN sed -i -e 's/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/g' /etc/php/8.3/apache2/php.ini
+RUN sed -i -e 's/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/g' /etc/php/8.3/cli/php.ini
 # RUN echo -e "\nAcceptPathInfo On\n" >> /etc/httpd/httpd.conf
 RUN find -type d -exec ln -s $PWD/php.ini {}/php.ini \;
 COPY .htaccess /var/www/html
