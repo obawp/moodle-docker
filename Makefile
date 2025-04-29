@@ -54,6 +54,10 @@ mkdir:
 	- docker cp ${STACK}_aux:/var/www/html ./vol/moodle/
 
 rmdir:
+	- make --no-print-directory rmdir_html
+	- make --no-print-directory rmdir_db
+
+rmdir_html:
 	- sudo rm -Rf ./vol/moodle/html/ 
 	- sudo rm -Rf ./vol/moodle/data/
 
@@ -66,51 +70,58 @@ up:
 	- docker compose -p ${STACK} -f "./docker-compose.${DBTYPE}.yml" up -d
 
 bash:
-	-  docker exec -it -u 0 -w /var/www/html ${STACK}_moodle_web bash
+	- docker exec -it -u 0 -w /var/www/html ${STACK}_moodle_web bash
 
 install:
-	-  docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_moodle_web /usr/bin/php install_database.php --lang=en --adminuser=${MOODLE_ADMIN_USER} --adminpass=${MOODLE_ADMIN_PASSWORD} --adminemail=${MOODLE_ADMIN_EMAIL} --fullname=${MOODLE_SITE_FULLNAME} --shortname=${MOODLE_SITE_SHORTNAME}  --agree-license
+	- docker exec -u www-data -w /var/www/html/admin/cli ${STACK}_moodle_web /usr/bin/php install_database.php --lang=en --adminuser=${MOODLE_ADMIN_USER} --adminpass=${MOODLE_ADMIN_PASSWORD} --adminemail=${MOODLE_ADMIN_EMAIL} --fullname=${MOODLE_SITE_FULLNAME} --shortname=${MOODLE_SITE_SHORTNAME}  --agree-license
+	- docker cp ./docker-files/moodle/apache/.htaccess ${STACK}_moodle_web:/var/www/html 
+	- docker exec -u 0 ${STACK}_moodle_web chown www-data:www-data -R /var/www/html/.htaccess
+	- docker exec -u 0 ${STACK}_moodle_web chmod 640 /var/www/html/.htaccess
 
 cron: #install
 	- docker exec -u 0 ${STACK}_moodle_web bash -c "echo '* * * * * /usr/bin/php /var/www/html/admin/cli/cron.php >/dev/null 2>&1' | sudo crontab -u www-data -"
 
 perm:
-	-  docker exec -u 0 ${STACK}_moodle_web chown www-data:www-data -R /var/www/html/
-	-  sudo chown $$USER:www-data ./vol/moodle/config.mariadb.php
-	-  sudo chown $$USER:www-data ./vol/moodle/config.mysql.php
-	-  sudo chown $$USER:www-data ./vol/moodle/config.pgsql.php
-	-  sudo chmod 0660 ./vol/moodle/config.mariadb.php
-	-  sudo chmod 0660 ./vol/moodle/config.mysql.php
-	-  sudo chmod 0660 ./vol/moodle/config.pgsql.php
-	-  docker exec -u 0 ${STACK}_moodle_web find /var/www/html -type d -exec chmod 0750 {} \;
-	-  docker exec -u 0 ${STACK}_moodle_web find /var/www/html -type f -exec chmod 0640 {} \;
+	- make --no-print-directory perm_html
+	- make --no-print-directory perm_moodledata
+
+perm_html:
+	- docker exec -u 0 ${STACK}_moodle_web chown www-data:www-data -R /var/www/html/
+	- sudo chown $$USER:www-data ./vol/moodle/config.mariadb.php
+	- sudo chown $$USER:www-data ./vol/moodle/config.mysql.php
+	- sudo chown $$USER:www-data ./vol/moodle/config.pgsql.php
+	- sudo chmod 0660 ./vol/moodle/config.mariadb.php
+	- sudo chmod 0660 ./vol/moodle/config.mysql.php
+	- sudo chmod 0660 ./vol/moodle/config.pgsql.php
+	- docker exec -u 0 ${STACK}_moodle_web find /var/www/html -type d -exec chmod 0750 {} \;
+	- docker exec -u 0 ${STACK}_moodle_web find /var/www/html -type f -exec chmod 0640 {} \;
 
 perm_moodledata:
-	-  docker exec -u 0 ${STACK}_moodle_web chown www-data:www-data -R /var/www/moodledata
-	-  docker exec -u 0 ${STACK}_moodle_web find /var/www/moodledata -type d -exec chmod 0770 {} \;
-	-  docker exec -u 0 ${STACK}_moodle_web find /var/www/moodledata -type f -exec chmod 0660 {} \;
+	- docker exec -u 0 ${STACK}_moodle_web chown www-data:www-data -R /var/www/moodledata
+	- docker exec -u 0 ${STACK}_moodle_web find /var/www/moodledata -type d -exec chmod 0770 {} \;
+	- docker exec -u 0 ${STACK}_moodle_web find /var/www/moodledata -type f -exec chmod 0660 {} \;
 
 perm_dev:
-	-  sudo chown $$USER:www-data -R ./vol/moodle/html
-	-  sudo chown $$USER:www-data ./vol/moodle/config.mariadb.php
-	-  sudo chown $$USER:www-data ./vol/moodle/config.mysql.php
-	-  sudo chown $$USER:www-data ./vol/moodle/config.pgsql.php
-	-  sudo chmod 0660 ./vol/moodle/config.mariadb.php
-	-  sudo chmod 0660 ./vol/moodle/config.mysql.php
-	-  sudo chmod 0660 ./vol/moodle/config.pgsql.php
-	-  sudo find ./vol/moodle/html -type d -exec chmod 0770 {} \;
-	-  sudo find ./vol/moodle/html -type f -exec chmod 0660 {} \;
-	-  sudo find ./vol/moodle/data -type d -exec chmod 0770 {} \;
-	-  sudo find ./vol/moodle/data -type f -exec chmod 0660 {} \;
-	-  sudo chown www-data:www-data -R ./vol/moodle/data
+	- sudo chown $$USER:www-data -R ./vol/moodle/html
+	- sudo chown $$USER:www-data ./vol/moodle/config.mariadb.php
+	- sudo chown $$USER:www-data ./vol/moodle/config.mysql.php
+	- sudo chown $$USER:www-data ./vol/moodle/config.pgsql.php
+	- sudo chmod 0660 ./vol/moodle/config.mariadb.php
+	- sudo chmod 0660 ./vol/moodle/config.mysql.php
+	- sudo chmod 0660 ./vol/moodle/config.pgsql.php
+	- sudo find ./vol/moodle/html -type d -exec chmod 0770 {} \;
+	- sudo find ./vol/moodle/html -type f -exec chmod 0660 {} \;
+	- sudo find ./vol/moodle/data -type d -exec chmod 0770 {} \;
+	- sudo find ./vol/moodle/data -type f -exec chmod 0660 {} \;
+	- sudo chown www-data:www-data -R ./vol/moodle/data
 
 perm_dev_dir:
-	-  sudo chown $$USER:www-data -R ./vol/moodle/html/${WORK_DIR}
-	-  sudo find ./vol/moodle/html/${WORK_DIR} -type d -exec chmod 0770 {} \;
-	-  sudo find ./vol/moodle/html/${WORK_DIR} -type f -exec chmod 0660 {} \;
+	- sudo chown $$USER:www-data -R ./vol/moodle/html/${WORK_DIR}
+	- sudo find ./vol/moodle/html/${WORK_DIR} -type d -exec chmod 0770 {} \;
+	- sudo find ./vol/moodle/html/${WORK_DIR} -type f -exec chmod 0660 {} \;
 
 perm_db:
-	-  docker exec -u 0 ${STACK}_moodle_db chown -R mysql:mysql /var/lib/mysql
+	- docker exec -u 0 ${STACK}_moodle_db chown -R mysql:mysql /var/lib/mysql
 
 phpu_mkdir:
 	- sudo mkdir -p ./vol/phpu/data

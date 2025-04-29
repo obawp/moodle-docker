@@ -71,9 +71,9 @@ RUN sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 10M/g' /etc/php/
 # PHP Sodium
 RUN apt update -y
 RUN apt install -y libsodium-dev php8.3-dev php-pear
-RUN pecl install -f libsodium
-RUN sed -i -e 's/;extension=sodium/extension=sodium/g' /etc/php/8.3/apache2/php.ini
-RUN sed -i -e 's/;extension=sodium/extension=sodium/g' /etc/php/8.3/cli/php.ini
+# RUN pecl install -f libsodium
+# RUN sed -i -e 's/;extension=sodium/extension=sodium/g' /etc/php/8.3/apache2/php.ini
+# RUN sed -i -e 's/;extension=sodium/extension=sodium/g' /etc/php/8.3/cli/php.ini
 
 # Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
@@ -143,11 +143,19 @@ RUN apt-get install -y redis-server
 # RUN a2ensite moodle
 # RUN a2dissite 000-default
 
-# Expose Apache port
-EXPOSE 80
 
+RUN sed -i -e 's/upload_max_filesize = 10M/upload_max_filesize = 5000000000/g' /etc/php/8.3/apache2/php.ini
+RUN sed -i -e 's/upload_max_filesize = 10M/upload_max_filesize = 5000000000/g' /etc/php/8.3/cli/php.ini
+RUN sed -i -e 's/post_max_size = 8M/post_max_size = 5000000000/g' /etc/php/8.3/apache2/php.ini
+RUN sed -i -e 's/post_max_size = 8M/post_max_size = 5000000000/g' /etc/php/8.3/cli/php.ini
+RUN sed -i -e 's/max_execution_time = 30/max_execution_time = 600/g' /etc/php/8.3/apache2/php.ini
+RUN sed -i -e 's/max_execution_time = 30/max_execution_time = 600/g' /etc/php/8.3/cli/php.ini
+RUN /etc/init.d/apache2 restart
 RUN echo "apache2ctl -D FOREGROUND & redis-server" >> /cmd.sh
 RUN chmod +x /cmd.sh
+
+# Expose Apache port
+EXPOSE 80
 
 # Start services
 CMD ["sh", "/cmd.sh"]

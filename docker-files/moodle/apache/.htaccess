@@ -29,3 +29,6 @@ RewriteRule ^vendor/bin/behat - [F,L]
 RewriteRule ^node_modules/cli/cli\.js - [F,L]
 RewriteRule ^reportbuilder/UPGRADING\.md - [F,L]
 
+php_value upload_max_filesize 500000000
+php_value post_max_size 500000000
+php_value max_execution_time 600

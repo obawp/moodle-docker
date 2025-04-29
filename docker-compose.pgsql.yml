@@ -27,7 +27,7 @@ services:
     command: > 
       sh -c "
       sed -i -e 's/Listen 80/Listen ${WEB_PORT}/g' /etc/apache2/ports.conf || true &&
-      sed -i -e 's/<VirtualHost *: 80>/<VirtualHost *: ${WEB_PORT}>/g' /etc/apache2/sites-enabled/000-default.conf || true &&
+      sed -i -e 's/<VirtualHost *:80>/<VirtualHost *:${WEB_PORT}>/g' /etc/apache2/sites-enabled/000-default.conf || true &&
       sed -i -e 's/listen 80;/listen ${WEB_PORT};/g' /etc/nginx/sites-available/moodle || true &&
       echo \"<Directory /var/www/html>
           AllowOverride All
