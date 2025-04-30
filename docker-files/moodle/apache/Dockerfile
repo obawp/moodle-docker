@@ -65,8 +65,8 @@ RUN git config --global --add safe.directory /var/www/html
 # Update PHP settings
 RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/8.3/apache2/php.ini
 RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/8.3/cli/php.ini
-RUN sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 10M/g' /etc/php/8.3/apache2/php.ini
-RUN sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 10M/g' /etc/php/8.3/cli/php.ini
+# RUN sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 10M/g' /etc/php/8.3/apache2/php.ini
+# RUN sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 10M/g' /etc/php/8.3/cli/php.ini
 
 # PHP Sodium
 RUN apt update -y
@@ -143,9 +143,8 @@ RUN apt-get install -y redis-server
 # RUN a2ensite moodle
 # RUN a2dissite 000-default
 
-
-RUN sed -i -e 's/upload_max_filesize = 10M/upload_max_filesize = 5000000000/g' /etc/php/8.3/apache2/php.ini
-RUN sed -i -e 's/upload_max_filesize = 10M/upload_max_filesize = 5000000000/g' /etc/php/8.3/cli/php.ini
+RUN sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 5000000000/g' /etc/php/8.3/apache2/php.ini
+RUN sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 5000000000/g' /etc/php/8.3/cli/php.ini
 RUN sed -i -e 's/post_max_size = 8M/post_max_size = 5000000000/g' /etc/php/8.3/apache2/php.ini
 RUN sed -i -e 's/post_max_size = 8M/post_max_size = 5000000000/g' /etc/php/8.3/cli/php.ini
 RUN sed -i -e 's/max_execution_time = 30/max_execution_time = 600/g' /etc/php/8.3/apache2/php.ini
