@@ -127,15 +127,23 @@ RUN chown www-data:www-data /usr/local/bin/composer
 # but it can be removed, if you don't use. 
 RUN apt-get install -y redis-server
 
+# Update nginx settings
+RUN sed -i -e 's/types_hash_max_size 2048;/types_hash_max_size 2048;\n        client_max_body_size 100M;/g' /etc/nginx/nginx.conf
+RUN nginx -t
+
 # Update PHP settings
 RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/8.3/fpm/php.ini
 RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/8.3/cli/php.ini
-RUN sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 5000000000/g' /etc/php/8.3/fpm/php.ini
-RUN sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 5000000000/g' /etc/php/8.3/cli/php.ini
-RUN sed -i -e 's/post_max_size = 8M/post_max_size = 5000000000/g' /etc/php/8.3/fpm/php.ini
-RUN sed -i -e 's/post_max_size = 8M/post_max_size = 5000000000/g' /etc/php/8.3/cli/php.ini
+RUN sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 500M/g' /etc/php/8.3/fpm/php.ini
+RUN sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 500M/g' /etc/php/8.3/cli/php.ini
+RUN sed -i -e 's/post_max_size = 8M/post_max_size = 500M/g' /etc/php/8.3/fpm/php.ini
+RUN sed -i -e 's/post_max_size = 8M/post_max_size = 500M/g' /etc/php/8.3/cli/php.ini
 RUN sed -i -e 's/max_execution_time = 30/max_execution_time = 600/g' /etc/php/8.3/fpm/php.ini
 RUN sed -i -e 's/max_execution_time = 30/max_execution_time = 600/g' /etc/php/8.3/cli/php.ini
+RUN sed -i -e 's/memory_limit = 128M/memory_limit = 512M/g' /etc/php/8.3/fpm/php.ini
+RUN sed -i -e 's/memory_limit = 128M/memory_limit = 512M/g' /etc/php/8.3/cli/php.ini
+
+# Rstarting services
 RUN /etc/init.d/nginx restart
 RUN /etc/init.d/php8.3-fpm restart
 
