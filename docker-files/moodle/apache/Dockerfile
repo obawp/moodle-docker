@@ -62,11 +62,6 @@ WORKDIR /var/www/html
 RUN git clone -b MOODLE_405_STABLE git://git.moodle.org/moodle.git /var/www/html
 RUN git config --global --add safe.directory /var/www/html
 
-# Update PHP settings
-RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/8.3/apache2/php.ini
-RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/8.3/cli/php.ini
-# RUN sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 10M/g' /etc/php/8.3/apache2/php.ini
-# RUN sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 10M/g' /etc/php/8.3/cli/php.ini
 
 # PHP Sodium
 RUN apt update -y
@@ -129,10 +124,12 @@ RUN chown www-data:www-data /usr/local/bin/composer
 # https://docs.moodle.org/405/en/Apache
 RUN sed -i -e 's/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/g' /etc/php/8.3/apache2/php.ini
 RUN sed -i -e 's/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/g' /etc/php/8.3/cli/php.ini
-# RUN echo -e "\nAcceptPathInfo On\n" >> /etc/httpd/httpd.conf
-RUN echo "upload_max_filesize = 5000000000" >> /var/www/html/php.ini
+
+RUN echo "upload_max_filesize = 5000000000" > /var/www/html/php.ini
 RUN echo "post_max_size = 5000000000" >> /var/www/html/php.ini
 RUN echo "max_execution_time = 600" >> /var/www/html/php.ini
+RUN echo "max_input_vars = 10000" >> /var/www/html/php.ini
+
 RUN find /var/www/html -not -path '/var/www/html' -type d -exec ln -s $PWD/php.ini {}/php.ini \;
 RUN find /var/www/html -not -path '/var/www/html/php.ini' -type f -iname php.ini  -exec chown root:root {} \;
 COPY .htaccess /var/www/html
@@ -147,14 +144,22 @@ RUN apt-get install -y redis-server
 # RUN a2ensite moodle
 # RUN a2dissite 000-default
 
-RUN sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 5000000000/g' /etc/php/8.3/apache2/php.ini
-RUN sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 5000000000/g' /etc/php/8.3/cli/php.ini
-RUN sed -i -e 's/post_max_size = 8M/post_max_size = 5000000000/g' /etc/php/8.3/apache2/php.ini
-RUN sed -i -e 's/post_max_size = 8M/post_max_size = 5000000000/g' /etc/php/8.3/cli/php.ini
+# Update PHP settings
+RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/8.3/apache2/php.ini
+RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/8.3/cli/php.ini
+RUN sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 500M/g' /etc/php/8.3/apache2/php.ini
+RUN sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 500M/g' /etc/php/8.3/cli/php.ini
+RUN sed -i -e 's/post_max_size = 8M/post_max_size = 500M/g' /etc/php/8.3/apache2/php.ini
+RUN sed -i -e 's/post_max_size = 8M/post_max_size = 500M/g' /etc/php/8.3/cli/php.ini
 RUN sed -i -e 's/max_execution_time = 30/max_execution_time = 600/g' /etc/php/8.3/apache2/php.ini
 RUN sed -i -e 's/max_execution_time = 30/max_execution_time = 600/g' /etc/php/8.3/cli/php.ini
-RUN /etc/init.d/apache2 restart
-RUN echo "apache2ctl -D FOREGROUND & redis-server" >> /cmd.sh
+RUN sed -i -e 's/memory_limit = 128M/memory_limit = 512M/g' /etc/php/8.3/apache2/php.ini
+RUN sed -i -e 's/memory_limit = 128M/memory_limit = 512M/g' /etc/php/8.3/cli/php.ini
+
+RUN apache2ctl graceful
+
+RUN echo "/etc/init.d/apache2 restart && apache2ctl -D FOREGROUND & redis-server" >> /cmd.sh
+
 RUN chmod +x /cmd.sh
 
 # Expose Apache port

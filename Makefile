@@ -70,7 +70,7 @@ perm_html:
 	- sudo chmod 0660 ./config/moodle/config.${DBTYPE}.php
 	- docker exec -u 0 ${STACK}_moodle_web find /var/www/html -type d -exec chmod 0750 {} \;
 	- docker exec -u 0 ${STACK}_moodle_web find /var/www/html -type f -exec chmod 0640 {} \;
-	-  docker exec -u 0 ${STACK}_moodle_web find /var/www/html -not -path '/var/www/html/php.ini' -type f -iname php.ini  -exec chown $$USER:root {} \;
+	- docker exec -u 0 ${STACK}_moodle_web find /var/www/html -not -path '/var/www/html/php.ini' -type f -iname php.ini  -exec chown $$USER:root {} \;
 
 perm_moodledata:
 	- docker exec -u 0 ${STACK}_moodle_web chown www-data:www-data -R /var/www/moodledata
@@ -136,3 +136,7 @@ install_missing_plugins:
 
 uninstall_missing_plugins:
 	- make --no-print-directory -f ./dump/Makefile uninstall_missing_plugins
+
+install_plugins:
+	- docker exec -u www-data -w /var/www/html/ ${STACK}_moodle_web bash -c "moosh plugin-list";
+	- while IFS= read -r plugin; do docker exec -u www-data -w /var/www/html/ ${STACK}_moodle_web bash -c "moosh plugin-install $$plugin"; done < ./dump/plugins.txt

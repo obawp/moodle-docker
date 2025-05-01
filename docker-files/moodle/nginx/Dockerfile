@@ -58,13 +58,6 @@ WORKDIR /var/www/html
 RUN git clone -b MOODLE_405_STABLE git://git.moodle.org/moodle.git /var/www/html
 RUN git config --global --add safe.directory /var/www/html
 
-# Update PHP settings
-RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/8.3/fpm/php.ini
-RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/8.3/cli/php.ini
-RUN sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 10M/g' /etc/php/8.3/fpm/php.ini
-RUN sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 10M/g' /etc/php/8.3/cli/php.ini
-# RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/8.3/cgi/php.ini
-
 # PHP Sodium
 RUN apt update -y
 RUN apt install -y libsodium-dev php8.3-dev php-pear
@@ -133,6 +126,18 @@ RUN chown www-data:www-data /usr/local/bin/composer
 # redis is needed for some plugin in my installation (and not to be installed outside this container)
 # but it can be removed, if you don't use. 
 RUN apt-get install -y redis-server
+
+# Update PHP settings
+RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/8.3/fpm/php.ini
+RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/8.3/cli/php.ini
+RUN sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 5000000000/g' /etc/php/8.3/fpm/php.ini
+RUN sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 5000000000/g' /etc/php/8.3/cli/php.ini
+RUN sed -i -e 's/post_max_size = 8M/post_max_size = 5000000000/g' /etc/php/8.3/fpm/php.ini
+RUN sed -i -e 's/post_max_size = 8M/post_max_size = 5000000000/g' /etc/php/8.3/cli/php.ini
+RUN sed -i -e 's/max_execution_time = 30/max_execution_time = 600/g' /etc/php/8.3/fpm/php.ini
+RUN sed -i -e 's/max_execution_time = 30/max_execution_time = 600/g' /etc/php/8.3/cli/php.ini
+RUN /etc/init.d/nginx restart
+RUN /etc/init.d/php8.3-fpm restart
 
 # Expose Nginx port
 EXPOSE 80
