@@ -5,10 +5,10 @@ services:
     ports:
       - "${WEB_PORT}:${WEB_PORT}"
     volumes:
-      - ./vol/moodle/html:/var/www/html
-      - ./vol/moodle/config.mysql.php:/var/www/html/config.php
-      - ${MOODLEDATA_DIR}:/var/www/moodledata
-      - ./vol/phpu/data:/var/www/phpu_moodledata
+      - ./src:/var/www/html
+      - ./config/moodle/config.mysql.php:/var/www/html/config.php
+      - ${VOLUME_DIR}/moodle/data:/var/www/moodledata
+      - ${VOLUME_DIR}/phpunit/moodle/data:/var/www/phpu_moodledata
     environment:
       - MYSQL_DATABASE=${MYSQL_DATABASE}
       - MYSQL_USER=${MYSQL_USER}
@@ -54,9 +54,9 @@ services:
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_unicode_ci
     volumes:
-      - ./vol/mysql/data:/var/lib/mysql
-      - ./vol/mysql/my.cnf:/etc/my.cnf
-      - ./vol/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql 
+      - ${VOLUME_DIR}/mysql/data:/var/lib/mysql
+      - ./config/db/mysql/my.cnf:/etc/my.cnf
+      - ./config/db/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql 
     networks:
       - moodle_network
 
@@ -92,9 +92,9 @@ services:
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_unicode_ci
     volumes:
-      - ./vol/phpu/mysql/data:/var/lib/mysql
-      - ./vol/phpu/mysql/my.cnf:/etc/my.cnf
-      - ./vol/phpu/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ${VOLUME_DIR}/phpunit/mysql/data:/var/lib/mysql
+      - ./config/phpunit/mysql/my.cnf:/etc/my.cnf
+      - ./config/phpunit/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - moodle_network
 

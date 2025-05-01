@@ -130,7 +130,11 @@ RUN chown www-data:www-data /usr/local/bin/composer
 RUN sed -i -e 's/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/g' /etc/php/8.3/apache2/php.ini
 RUN sed -i -e 's/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/g' /etc/php/8.3/cli/php.ini
 # RUN echo -e "\nAcceptPathInfo On\n" >> /etc/httpd/httpd.conf
-RUN find -type d -exec ln -s $PWD/php.ini {}/php.ini \;
+RUN echo "upload_max_filesize = 5000000000" >> /var/www/html/php.ini
+RUN echo "post_max_size = 5000000000" >> /var/www/html/php.ini
+RUN echo "max_execution_time = 600" >> /var/www/html/php.ini
+RUN find /var/www/html -not -path '/var/www/html' -type d -exec ln -s $PWD/php.ini {}/php.ini \;
+RUN find /var/www/html -not -path '/var/www/html/php.ini' -type f -iname php.ini  -exec chown root:root {} \;
 COPY .htaccess /var/www/html
 RUN chmod 640 /var/www/html/.htaccess
 

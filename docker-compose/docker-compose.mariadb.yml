@@ -5,10 +5,10 @@ services:
     ports:
       - "${WEB_PORT}:${WEB_PORT}"
     volumes:
-      - ./vol/moodle/html:/var/www/html
-      - ./vol/moodle/config.mariadb.php:/var/www/html/config.php
-      - ${MOODLEDATA_DIR}:/var/www/moodledata
-      - ./vol/phpu/data:/var/www/phpu_moodledata
+      - ./src:/var/www/html
+      - ./config/moodle/config.mariadb.php:/var/www/html/config.php
+      - ${VOLUME_DIR}/moodle/data:/var/www/moodledata
+      - ${VOLUME_DIR}/phpunit/moodle/data:/var/www/phpu_moodledata
     environment:
       - MARIADB_DATABASE=${MARIADB_DATABASE}
       - MARIADB_USER=${MARIADB_USER}
@@ -54,9 +54,9 @@ services:
       - --character-set-server=utf8mb4 
       - --collation-server=utf8mb4_unicode_ci
     volumes:
-      - ./vol/mariadb/data:/var/lib/mysql
-      - ./vol/mariadb/my.cnf:/etc/my.cnf
-      - ./vol/mariadb/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ${VOLUME_DIR}/mariadb/data:/var/lib/mysql
+      - ./config/db/mariadb/my.cnf:/etc/my.cnf
+      - ./config/db/mariadb/init.sql:/docker-entrypoint-initdb.d/init.sql
       # - ./backup/mariadb:/var/mariadb/backup/
     networks:
       - moodle_network
@@ -93,9 +93,9 @@ services:
       - --character-set-server=utf8mb4 
       - --collation-server=utf8mb4_unicode_ci
     volumes:
-      - ./vol/phpu/mariadb/data:/var/lib/mariadb
-      - ./vol/phpu/mariadb/my.cnf:/etc/my.cnf
-      - ./vol/phpu/mariadb/init.sql:/docker-entrypoint-initdb.d/init.sql 
+      - ${VOLUME_DIR}/phpunit/mariadb/data:/var/lib/mariadb
+      - ./config/phpunit/mariadb/my.cnf:/etc/my.cnf
+      - ./config/phpunit/mariadb/init.sql:/docker-entrypoint-initdb.d/init.sql 
     networks:
       - moodle_network
 

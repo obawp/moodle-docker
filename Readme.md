@@ -79,7 +79,7 @@ make install
 
 ### Configuring the config.php file
 
-Go to `./vol/moodle/config.php` and change the passwords
+Go to `./config/moodle/config.php` and change the passwords
 
 ## Access
 

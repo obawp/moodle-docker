@@ -40,8 +40,8 @@ $CFG->dboptions = array(
 
 
 // Moodle's webroot and dataroot
-$CFG->serverurl = getenv_docker('SERVERURL', 'http://moodle.local:80');
-$CFG->wwwroot   = getenv_docker('WWWROOT', 'http://moodle.local:80');
+$CFG->serverurl = getenv_docker('SERVERURL', 'http://moodle.local');
+$CFG->wwwroot   = getenv_docker('WWWROOT', 'http://moodle.local');
 $CFG->dataroot  = '/var/www/moodledata';
 $CFG->dirroot   = '/var/www/html';
 $CFG->themedir  = $CFG->dirroot . '/theme';
@@ -64,7 +64,7 @@ $CFG->passwordsaltmain =  getenv_docker('SALT','geiTheiz4yo7tanaeyoo9KohwohdAeyu
 
 // Timezone settings
 $CFG->timezone =  getenv_docker('MOODLE_TZ','America/Sao_Paulo');
-
+// $CFG->timezone = 'America/Sao_Paulo';
 // Proxy settings (optional)
 // $CFG->proxyhost  = '';
 // $CFG->proxyport  = 0;

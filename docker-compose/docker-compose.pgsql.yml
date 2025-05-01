@@ -5,10 +5,10 @@ services:
     ports:
       - "${WEB_PORT}:${WEB_PORT}"
     volumes:
-      - ./vol/moodle/html:/var/www/html
-      - ./vol/moodle/config.pgsql.php:/var/www/html/config.php
-      - ${MOODLEDATA_DIR}:/var/www/moodledata
-      - ./vol/phpu/data:/var/www/phpu_moodledata
+      - ./src:/var/www/html
+      - ./config/moodle/config.pgsql.php:/var/www/html/config.php
+      - ${VOLUME_DIR}/moodle/data:/var/www/moodledata
+      - ${VOLUME_DIR}/phpunit/moodle/data:/var/www/phpu_moodledata
     environment:
       - PGSQL_DB=${PGSQL_DB}
       - PGSQL_USER=${PGSQL_USER}
@@ -51,8 +51,8 @@ services:
       - POSTGRES_PASSWORD=${PGSQL_PASSWORD}
       - TZ=${PGSQL_TZ}
     volumes:
-      - ./vol/pgsql/data:/var/lib/postgresql/data
-      - ./vol/pgsql/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ${VOLUME_DIR}/pgsql/data:/var/lib/postgresql/data
+      - ./config/db/pgsql/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - moodle_network
 
@@ -68,8 +68,8 @@ services:
       - POSTGRES_PASSWORD=${PHPU_PGSQL_PASSWORD}
       - TZ=${PHPU_PGSQL_TZ}
     volumes:
-      - ./vol/phpu/pgsql/data:/var/lib/postgresql/data
-      - ./vol/phpu/pgsql/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ${VOLUME_DIR}/phpunit/pgsql/data:/var/lib/postgresql/data
+      - ${VOLUME_DIR}/phpunit/pgsql/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - moodle_network
     
