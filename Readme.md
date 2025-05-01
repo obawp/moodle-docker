@@ -40,7 +40,6 @@ If do you want to use my image `antonio24073/moodle:4.5-apache` you can put it i
 make build
 ```
 
-
 ### Creating the volume folder
 
 ```bash
@@ -63,13 +62,11 @@ make perm
 
 ### Add (developer) linux permissions
 
-Don't jump this step, because you will need to edit the `config.php` file
+Enable to edition
 
 ```bash
 make perm_dev
 ```
-
-Change this back if you don't need to edit the files.
 
 ### Install Moodle if not installed
 
