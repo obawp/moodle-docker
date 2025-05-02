@@ -97,10 +97,12 @@ RUN find /var/www/phpu_moodledata -type d -exec chmod 0770 {} \;
 RUN find /var/www/phpu_moodledata -type f -exec chmod 0660 {} \;
 
 # Nginx configuration
-RUN echo "security.limit_extensions = .php" >> /etc/php/8.3/fpm/pool.d/www.conf
 COPY moodle.nginx /etc/nginx/sites-available/moodle
 RUN ln -s /etc/nginx/sites-available/moodle /etc/nginx/sites-enabled/
 RUN rm -f /etc/nginx/sites-enabled/default
+
+# php-fpm configuration
+RUN echo "security.limit_extensions = .php" >> /etc/php/8.3/fpm/pool.d/www.conf
 RUN sed -i -e 's/;clear_env = no/clear_env = no/g' /etc/php/8.3/fpm/pool.d/www.conf
 
 # Install moosh

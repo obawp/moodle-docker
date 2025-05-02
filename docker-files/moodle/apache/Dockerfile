@@ -21,6 +21,8 @@ RUN add-apt-repository ppa:ondrej/php
 # Install PHP 8.3 and related extensions
 RUN apt-get update -y
 RUN apt-get install -y php8.3
+RUN apt-get install libapache2-mod-fcgid 
+RUN apt-get install -y php8.3-fpm
 RUN apt-get install -y php8.3-cli
 RUN apt-get install -y php8.3-mysqlnd
 RUN apt-get install -y php8.3-xml
@@ -41,6 +43,8 @@ RUN apt-get install -y php8.3-imap
 # Enable Apache modules
 RUN a2enmod rewrite
 RUN a2enmod php8.3
+RUN a2enmod proxy_fcgi setenvif
+RUN a2enconf php8.3-fpm
 
 # Install Nodejs and build-essential
 RUN apt-get install -y nodejs
@@ -144,6 +148,7 @@ RUN apt-get install -y redis-server
 # RUN a2ensite moodle
 # RUN a2dissite 000-default
 
+
 # Update PHP settings
 RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/8.3/apache2/php.ini
 RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/8.3/cli/php.ini
@@ -156,14 +161,26 @@ RUN sed -i -e 's/max_execution_time = 30/max_execution_time = 600/g' /etc/php/8.
 RUN sed -i -e 's/memory_limit = 128M/memory_limit = 512M/g' /etc/php/8.3/apache2/php.ini
 RUN sed -i -e 's/memory_limit = 128M/memory_limit = 512M/g' /etc/php/8.3/cli/php.ini
 
-RUN apache2ctl graceful
+# Pass all environment variables to PHP
+RUN sed -i -e 's/variables_order = "GPCS"/variables_order = "EGPCS"/g' /etc/php/8.3/apache2/php.ini
+RUN sed -i -e 's/variables_order = "GPCS"/variables_order = "EGPCS"/g' /etc/php/8.3/cli/php.ini
 
-RUN echo "/etc/init.d/apache2 restart && apache2ctl -D FOREGROUND & redis-server" >> /cmd.sh
+# php-fpm configuration
+RUN echo "security.limit_extensions = .php" >> /etc/php/8.3/fpm/pool.d/www.conf
+RUN sed -i -e 's/;clear_env = no/clear_env = no/g' /etc/php/8.3/fpm/pool.d/www.conf
 
-RUN chmod +x /cmd.sh
+RUN echo '#!/bin/bash' > /cmd.sh && \
+    echo 'set -e' >> /cmd.sh && \
+    echo 'printenv | grep -v "no_proxy" >> /etc/environment' >> /cmd.sh && \
+    echo 'export $(cat /etc/environment | xargs)' >> /cmd.sh && \
+    echo '/etc/init.d/apache2 restart' >> /cmd.sh && \
+    echo '/etc/init.d/php8.3-fpm start' >> /cmd.sh && \
+    echo 'redis-server' >> /cmd.sh && \
+    echo 'apache2ctl -D FOREGROUND' >> /cmd.sh && \
+    chmod +x /cmd.sh
 
 # Expose Apache port
 EXPOSE 80
-
+ 
 # Start services
-CMD ["sh", "/cmd.sh"]
+ENTRYPOINT ["sh", "/cmd.sh"]

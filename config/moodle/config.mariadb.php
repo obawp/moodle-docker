@@ -20,6 +20,7 @@ if (!function_exists('getenv_docker')) {
 	}
 }
 
+
 // Database settings
 $CFG->dbtype    =  'mariadb';
 $CFG->dblibrary =  'native';
