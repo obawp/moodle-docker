@@ -43,8 +43,8 @@ services:
     image: postgres:13
     container_name: ${STACK}_moodle_db
     restart: always
-    ports:
-      - "${PGSQL_PORT}:5432"
+    # ports:
+    #   - "${PGSQL_PORT}:5432"
     environment:
       - POSTGRES_DB=${PGSQL_DB}
       - POSTGRES_USER=${PGSQL_USER}
@@ -60,8 +60,8 @@ services:
     image: postgres:13
     container_name: ${STACK}_moodle_phpunit_db
     restart: always
-    ports:
-      - "${PHPU_PGSQL_PORT}:5432"
+    # ports:
+    #   - "${PHPU_PGSQL_PORT}:5432"
     environment:
       - POSTGRES_DB=${PHPU_PGSQL_DB}
       - POSTGRES_USER=${PHPU_PGSQL_USER}

@@ -49,8 +49,8 @@ services:
     image: mariadb:10.6
     container_name: ${STACK}_moodle_db
     restart: always
-    ports:
-      - "${MARIADB_DB_PORT}:3306"
+    # ports:
+    #   - "${MARIADB_DB_PORT}:3306"
     environment:
       - MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
       - MARIADB_DATABASE=${MARIADB_DATABASE}
@@ -88,8 +88,8 @@ services:
     image: mariadb:10.6
     container_name: ${STACK}_moodle_phpunit_db
     restart: always
-    ports:
-      - "${MARIADB_PHPU_DB_PORT}:3306"
+    # ports:
+    #   - "${MARIADB_PHPU_DB_PORT}:3306"
     environment:
       - MARIADB_ROOT_PASSWORD=${PHPU_MARIADB_ROOT_PASSWORD}
       - MARIADB_DATABASE=${PHPU_MARIADB_DATABASE}

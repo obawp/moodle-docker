@@ -43,8 +43,8 @@ services:
     image: mysql:8.0
     container_name: ${STACK}_moodle_db
     restart: always
-    ports:
-      - "${MYSQL_DB_PORT}:3306"
+    # ports:
+    #   - "${MYSQL_DB_PORT}:3306"
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - MYSQL_DATABASE=${MYSQL_DATABASE}
@@ -81,8 +81,8 @@ services:
     image: mysql:8.0
     container_name: ${STACK}_moodle_phpunit_db
     restart: always
-    ports:
-      - "${MYSQL_PHPU_DB_PORT}:3306"
+    # ports:
+    #   - "${MYSQL_PHPU_DB_PORT}:3306"
     environment:
       - MYSQL_ROOT_PASSWORD=${PHPU_MYSQL_ROOT_PASSWORD}
       - MYSQL_DATABASE=${PHPU_MYSQL_DATABASE}
