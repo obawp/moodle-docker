@@ -15,6 +15,7 @@ services:
       - MARIADB_PASSWORD=${MARIADB_PASSWORD}
       - MARIADB_PREFIX=${MARIADB_PREFIX}
       - MARIADB_PORT=${MARIADB_PORT}
+      - WEB_PORT=${WEB_PORT}
       - SERVERURL=${SERVERURL}
       - WWWROOT=${WWWROOT}
       - SERVERURL=${SERVERURL}
@@ -24,22 +25,6 @@ services:
       - PHPU_MARIADB_DATABASE=${PHPU_MARIADB_DATABASE}
       - PHPU_MARIADB_USER=${PHPU_MARIADB_USER}
       - PHPU_MARIADB_PASSWORD=${PHPU_MARIADB_PASSWORD}
-    command: > 
-      sh -c "
-      sed -i -e 's/Listen 80/Listen ${WEB_PORT}/g' /etc/apache2/ports.conf || true &&
-      sed -i -e 's/<VirtualHost *:80>/<VirtualHost *:${WEB_PORT}>/g' /etc/apache2/sites-enabled/000-default.conf || true &&
-      sed -i -e 's/listen 80;/listen ${WEB_PORT};/g' /etc/nginx/sites-available/moodle || true &&
-      echo \"<Directory /var/www/html>
-          Options Indexes FollowSymLinks
-          AllowOverride All
-          Require all granted
-          SetHandler \"proxy:unix:/var/run/php/php8.3-fpm.sock|fcgi://localhost\"
-      </Directory>\" >> /etc/apache2/sites-enabled/000-default.conf || true &&
-      sudo a2ensite 000-default.conf &&
-      printenv | grep -v "no_proxy" >> /etc/environment &&
-      echo 'export $(cat /etc/environment | xargs)' >> /etc/apache2/envvars &&
-      sh /cmd.sh
-      "
     depends_on:
       - db
     networks:

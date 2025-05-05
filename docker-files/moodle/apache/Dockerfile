@@ -129,10 +129,10 @@ RUN chown www-data:www-data /usr/local/bin/composer
 RUN sed -i -e 's/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/g' /etc/php/8.3/apache2/php.ini
 RUN sed -i -e 's/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/g' /etc/php/8.3/cli/php.ini
 
-RUN echo "upload_max_filesize = 5000000000" > /var/www/html/php.ini
-RUN echo "post_max_size = 5000000000" >> /var/www/html/php.ini
-RUN echo "max_execution_time = 600" >> /var/www/html/php.ini
-RUN echo "max_input_vars = 10000" >> /var/www/html/php.ini
+RUN echo "upload_max_filesize = 5000000000" > /var/www/html/php.ini && \
+echo "post_max_size = 5000000000" >> /var/www/html/php.ini && \
+echo "max_execution_time = 600" >> /var/www/html/php.ini && \
+echo "max_input_vars = 10000" >> /var/www/html/php.ini
 
 RUN find /var/www/html -not -path '/var/www/html' -type d -exec ln -s $PWD/php.ini {}/php.ini \;
 RUN find /var/www/html -not -path '/var/www/html/php.ini' -type f -iname php.ini  -exec chown root:root {} \;
@@ -148,39 +148,51 @@ RUN apt-get install -y redis-server
 # RUN a2ensite moodle
 # RUN a2dissite 000-default
 
-
 # Update PHP settings
-RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/8.3/apache2/php.ini
-RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/8.3/cli/php.ini
-RUN sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 500M/g' /etc/php/8.3/apache2/php.ini
-RUN sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 500M/g' /etc/php/8.3/cli/php.ini
-RUN sed -i -e 's/post_max_size = 8M/post_max_size = 500M/g' /etc/php/8.3/apache2/php.ini
-RUN sed -i -e 's/post_max_size = 8M/post_max_size = 500M/g' /etc/php/8.3/cli/php.ini
-RUN sed -i -e 's/max_execution_time = 30/max_execution_time = 600/g' /etc/php/8.3/apache2/php.ini
-RUN sed -i -e 's/max_execution_time = 30/max_execution_time = 600/g' /etc/php/8.3/cli/php.ini
-RUN sed -i -e 's/memory_limit = 128M/memory_limit = 512M/g' /etc/php/8.3/apache2/php.ini
-RUN sed -i -e 's/memory_limit = 128M/memory_limit = 512M/g' /etc/php/8.3/cli/php.ini
-
-# Pass all environment variables to PHP
-RUN sed -i -e 's/variables_order = "GPCS"/variables_order = "EGPCS"/g' /etc/php/8.3/apache2/php.ini
-RUN sed -i -e 's/variables_order = "GPCS"/variables_order = "EGPCS"/g' /etc/php/8.3/cli/php.ini
+RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/8.3/fpm/php.ini && \
+    sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 500M/g' /etc/php/8.3/fpm/php.ini && \
+    sed -i -e 's/post_max_size = 8M/post_max_size = 500M/g' /etc/php/8.3/fpm/php.ini && \
+    sed -i -e 's/max_execution_time = 30/max_execution_time = 600/g' /etc/php/8.3/fpm/php.ini && \
+    sed -i -e 's/memory_limit = 128M/memory_limit = 512M/g' /etc/php/8.3/fpm/php.ini && \
+    sed -i -e 's/variables_order = "GPCS"/variables_order = "EGPCS"/g' /etc/php/8.3/fpm/php.ini
+RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/8.3/cli/php.ini && \
+    sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 500M/g' /etc/php/8.3/cli/php.ini && \
+    sed -i -e 's/post_max_size = 8M/post_max_size = 500M/g' /etc/php/8.3/cli/php.ini && \
+    sed -i -e 's/max_execution_time = 30/max_execution_time = 600/g' /etc/php/8.3/cli/php.ini && \
+    sed -i -e 's/memory_limit = 128M/memory_limit = 512M/g' /etc/php/8.3/cli/php.ini && \
+    sed -i -e 's/variables_order = "GPCS"/variables_order = "EGPCS"/g' /etc/php/8.3/cli/php.ini
+RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/8.3/apache2/php.ini && \
+    sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 500M/g' /etc/php/8.3/apache2/php.ini && \
+    sed -i -e 's/post_max_size = 8M/post_max_size = 500M/g' /etc/php/8.3/apache2/php.ini && \
+    sed -i -e 's/max_execution_time = 30/max_execution_time = 600/g' /etc/php/8.3/apache2/php.ini && \
+    sed -i -e 's/memory_limit = 128M/memory_limit = 512M/g' /etc/php/8.3/apache2/php.ini && \
+    sed -i -e 's/variables_order = "GPCS"/variables_order = "EGPCS"/g' /etc/php/8.3/apache2/php.ini
 
 # php-fpm configuration
 RUN echo "security.limit_extensions = .php" >> /etc/php/8.3/fpm/pool.d/www.conf
 RUN sed -i -e 's/;clear_env = no/clear_env = no/g' /etc/php/8.3/fpm/pool.d/www.conf
 
+# Modify Apache's 000-default.conf to include PHP-FPM proxy handler
+RUN echo '<Directory /var/www/html>\n\
+Options Indexes FollowSymLinks\n\
+AllowOverride All\n\
+Require all granted\n\
+SetHandler "proxy:unix:/var/run/php/php8.3-fpm.sock|fcgi://localhost"\n\
+</Directory>' >> /etc/apache2/sites-available/moodle.conf || true
+RUN a2ensite moodle.conf
+RUN echo "ServerName moodle.local" > /etc/apache2/conf-available/servername.conf
+RUN /etc/init.d/apache2 stop
+
 RUN echo '#!/bin/bash' > /cmd.sh && \
     echo 'set -e' >> /cmd.sh && \
     echo 'printenv | grep -v "no_proxy" >> /etc/environment' >> /cmd.sh && \
     echo 'export $(cat /etc/environment | xargs)' >> /cmd.sh && \
-    echo '/etc/init.d/apache2 restart' >> /cmd.sh && \
+    echo 'sed -i "s/Listen 80/Listen $WEB_PORT/" /etc/apache2/ports.conf' >> /cmd.sh && \
+    echo 'sed -i "s/<VirtualHost \*:80>/<VirtualHost *:$WEB_PORT>/" /etc/apache2/sites-enabled/000-default.conf' >> /cmd.sh && \
     echo '/etc/init.d/php8.3-fpm start' >> /cmd.sh && \
-    echo 'redis-server' >> /cmd.sh && \
-    echo 'apache2ctl -D FOREGROUND' >> /cmd.sh && \
-    chmod +x /cmd.sh
+    echo 'redis-server &' >> /cmd.sh && \
+    echo 'apache2ctl -D FOREGROUND' >> /cmd.sh
+RUN chmod +x /cmd.sh
 
-# Expose Apache port
-EXPOSE 80
- 
 # Start services
 ENTRYPOINT ["sh", "/cmd.sh"]

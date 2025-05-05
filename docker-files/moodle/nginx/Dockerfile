@@ -134,25 +134,31 @@ RUN sed -i -e 's/types_hash_max_size 2048;/types_hash_max_size 2048;\n        cl
 RUN nginx -t
 
 # Update PHP settings
-RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/8.3/fpm/php.ini
-RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/8.3/cli/php.ini
-RUN sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 500M/g' /etc/php/8.3/fpm/php.ini
-RUN sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 500M/g' /etc/php/8.3/cli/php.ini
-RUN sed -i -e 's/post_max_size = 8M/post_max_size = 500M/g' /etc/php/8.3/fpm/php.ini
-RUN sed -i -e 's/post_max_size = 8M/post_max_size = 500M/g' /etc/php/8.3/cli/php.ini
-RUN sed -i -e 's/max_execution_time = 30/max_execution_time = 600/g' /etc/php/8.3/fpm/php.ini
-RUN sed -i -e 's/max_execution_time = 30/max_execution_time = 600/g' /etc/php/8.3/cli/php.ini
-RUN sed -i -e 's/memory_limit = 128M/memory_limit = 512M/g' /etc/php/8.3/fpm/php.ini
-RUN sed -i -e 's/memory_limit = 128M/memory_limit = 512M/g' /etc/php/8.3/cli/php.ini
+RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/8.3/fpm/php.ini && \
+    sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 500M/g' /etc/php/8.3/fpm/php.ini && \
+    sed -i -e 's/post_max_size = 8M/post_max_size = 500M/g' /etc/php/8.3/fpm/php.ini && \
+    sed -i -e 's/max_execution_time = 30/max_execution_time = 600/g' /etc/php/8.3/fpm/php.ini && \
+    sed -i -e 's/memory_limit = 128M/memory_limit = 512M/g' /etc/php/8.3/fpm/php.ini && \
+    sed -i -e 's/variables_order = "GPCS"/variables_order = "EGPCS"/g' /etc/php/8.3/fpm/php.ini
+RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/8.3/cli/php.ini && \
+    sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 500M/g' /etc/php/8.3/cli/php.ini && \
+    sed -i -e 's/post_max_size = 8M/post_max_size = 500M/g' /etc/php/8.3/cli/php.ini && \
+    sed -i -e 's/max_execution_time = 30/max_execution_time = 600/g' /etc/php/8.3/cli/php.ini && \
+    sed -i -e 's/memory_limit = 128M/memory_limit = 512M/g' /etc/php/8.3/cli/php.ini && \
+    sed -i -e 's/variables_order = "GPCS"/variables_order = "EGPCS"/g' /etc/php/8.3/cli/php.ini
 
 # Rstarting services
-RUN /etc/init.d/nginx restart
-RUN /etc/init.d/php8.3-fpm restart
+# RUN /etc/init.d/nginx restart
+# RUN /etc/init.d/php8.3-fpm restart
 
-# Expose Nginx port
-EXPOSE 80
-
-RUN echo "sh -c \"/etc/init.d/php8.3-fpm start && exec nginx -g 'daemon off;' & redis-server\"" >> /cmd.sh
+RUN echo '#!/bin/bash' > /cmd.sh && \
+    echo 'set -e' >> /cmd.sh && \
+    echo 'printenv | grep -v "no_proxy" >> /etc/environment' >> /cmd.sh && \
+    echo 'export $(cat /etc/environment | xargs)' >> /cmd.sh && \
+    echo 'sed -i -e "s/listen 80;/listen $WEB_PORT;/g" /etc/nginx/sites-available/moodle' >> /cmd.sh && \
+    echo '/etc/init.d/php8.3-fpm start' >> /cmd.sh && \
+    echo 'redis-server &' >> /cmd.sh && \
+    echo "exec nginx -g 'daemon off;'" >> /cmd.sh
 RUN chmod +x /cmd.sh
 
 # Start services

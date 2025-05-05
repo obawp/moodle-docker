@@ -15,6 +15,7 @@ services:
       - PGSQL_PASSWORD=${PGSQL_PASSWORD}
       - PGSQL_PREFIX=${PGSQL_PREFIX}
       - PGSQL_PORT=${PGSQL_PORT}
+      - WEB_PORT=${WEB_PORT}
       - SERVERURL=${SERVERURL}
       - WWWROOT=${WWWROOT}
       - SERVERURL=${SERVERURL}
@@ -24,16 +25,6 @@ services:
       - PHPU_PGSQL_DB=${PHPU_PGSQL_DB}
       - PHPU_PGSQL_USER=${PHPU_PGSQL_USER}
       - PHPU_PGSQL_PASSWORD=${PHPU_PGSQL_PASSWORD}
-    command: > 
-      sh -c "
-      sed -i -e 's/Listen 80/Listen ${WEB_PORT}/g' /etc/apache2/ports.conf || true &&
-      sed -i -e 's/<VirtualHost *:80>/<VirtualHost *:${WEB_PORT}>/g' /etc/apache2/sites-enabled/000-default.conf || true &&
-      sed -i -e 's/listen 80;/listen ${WEB_PORT};/g' /etc/nginx/sites-available/moodle || true &&
-      echo \"<Directory /var/www/html>
-          AllowOverride All
-      </Directory>\" >> /etc/apache2/sites-enabled/000-default.conf || true &&
-      sh /cmd.sh
-      "
     depends_on:
       - db
     networks:
