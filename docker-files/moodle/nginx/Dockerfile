@@ -96,11 +96,6 @@ RUN chown www-data:www-data -R /var/www/phpu_moodledata
 RUN find /var/www/phpu_moodledata -type d -exec chmod 0770 {} \;
 RUN find /var/www/phpu_moodledata -type f -exec chmod 0660 {} \;
 
-# Nginx configuration
-COPY moodle.nginx /etc/nginx/sites-available/moodle
-RUN ln -s /etc/nginx/sites-available/moodle /etc/nginx/sites-enabled/
-RUN rm -f /etc/nginx/sites-enabled/default
-
 # php-fpm configuration
 RUN echo "security.limit_extensions = .php" >> /etc/php/8.3/fpm/pool.d/www.conf
 RUN sed -i -e 's/;clear_env = no/clear_env = no/g' /etc/php/8.3/fpm/pool.d/www.conf
@@ -147,9 +142,14 @@ RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/8.3/c
     sed -i -e 's/memory_limit = 128M/memory_limit = 512M/g' /etc/php/8.3/cli/php.ini && \
     sed -i -e 's/variables_order = "GPCS"/variables_order = "EGPCS"/g' /etc/php/8.3/cli/php.ini
 
+# Nginx configuration
+COPY moodle.nginx /etc/nginx/sites-available/moodle
+RUN ln -s /etc/nginx/sites-available/moodle /etc/nginx/sites-enabled/
+RUN rm -f /etc/nginx/sites-enabled/default
+
 # Rstarting services
-# RUN /etc/init.d/nginx restart
-# RUN /etc/init.d/php8.3-fpm restart
+RUN /etc/init.d/nginx restart
+RUN /etc/init.d/php8.3-fpm restart
 
 RUN echo '#!/bin/bash' > /cmd.sh && \
     echo 'set -e' >> /cmd.sh && \

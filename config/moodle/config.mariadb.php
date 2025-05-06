@@ -46,8 +46,11 @@ $CFG->wwwroot   = getenv_docker('WWWROOT', 'http://moodle.local');
 $CFG->dataroot  = '/var/www/moodledata';
 $CFG->dirroot   = '/var/www/html';
 $CFG->themedir  = $CFG->dirroot . '/theme';
-$CFG->routerconfigured = false;
 $CFG->directorypermissions = 02770;
+
+// When not configured on the web server it must be accessed via https://example.com/moodle/r.php
+// When configured the on the web server the 'r.php' may be removed.
+$CFG->routerconfigured = false; 
 
 $CFG->admin = "admin";
 
@@ -56,6 +59,9 @@ $CFG->cookiepath    = $CFG->dataroot .'/sessions/';
 $CFG->cookiesecure  = false;
 $CFG->cookiehttponly = true;
 // $CFG->cookiehttponly = false;
+$CFG->slasharguments = true; // only use false to http:my-url.com/index.php/path-info/slasharguments issue
+$CFG->overridetossl = false;
+// define('CACHE_DISABLE_ALL', true);
 
 // Moodle language settings
 // $CFG->lang = 'en';

@@ -4,36 +4,6 @@ server {
     root /var/www/html;
     index index.php index.html index.htm;
 
-    # PHP processing
-    location ~ \.php(/|$) {
-        # Split the path info based on URI.
-        fastcgi_split_path_info ^(.+\.php)(/.*)$;
-
-        # Store the original path_info
-        set $path_info $fastcgi_path_info;
-
-        # Look for the PHP file. If not found, jump to @routed.
-        try_files $fastcgi_script_name $fastcgi_script_name/;
-
-        # Pass to FastCGI
-        fastcgi_pass   unix:/run/php/php8.3-fpm.sock;
-        include        fastcgi_params;
-
-        # Reapply the path_info after including fastcgi_params.
-        fastcgi_param PATH_INFO $path_info;
-        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
-        fastcgi_param DOCUMENT_ROOT $realpath_root;
-    }
-
-    # Static files caching
-    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|otf|eot|mp3|mp4|avi|mov|flv|wmv|webm)$ {
-        root /var/www/html;
-        try_files $uri $uri/ /index.php?$query_string;
-        expires max;
-        log_not_found off;
-        access_log off;
-    }
-
     # Restrict direct access to sensitive files
     location ~ (/vendor/|/node_modules/|composer\.json|/readme|/README|readme\.txt|/upgrade\.txt|/UPGRADING\.md|db/install\.xml|/fixtures/|/behat/|phpunit\.xml|\.lock|environment\.xml) {
         deny all;
@@ -54,7 +24,38 @@ server {
     location /dataroot/ {
         internal;
         alias /var/www/moodledata/;
-        deny all; 
-        return 404;
     }
+    
+    # PHP processing
+    location ~ \.php(/|$) {
+        # Split the path info based on URI.
+        fastcgi_split_path_info ^(.+\.php)(/.*)$;
+
+        # Store the original path_info
+        set $path_info $fastcgi_path_info;
+
+        # Look for the PHP file. If not found, jump to @routed.
+        try_files $fastcgi_script_name $fastcgi_script_name/;
+
+
+        # Reapply the path_info after including fastcgi_params.
+        fastcgi_param PATH_INFO $path_info;
+        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+        fastcgi_param DOCUMENT_ROOT $realpath_root;
+
+        # Pass to FastCGI
+        include        fastcgi_params;
+        fastcgi_pass   unix:/run/php/php8.3-fpm.sock;
+    }
+    
+
+    # Static files caching
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|otf|eot|mp3|mp4|avi|mov|flv|wmv|webm)$ {
+        root /var/www/html;
+        try_files $uri $uri/ /index.php?$query_string;
+        expires max;
+        log_not_found off;
+        access_log off;
+    }
+
 }
