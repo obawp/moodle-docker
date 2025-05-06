@@ -5,6 +5,31 @@ server {
     index index.php index.html index.htm;
     error_page 404 /error/index.php;    error_page 403 =404 /error/index.php;
 
+
+    # Restrict direct access to sensitive files
+    location ~ (/vendor/|/node_modules/|composer\.json|/readme|/README|readme\.txt|/upgrade\.txt|/UPGRADING\.md|db/install\.xml|/fixtures/|/behat/|phpunit\.xml|\.lock|environment\.xml) {
+        deny all;
+        return 404;
+    }
+
+    # Restrict access to dot files, except ".well-known"
+    location ~ /\.(?!well-known).* {
+        return 404;
+    }
+
+    # Restrict access to moodledata directory (not needed for the current project)
+    location ^~ /moodledata/ {
+        deny all;
+        return 403;
+    }
+    
+    location /dataroot/ {
+        internal;
+        alias /var/www/moodledata/;
+        deny all; 
+        return 404;
+    }
+    
     # PHP processing
     location ~ [^/]\.php(/|$) {
         fastcgi_split_path_info  ^(.+\.php)(/.+)$;
@@ -34,29 +59,5 @@ server {
         expires max;
         log_not_found off;
         access_log off;
-    }
-
-    # Restrict direct access to sensitive files
-    location ~ (/vendor/|/node_modules/|composer\.json|/readme|/README|readme\.txt|/upgrade\.txt|/UPGRADING\.md|db/install\.xml|/fixtures/|/behat/|phpunit\.xml|\.lock|environment\.xml) {
-        deny all;
-        return 404;
-    }
-
-    # Restrict access to dot files, except ".well-known"
-    location ~ /\.(?!well-known).* {
-        return 404;
-    }
-
-    # Restrict access to moodledata directory (not needed for the current project)
-    location ^~ /moodledata/ {
-        deny all;
-        return 403;
-    }
-    
-    location /dataroot/ {
-        internal;
-        alias /var/www/moodledata/;
-        deny all; 
-        return 404;
     }
 }

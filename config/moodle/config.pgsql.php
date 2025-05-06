@@ -76,11 +76,13 @@ $CFG->xsendfilealiases = array(
 );
 
 // Debugging settings (not for production use)
-@error_reporting(E_ALL | E_STRICT);
-@ini_set('display_errors', '1');
-$CFG->debug = (E_ALL | E_STRICT);
-$CFG->debugdisplay = 1;
-
+$debug = getenv_docker('DEBUG', false);
+if($debug){	
+	@error_reporting(E_ALL | E_STRICT);
+	@ini_set('display_errors', '1');
+	$CFG->debug = (E_ALL | E_STRICT);
+	$CFG->debugdisplay = 1;
+}
 
 $phpu_enabled = getenv_docker('PHPU_ENABLED', false);
 if($phpu_enabled){

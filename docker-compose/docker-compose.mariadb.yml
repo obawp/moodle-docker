@@ -2,6 +2,7 @@ services:
   web:
     image: ${REPO}-${WEBSERVER}
     container_name: ${STACK}_moodle_web
+    restart: always
     ports:
       - "${WEB_PORT}:${WEB_PORT}"
     volumes:
@@ -29,6 +30,11 @@ services:
       - db
     networks:
       - moodle_network
+    deploy:
+      resources:
+        limits:
+          cpus: ${CPUS}
+          memory: ${MEMORY}
 
   db:
     image: mariadb:10.6
@@ -51,6 +57,11 @@ services:
       # - ./backup/mariadb:/var/mariadb/backup/
     networks:
       - moodle_network
+    deploy:
+      resources:
+        limits:
+          cpus: ${CPUS}
+          memory: ${MEMORY}
 
   pma:
     image: phpmyadmin/phpmyadmin
@@ -68,6 +79,11 @@ services:
       - db
     networks:
       - moodle_network
+    deploy:
+      resources:
+        limits:
+          cpus: ${CPUS}
+          memory: ${MEMORY}
 
   phpu_db:
     image: mariadb:10.6
@@ -89,6 +105,11 @@ services:
       - ./config/phpunit/mariadb/init.sql:/docker-entrypoint-initdb.d/init.sql 
     networks:
       - moodle_network
+    deploy:
+      resources:
+        limits:
+          cpus: ${CPUS}
+          memory: ${MEMORY}
 
   phpu_pma:
     image: phpmyadmin/phpmyadmin
@@ -106,6 +127,11 @@ services:
       - phpu_db
     networks:
       - moodle_network
+    deploy:
+      resources:
+        limits:
+          cpus: ${CPUS}
+          memory: ${MEMORY}
 
 networks:
   moodle_network:

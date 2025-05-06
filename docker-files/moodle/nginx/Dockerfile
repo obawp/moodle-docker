@@ -96,10 +96,6 @@ RUN chown www-data:www-data -R /var/www/phpu_moodledata
 RUN find /var/www/phpu_moodledata -type d -exec chmod 0770 {} \;
 RUN find /var/www/phpu_moodledata -type f -exec chmod 0660 {} \;
 
-# php-fpm configuration
-RUN echo "security.limit_extensions = .php" >> /etc/php/8.3/fpm/pool.d/www.conf
-RUN sed -i -e 's/;clear_env = no/clear_env = no/g' /etc/php/8.3/fpm/pool.d/www.conf
-
 # Install moosh
 RUN apt-add-repository ppa:zabuch/ppa
 RUN apt-get update -y
@@ -124,8 +120,20 @@ RUN chown www-data:www-data /usr/local/bin/composer
 # but it can be removed, if you don't use. 
 RUN apt-get install -y redis-server
 
+# moodle cron
+RUN apt-get install -y cron
+RUN echo '* * * * * sudo -u www-data /usr/bin/php /var/www/html/admin/cli/cron.php' > /etc/cron.d/moodle
+RUN chmod 0644 /etc/cron.d/moodle
+RUN crontab /etc/cron.d/moodle
+RUN touch /var/log/cron.log
+
+# php-fpm configuration
+RUN echo "security.limit_extensions = .php" >> /etc/php/8.3/fpm/pool.d/www.conf
+RUN sed -i -e 's/;clear_env = no/clear_env = no/g' /etc/php/8.3/fpm/pool.d/www.conf
+RUN sed -i -e 's/;request_terminate_timeout = 0/request_terminate_timeout = 1800s/g' /etc/php/8.3/fpm/pool.d/www.conf
+
 # Update nginx settings
-RUN sed -i -e 's/types_hash_max_size 2048;/types_hash_max_size 2048;\n        client_max_body_size 100M;/g' /etc/nginx/nginx.conf
+RUN sed -i -e 's/types_hash_max_size 2048;/types_hash_max_size 2048;\n        client_max_body_size 500M;/g' /etc/nginx/nginx.conf
 RUN nginx -t
 
 # Update PHP settings
@@ -157,7 +165,8 @@ RUN echo '#!/bin/bash' > /cmd.sh && \
     echo 'export $(cat /etc/environment | xargs)' >> /cmd.sh && \
     echo 'sed -i -e "s/listen 80;/listen $WEB_PORT;/g" /etc/nginx/sites-available/moodle' >> /cmd.sh && \
     echo '/etc/init.d/php8.3-fpm start' >> /cmd.sh && \
-    echo 'redis-server &' >> /cmd.sh && \
+    echo '/etc/init.d/cron start' >> /cmd.sh && \
+    echo 'redis-server & # do not remove the &' >> /cmd.sh && \
     echo "exec nginx -g 'daemon off;'" >> /cmd.sh
 RUN chmod +x /cmd.sh
 

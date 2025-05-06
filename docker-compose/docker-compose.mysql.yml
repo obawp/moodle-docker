@@ -2,6 +2,7 @@ services:
   web:
     image: ${REPO}-${WEBSERVER}
     container_name: ${STACK}_moodle_web
+    restart: always
     ports:
       - "${WEB_PORT}:${WEB_PORT}"
     volumes:
@@ -29,6 +30,11 @@ services:
       - db
     networks:
       - moodle_network
+    deploy:
+      resources:
+        limits:
+          cpus: ${CPUS}
+          memory: ${MEMORY}
 
   db:
     image: mysql:8.0
@@ -67,6 +73,11 @@ services:
       - db
     networks:
       - moodle_network
+    deploy:
+      resources:
+        limits:
+          cpus: ${CPUS}
+          memory: ${MEMORY}
 
   phpu_db:
     image: mysql:8.0
@@ -88,6 +99,11 @@ services:
       - ./config/phpunit/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - moodle_network
+    deploy:
+      resources:
+        limits:
+          cpus: ${CPUS}
+          memory: ${MEMORY}
 
   phpu_pma:
     image: phpmyadmin/phpmyadmin
@@ -105,6 +121,11 @@ services:
       - phpu_db
     networks:
       - moodle_network
+    deploy:
+      resources:
+        limits:
+          cpus: ${CPUS}
+          memory: ${MEMORY}
 
 networks:
   moodle_network:

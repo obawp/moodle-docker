@@ -143,6 +143,13 @@ RUN chmod 640 /var/www/html/.htaccess
 # but it can be removed, if you don't use. 
 RUN apt-get install -y redis-server
 
+# moodle cron
+RUN apt-get install -y cron
+RUN echo '* * * * * sudo -u www-data /usr/bin/php /var/www/html/admin/cli/cron.php' > /etc/cron.d/moodle
+RUN chmod 0644 /etc/cron.d/moodle
+RUN crontab /etc/cron.d/moodle
+RUN touch /var/log/cron.log
+
 # Apache config
 # COPY moodle.apache /etc/apache2/sites-available/moodle.conf
 # RUN a2ensite moodle
@@ -190,7 +197,8 @@ RUN echo '#!/bin/bash' > /cmd.sh && \
     echo 'sed -i "s/Listen 80/Listen $WEB_PORT/" /etc/apache2/ports.conf' >> /cmd.sh && \
     echo 'sed -i "s/<VirtualHost \*:80>/<VirtualHost *:$WEB_PORT>/" /etc/apache2/sites-enabled/000-default.conf' >> /cmd.sh && \
     echo '/etc/init.d/php8.3-fpm start' >> /cmd.sh && \
-    echo 'redis-server &' >> /cmd.sh && \
+    echo '/etc/init.d/cron start' >> /cmd.sh && \
+    echo 'redis-server & # do not remove the &' >> /cmd.sh && \
     echo 'apache2ctl -D FOREGROUND' >> /cmd.sh
 RUN chmod +x /cmd.sh
 
