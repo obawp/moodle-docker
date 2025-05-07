@@ -48,9 +48,6 @@ rmdir_db:
 up:
 	- docker compose -p ${STACK} --project-directory ./ -f "./docker-compose/docker-compose.${DBTYPE}.yml" up -d
 
-up_limited_resources:
-	- docker compose --compatibility -p ${STACK} --project-directory ./ -f "./docker-compose/docker-compose.${DBTYPE}.yml" up -d
-
 bash:
 	- docker exec -it -u 0 -w /var/www/html ${STACK}_moodle_web bash
 
@@ -142,9 +139,16 @@ clear_restores_in_progress_list:
 	- docker exec -u 0 ${STACK}_moodle_db mariadb -u ${MARIADB_USER} -p${MARIADB_PASSWORD} ${MARIADB_DATABASE} -e "DELETE FROM mdl_backup_controllers WHERE interactive = 1;"
 
 bkp_courses_restore:
-	- docker exec -it -u www-data -w / ${STACK}_moodle_web mkdir -p /backup/courses
-	- docker  cp ${VOLUME_DIR}/backup/${CURRENT_BACKUP_DIR}/courses ${STACK}_moodle_web:/backup/courses
-	- ls ${VOLUME_DIR}/backup/${CURRENT_BACKUP_DIR}/courses | while IFS= read -r course; do docker exec -u www-data -w /var/www/html/ ${STACK}_moodle_web bash -c "echo "$$course"; /usr/bin/php admin/cli/restore_backup.php --file=/backup/courses/$$course --categoryid=1 "; done
+	docker exec -it -u 0 -w / ${STACK}_9oodle_web mkdir -p /var/www/backup/courses
+	docker exec -it -u 0 -w / ${STACK}_moodle_web chown root:www-data /var/www/backup
+	docker  cp ${VOLUME_DIR}/backup/${CURRENT_BACKUP_DIR}/courses ${STACK}_moodle_web:/var/www/backup
+	ls ${VOLUME_DIR}/backup/${CURRENT_BACKUP_DIR}/courses | while IFS= read -r course; do docker exec -u www-data -w /var/www/html/ ${STACK}_moodle_web bash -c "echo "$$course"; /usr/bin/php admin/cli/restore_backup.php --file=/var/www/backup/courses/$$course --categoryid=1 & wait;"; done
+	# - for course in $(ls "${VOLUME_DIR}/backup/${CURRENT_BACKUP_DIR}/courses"); do
+	#     echo "Restoring course: $course"
+	#     docker exec -u www-data -w /var/www/html/ "${STACK}_moodle_web" \
+	#       bash -c "/usr/bin/php admin/cli/restore_backup.php --file=/backup/courses/$course --categoryid=1"
+	#   done
+
 
 plugins_purge_missing_dry:
 	-  docker exec -it -u www-data -w /var/www/html/ ${STACK}_moodle_web /usr/bin/php admin/cli/uninstall_plugins.php --purge-missing

@@ -76,7 +76,7 @@ $CFG->xsendfilealiases = array(
 );
 
 // Debugging settings (not for production use)
-$debug = getenv_docker('DEBUG', false);
+$debug = getenv_docker('FORCE_DEBUG', false);
 if($debug){	
 	@error_reporting(E_ALL | E_STRICT);
 	@ini_set('display_errors', '1');
