@@ -5,6 +5,7 @@ server {
     index index.php index.html index.htm;
 
     fastcgi_read_timeout 1800; 
+    
 
     # Restrict direct access to sensitive files
     location ~ (/vendor/|/node_modules/|composer\.json|/readme|/README|readme\.txt|/upgrade\.txt|/UPGRADING\.md|db/install\.xml|/fixtures/|/behat/|phpunit\.xml|\.lock|environment\.xml) {
@@ -17,15 +18,16 @@ server {
         return 404;
     }
 
+    # X-Accel-Redirect
+    location ^~ /dataroot/ {
+        internal;
+        alias /var/www/moodledata/;
+    }
+
     # Restrict access to moodledata directory (not needed for the current project)
     location ^~ /moodledata/ {
         deny all;
         return 403;
-    }
-    
-    location /dataroot/ {
-        internal;
-        alias /var/www/moodledata/;
     }
 
     # PHP processing
@@ -60,5 +62,4 @@ server {
         log_not_found off;
         access_log off;
     }
-
 }

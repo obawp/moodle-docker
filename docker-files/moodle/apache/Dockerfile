@@ -132,7 +132,11 @@ RUN sed -i -e 's/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/g' /etc/php/8.3/cli/php.
 RUN echo "upload_max_filesize = 5000000000" > /var/www/html/php.ini && \
 echo "post_max_size = 5000000000" >> /var/www/html/php.ini && \
 echo "max_execution_time = 600" >> /var/www/html/php.ini && \
-echo "max_input_vars = 10000" >> /var/www/html/php.ini
+echo "max_input_vars = 10000" >> /var/www/html/php.ini && \
+echo "zlib.output_compression = on" >> /var/www/html/php.ini && \
+echo "zlib.output_compression_level = 6" >> /var/www/html/php.ini
+# to test: zlib for ERR_INCOMPLETE_CHUNKED_ENCODING
+
 
 RUN find /var/www/html -not -path '/var/www/html' -type d -exec ln -s $PWD/php.ini {}/php.ini \;
 RUN find /var/www/html -not -path '/var/www/html/php.ini' -type f -iname php.ini  -exec chown root:root {} \;
