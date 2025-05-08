@@ -14,8 +14,8 @@ The Moodle current version is the 4.5 but you can customize it if do you want in
 
 Supported:
 
-- Apache
-- Nginx
+- Apache (not working yet)
+- Nginx (recommended)
 - MariaDB
 - MySQL
 - Postgres
