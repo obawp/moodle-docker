@@ -16,7 +16,7 @@ Supported:
 
 - Apache (not working yet)
 - Nginx (recommended)
-- MariaDB
+- MariaDB (recommended)
 - MySQL
 - Postgres
 
