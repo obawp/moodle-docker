@@ -121,6 +121,7 @@ RUN chown www-data:www-data /usr/local/bin/composer
 RUN apt-get install -y redis-server
 
 # moodle cron
+RUN apt-get install -y tzdata
 RUN apt-get install -y cron
 
 # creating php,ini in all folders
@@ -178,6 +179,7 @@ RUN /etc/init.d/php8.3-fpm restart
 
 RUN echo '#!/bin/bash' > /cmd.sh && \
     echo 'set -e' >> /cmd.sh && \
+    echo 'rm /etc/localtime && ln -fs /usr/share/zoneinfo/$TZ /etc/localtime && dpkg-reconfigure -f noninteractive tzdata' >> /cmd.sh && \
     echo 'printenv | grep -v "no_proxy" >> /etc/environment' >> /cmd.sh && \
     echo 'export $(cat /etc/environment | xargs)' >> /cmd.sh && \
     echo 'sed -i -e "s/listen 80;/listen $WEB_PORT;/g" /etc/nginx/sites-available/moodle' >> /cmd.sh && \

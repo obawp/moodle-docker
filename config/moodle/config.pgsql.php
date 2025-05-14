@@ -63,7 +63,7 @@ $CFG->cookiehttponly = true;
 $CFG->passwordsaltmain =  getenv_docker('SALT','geiTheiz4yo7tanaeyoo9KohwohdAeyuaxohp3hon3');
 
 // Timezone settings
-$CFG->timezone =  getenv_docker('MOODLE_TZ','America/Sao_Paulo');
+$CFG->timezone =  getenv_docker('TZ','America/Sao_Paulo');
 
 // Proxy settings (optional)
 // $CFG->proxyhost  = '';

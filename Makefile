@@ -137,6 +137,9 @@ plugins_list:
 clear_restores_in_progress_list:
 	- docker exec -u 0 ${STACK}_moodle_db mariadb -u ${MARIADB_USER} -p${MARIADB_PASSWORD} ${MARIADB_DATABASE} -e "DELETE FROM mdl_backup_controllers WHERE interactive = 1;"
 
+bkp_ls_courses_restore:
+	- ls ${VOLUME_DIR}/backup/${CURRENT_BACKUP_DIR}/courses
+	
 bkp_courses_restore:
 	docker exec -it -u 0 -w / ${STACK}_moodle_web mkdir -p /var/www/backup/courses
 	docker exec -it -u 0 -w / ${STACK}_moodle_web chown root:www-data /var/www/backup
@@ -163,6 +166,22 @@ plugins_install:
 plugins_uninstall:
 	- echo "$(plugins)" | while IFS= read -r plugin; do docker exec -u www-data -w /var/www/html/ ${STACK}_moodle_web bash -c "moosh plugin-uninstall $$plugin"; done
 	-  docker exec -it -u www-data -w /var/www/html/ ${STACK}_moodle_web /usr/bin/php admin/cli/uninstall_plugins.php  --plugins=$(plugins) --run
+
+checks:
+	- docker exec -u www-data -w /var/www/html/ ${STACK}_moodle_web php admin/cli/checks.php
+
+task_list:
+	- docker exec -u www-data -w /var/www/html/ ${STACK}_moodle_web php admin/cli/scheduled_task.php --list;
+
+# Example: make task=core\task\cron_task task_run
+task_exec:
+	- docker exec -u www-data -w /var/www/html/ ${STACK}_moodle_web php admin/cli/scheduled_task.php --showdebugging --execute='$(task)';
+
+adhoc_list:
+	- docker exec -u www-data -w /var/www/html/ ${STACK}_moodle_web php admin/cli/adhoc_task.php --help;
+
+adhoc_exec:
+	- docker exec -u www-data -w /var/www/html/ ${STACK}_moodle_web php admin/cli/adhoc_task.php --execute='$(task)';
 
 bkp_mkdir:
 	- sudo mkdir -p ${VOLUME_DIR}/backup/${CURRENT_BACKUP_DIR}/html

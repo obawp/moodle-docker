@@ -133,6 +133,7 @@ RUN chmod 640 /var/www/html/.htaccess
 RUN apt-get install -y redis-server
 
 # install cron
+RUN apt-get install -y tzdata
 RUN apt-get install -y cron
 
 # creating php,ini in all folders
@@ -187,6 +188,7 @@ RUN /etc/init.d/apache2 stop
 
 RUN echo '#!/bin/bash' > /cmd.sh && \
     echo 'set -e' >> /cmd.sh && \
+    echo 'rm /etc/localtime && ln -fs /usr/share/zoneinfo/$TZ /etc/localtime && dpkg-reconfigure -f noninteractive tzdata' >> /cmd.sh && \
     echo 'printenv | grep -v "no_proxy" >> /etc/environment' >> /cmd.sh && \
     echo 'export $(cat /etc/environment | xargs)' >> /cmd.sh && \
     echo 'sed -i "s/Listen 80/Listen $WEB_PORT/" /etc/apache2/ports.conf' >> /cmd.sh && \
