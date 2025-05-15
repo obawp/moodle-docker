@@ -5,6 +5,7 @@ services:
     restart: always
     ports:
       - "${WEB_PORT}:${WEB_PORT}"
+      - "${WEBS_PORT}:${WEBS_PORT}"
     volumes:
       - ./src:/var/www/html
       - ./config/moodle/config.pgsql.php:/var/www/html/config.php
@@ -17,6 +18,8 @@ services:
       - PGSQL_PREFIX=${PGSQL_PREFIX}
       - PGSQL_PORT=${PGSQL_PORT}
       - WEB_PORT=${WEB_PORT}
+      - WEBS_PORT=${WEBS_PORT}
+      - DOMAIN=${DOMAIN}
       - FORCE_DEBUG=${FORCE_DEBUG}
       - SERVERURL=${SERVERURL}
       - WWWROOT=${WWWROOT}

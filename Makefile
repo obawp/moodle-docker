@@ -24,6 +24,8 @@ run:
 
 mkdir:
 	- sudo mkdir -p ${VOLUME_DIR}/moodle/data
+	- sudo mkdir -p ${VOLUME_DIR}/moodle/certbot/www
+	- sudo mkdir -p ${VOLUME_DIR}/moodle/certbot/conf
 	- make --no-print-directory mkdir_db
 	- sudo chown $$USER:www-data ${VOLUME_DIR}/
 	- sudo chown $$USER:www-data ${VOLUME_DIR}/moodle/
@@ -32,10 +34,16 @@ mkdir:
 	- sudo chmod 640 ./config/moodle/config.${DBTYPE}.php
 	- sudo chown $$USER:www-data ${VOLUME_DIR}/moodle/data
 	- sudo chown $$USER:www-data ${VOLUME_DIR}/${DBTYPE}/data
+	- make --no-print-directory mkdir_certbot
 	- make --no-print-directory cp_aux
 
 mkdir_db:
 	- sudo mkdir -p ${VOLUME_DIR}/${DBTYPE}/data
+
+mkdir_certbot:
+	- sudo mkdir -p ${VOLUME_DIR}/moodle/certbot/www
+	- sudo mkdir -p ${VOLUME_DIR}/moodle/certbot/conf
+	- sudo chown $$USER:$$USER -R ${VOLUME_DIR}/moodle/certbot
 
 cp_aux:
 	@if docker ps -a --format '{{.Names}}' | grep -q "^${STACK}_aux$$"; then \
@@ -48,6 +56,7 @@ rmdir:
 	- make --no-print-directory rmdir_html
 	- make --no-print-directory rmdir_moodledata
 	- make --no-print-directory rmdir_db
+	- make --no-print-directory rmdir_certbot
 
 rmdir_html:
 	- sudo rm -Rf ./src/
@@ -57,6 +66,9 @@ rmdir_moodledata:
 
 rmdir_db:
 	- sudo rm -Rf ${VOLUME_DIR}/${DBTYPE}/data/
+
+rmdir_certbot:
+	- sudo rm -Rf ${VOLUME_DIR}/moodle/certbot/
 
 up:
 	- docker compose -p ${STACK} --project-directory ./ -f "./docker-compose/docker-compose.${DBTYPE}.yml" up -d
@@ -336,3 +348,19 @@ bkp_to_remote:
 
 bkp_from_remote:
 	- sudo scp -P ${SSH_PORT} ${SSH_USER}@${SSH_HOST}:${SSH_VOLUME_DIR}/backup/${CURRENT_BACKUP_DIR}.tgz ${VOLUME_DIR}/backup/
+
+
+# the url_replace command are for migration from http to https
+url_replace_list:
+	- docker exec -it -u www-data -w /var/www/html/ ${STACK}_moodle_web /usr/bin/php admin/tool/httpsreplace/cli/url_replace.php -l
+
+url_replace_confirm:
+	- docker exec -it -u www-data -w /var/www/html/ ${STACK}_moodle_web /usr/bin/php admin/tool/httpsreplace/cli/url_replace.php -r --confirm
+
+url_replace_help:
+	- docker exec -it -u www-data -w /var/www/html/ ${STACK}_moodle_web /usr/bin/php admin/tool/httpsreplace/cli/url_replace.php -h
+
+
+# Example: make search=http://moodle.local replace=http://moodle.prod search_replace
+search_replace:
+	- docker exec -it -u www-data -w /var/www/html/ ${STACK}_moodle_web /usr/bin/php admin/tool/replace/cli/replace.php --search=$(search) --replace=$(replace) --shorten --non-interactive

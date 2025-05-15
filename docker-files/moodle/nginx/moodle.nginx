@@ -1,6 +1,6 @@
 server {
     listen 80;
-    server_name localhost;
+    server_name moodle.local www.moodle.local;
     root /var/www/html;
     index index.php index.html index.htm;
 
@@ -16,6 +16,79 @@ server {
     # Restrict access to dot files, except ".well-known"
     location ~ /\.(?!well-known).* {
         return 404;
+    }
+
+    # X-Accel-Redirect
+    location ^~ /dataroot/ {
+        internal;
+        alias /var/www/moodledata/;
+    }
+
+    # Restrict access to moodledata directory (not needed for the current project)
+    location ^~ /moodledata/ {
+        deny all;
+        return 403;
+    }
+
+    # PHP processing
+    location ~ \.php(/|$) {
+
+        # Split the path info based on URI.
+        fastcgi_split_path_info ^(.+\.php)(/.*)$;
+
+        # Store the original path_info
+        set $path_info $fastcgi_path_info;
+
+        # Look for the PHP file. If not found, jump to @routed.
+        try_files $fastcgi_script_name $fastcgi_script_name/;
+
+
+        # Reapply the path_info after including fastcgi_params.
+        fastcgi_param PATH_INFO $path_info;
+        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+        fastcgi_param DOCUMENT_ROOT $realpath_root;
+
+        # Pass to FastCGI
+        include        fastcgi_params;
+        fastcgi_pass   unix:/run/php/php8.3-fpm.sock;
+    }
+    
+
+    # Static files caching
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|otf|eot|mp3|mp4|avi|mov|flv|wmv|webm)$ {
+        root /var/www/html;
+        try_files $uri $uri/ /index.php?$query_string;
+        expires max;
+        log_not_found off;
+        access_log off;
+    }
+}
+server {
+    listen 443 default_server ssl http2;
+    listen [::]:443 ssl http2;
+    server_name moodle.local www.moodle.local;
+    root /var/www/html;
+    index index.php index.html index.htm;
+
+    ssl_certificate /etc/nginx/ssl/live/moodle.local/fullchain.pem;
+    ssl_certificate_key /etc/nginx/ssl/live/moodle.local/privkey.pem;
+    
+    fastcgi_read_timeout 1800; 
+    
+
+    # Restrict direct access to sensitive files
+    location ~ (/vendor/|/node_modules/|composer\.json|/readme|/README|readme\.txt|/upgrade\.txt|/UPGRADING\.md|db/install\.xml|/fixtures/|/behat/|phpunit\.xml|\.lock|environment\.xml) {
+        deny all;
+        return 404;
+    }
+
+    # Restrict access to dot files, except ".well-known"
+    location ~ /\.(?!well-known).* {
+        return 404;
+    }
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
     }
 
     # X-Accel-Redirect

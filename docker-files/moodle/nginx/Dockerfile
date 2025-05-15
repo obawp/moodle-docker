@@ -168,6 +168,11 @@ RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/8.3/c
     sed -i -e 's/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/g' /etc/php/8.3/cli/php.ini && \
     sed -i -e 's/variables_order = "GPCS"/variables_order = "EGPCS"/g' /etc/php/8.3/cli/php.ini
 
+# Adding  Non-interactive self-signed Certificate and 10 years expiration
+WORKDIR /etc/nginx/ssl/live/moodle.local/
+RUN openssl req -x509 -newkey rsa:4096 -keyout privkey.pem -out fullchain.pem -sha256 -days 3650 -nodes -subj "/C=XX/ST=StateName/L=CityName/O=CompanyName/OU=CompanySectionName/CN=moodle.local"
+WORKDIR /var/www/html
+
 # Nginx configuration
 COPY moodle.nginx /etc/nginx/sites-available/moodle
 RUN ln -s /etc/nginx/sites-available/moodle /etc/nginx/sites-enabled/
@@ -177,16 +182,7 @@ RUN rm -f /etc/nginx/sites-enabled/default
 RUN /etc/init.d/nginx restart
 RUN /etc/init.d/php8.3-fpm restart
 
-RUN echo '#!/bin/bash' > /cmd.sh && \
-    echo 'set -e' >> /cmd.sh && \
-    echo 'rm /etc/localtime && ln -fs /usr/share/zoneinfo/$TZ /etc/localtime && dpkg-reconfigure -f noninteractive tzdata' >> /cmd.sh && \
-    echo 'printenv | grep -v "no_proxy" >> /etc/environment' >> /cmd.sh && \
-    echo 'export $(cat /etc/environment | xargs)' >> /cmd.sh && \
-    echo 'sed -i -e "s/listen 80;/listen $WEB_PORT;/g" /etc/nginx/sites-available/moodle' >> /cmd.sh && \
-    echo '/etc/init.d/php8.3-fpm start' >> /cmd.sh && \
-    echo '/etc/init.d/cron start' >> /cmd.sh && \
-    echo 'redis-server & # do not remove the &' >> /cmd.sh && \
-    echo "exec nginx -g 'daemon off;'" >> /cmd.sh
+COPY cmd.sh /cmd.sh
 RUN chmod +x /cmd.sh
 
 # Start services

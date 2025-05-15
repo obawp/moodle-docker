@@ -5,6 +5,7 @@ services:
     restart: always
     ports:
       - "${WEB_PORT}:${WEB_PORT}"
+      - "${WEBS_PORT}:${WEBS_PORT}"
     volumes:
       - ./src:/var/www/html
       - ./config/moodle/config.mysql.php:/var/www/html/config.php
@@ -18,6 +19,8 @@ services:
       - MYSQL_PORT=${MYSQL_PORT}
       - FORCE_DEBUG=${FORCE_DEBUG}
       - WEB_PORT=${WEB_PORT}
+      - WEBS_PORT=${WEBS_PORT}
+      - DOMAIN=${DOMAIN}
       - SERVERURL=${SERVERURL}
       - WWWROOT=${WWWROOT}
       - SERVERURL=${SERVERURL}

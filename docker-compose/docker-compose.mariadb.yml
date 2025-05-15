@@ -5,6 +5,7 @@ services:
     restart: always
     ports:
       - "${WEB_PORT}:${WEB_PORT}"
+      - "${WEBS_PORT}:${WEBS_PORT}"
     volumes:
       - ./src:/var/www/html
       - ./config/moodle/config.mariadb.php:/var/www/html/config.php
@@ -18,6 +19,13 @@ services:
       - MARIADB_PORT=${MARIADB_PORT}
       - FORCE_DEBUG=${FORCE_DEBUG}
       - WEB_PORT=${WEB_PORT}
+      - WEBS_PORT=${WEBS_PORT}
+      - DOMAIN=${DOMAIN}
+      - CERT_COUNTRY=${CERT_COUNTRY}
+      - CERT_STATE=${CERT_STATE}
+      - CERT_CITY=${CERT_CITY}
+      - CERT_ORG=${CERT_ORG}
+      - CERT_ORG_UNIT=${CERT_ORG_UNIT}
       - SERVERURL=${SERVERURL}
       - WWWROOT=${WWWROOT}
       - SERVERURL=${SERVERURL}
@@ -37,7 +45,12 @@ services:
         limits:
           cpus: ${CPUS}
           memory: ${MEMORY}
-
+  certbot:
+    image: certbot/certbot:latest
+    volumes:
+      - ${VOLUME_DIR}/moodle/certbot/www/:/var/www/certbot/:rw
+      - ${VOLUME_DIR}/moodle/certbot/conf/:/etc/letsencrypt/:rw
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
   db:
     image: mariadb:10.6
     container_name: ${STACK}_moodle_db
