@@ -20,6 +20,11 @@ services:
       - WEB_PORT=${WEB_PORT}
       - WEBS_PORT=${WEBS_PORT}
       - DOMAIN=${DOMAIN}
+      - CERT_COUNTRY=${CERT_COUNTRY}
+      - CERT_STATE=${CERT_STATE}
+      - CERT_CITY=${CERT_CITY}
+      - CERT_ORG=${CERT_ORG}
+      - CERT_ORG_UNIT=${CERT_ORG_UNIT}
       - FORCE_DEBUG=${FORCE_DEBUG}
       - SERVERURL=${SERVERURL}
       - WWWROOT=${WWWROOT}
