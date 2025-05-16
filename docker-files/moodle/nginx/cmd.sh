@@ -16,12 +16,15 @@ sed -i -e "s/listen [::]:/listen [::]:$WEBS_PORT/g" /etc/nginx/sites-available/m
 # Update Nginx configuration to use the specified domain
 sed -i -e "s/moodle.local/$DOMAIN/g" /etc/nginx/sites-available/moodle
 
-
 # Adding  Non-interactive self-signed Certificate and 10 years expiration
-mkdir -p /etc/nginx/ssl/live/$DOMAIN/ || true
-chmod +x /etc/nginx/ssl/live/$DOMAIN/
-cd /etc/nginx/ssl/live/$DOMAIN/
-openssl req -x509 -newkey rsa:4096 -keyout privkey.pem -out fullchain.pem -sha256 -days 3650 -nodes -subj "/C=$CERT_COUNTRY/ST=$CERT_STATE/L=$CERT_CITY/O=$CERT_ORG/OU=$CERT_ORG_UNIT/CN=$DOMAIN"
+mkdir -p /etc/letsencrypt/live/$DOMAIN/ || true
+cd /etc/letsencrypt/live/$DOMAIN/
+if [ ! -e /etc/letsencrypt/live/$DOMAIN/fullchain.pem ]; then
+    echo "Creating self-signed certificate..."
+    openssl req -x509 -newkey rsa:4096 -keyout privkey.pem -out fullchain.pem -sha256 -days 3650 -nodes -subj "/C=$CERT_COUNTRY/ST=$CERT_STATE/L=$CERT_CITY/O=$CERT_ORG/OU=$CERT_ORG_UNIT/CN=$DOMAIN"
+else
+    echo "Self-signed certificate already exists or not needed."
+fi
 cd /var/www/html
 
 # Start PHP-FPM service

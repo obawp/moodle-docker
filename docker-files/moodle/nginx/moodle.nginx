@@ -76,8 +76,8 @@ server {
     root /var/www/html;
     index index.php index.html index.htm;
 
-    ssl_certificate /etc/nginx/ssl/live/moodle.local/fullchain.pem;
-    ssl_certificate_key /etc/nginx/ssl/live/moodle.local/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/moodle.local/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/moodle.local/privkey.pem;
     
     fastcgi_read_timeout 1800; 
     

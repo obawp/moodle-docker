@@ -169,7 +169,7 @@ RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/8.3/c
     sed -i -e 's/variables_order = "GPCS"/variables_order = "EGPCS"/g' /etc/php/8.3/cli/php.ini
 
 # Adding  Non-interactive self-signed Certificate and 10 years expiration
-WORKDIR /etc/nginx/ssl/live/moodle.local/
+WORKDIR /etc/letsencrypt/live/moodle.local/
 RUN openssl req -x509 -newkey rsa:4096 -keyout privkey.pem -out fullchain.pem -sha256 -days 3650 -nodes -subj "/C=XX/ST=StateName/L=CityName/O=CompanyName/OU=CompanySectionName/CN=moodle.local"
 WORKDIR /var/www/html
 
@@ -182,7 +182,6 @@ RUN rm -f /etc/nginx/sites-enabled/default
 RUN nginx -t
 RUN /etc/init.d/nginx restart
 RUN /etc/init.d/php8.3-fpm restart
-
 COPY cmd.sh /cmd.sh
 RUN chmod +x /cmd.sh
 

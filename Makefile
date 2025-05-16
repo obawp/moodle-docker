@@ -44,6 +44,7 @@ mkdir_certbot:
 	- sudo mkdir -p ${VOLUME_DIR}/moodle/certbot/www/.well-known/acme-challenge/
 	- sudo mkdir -p ${VOLUME_DIR}/moodle/certbot/conf
 	- sudo chown $$USER:$$USER -R ${VOLUME_DIR}/moodle/certbot
+	- sudo chmod 755 ${VOLUME_DIR}/moodle/mkdir_certbot
 
 cp_aux:
 	@if docker ps -a --format '{{.Names}}' | grep -q "^${STACK}_aux$$"; then \
@@ -354,6 +355,7 @@ bkp_from_remote:
 url_replace_list:
 	- docker exec -it -u www-data -w /var/www/html/ ${STACK}_moodle_web /usr/bin/php admin/tool/httpsreplace/cli/url_replace.php -l
 
+# Do not use confirm on impulse. Give preference to Search and Replace if you have unknown URLs in the listing
 url_replace_confirm:
 	- docker exec -it -u www-data -w /var/www/html/ ${STACK}_moodle_web /usr/bin/php admin/tool/httpsreplace/cli/url_replace.php -r --confirm
 
@@ -364,3 +366,7 @@ url_replace_help:
 # Example: make search=http://moodle.local replace=http://moodle.prod search_replace
 search_replace:
 	- docker exec -it -u www-data -w /var/www/html/ ${STACK}_moodle_web /usr/bin/php admin/tool/replace/cli/replace.php --search=$(search) --replace=$(replace) --shorten --non-interactive
+
+
+init_certbot:
+	- docker exec -it ${STACK}_moodle_certbot certbot certonly --webroot -w /var/www/certbot  --email ${CERT_EMAIL} -d ${DOMAIN} --rsa-key-size 4096 --agree-tos --force-renewal --debug-challenges -v
