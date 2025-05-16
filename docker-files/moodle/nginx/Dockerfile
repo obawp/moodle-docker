@@ -179,6 +179,7 @@ RUN ln -s /etc/nginx/sites-available/moodle /etc/nginx/sites-enabled/
 RUN rm -f /etc/nginx/sites-enabled/default
 
 # Rstarting services
+RUN nginx -t
 RUN /etc/init.d/nginx restart
 RUN /etc/init.d/php8.3-fpm restart
 
