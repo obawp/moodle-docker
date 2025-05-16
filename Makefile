@@ -44,7 +44,11 @@ mkdir_certbot:
 	- sudo mkdir -p ${VOLUME_DIR}/moodle/certbot/www/.well-known/acme-challenge/
 	- sudo mkdir -p ${VOLUME_DIR}/moodle/certbot/conf
 	- sudo chown $$USER:$$USER -R ${VOLUME_DIR}/moodle/certbot
-	- sudo chmod 755 ${VOLUME_DIR}/moodle/mkdir_certbot
+	- sudo chmod 755 ${VOLUME_DIR}/moodle/certbot
+	- sudo chown $$USER:$$USER ${VOLUME_DIR}/moodle/certbot/www
+	- sudo chmod 755 ${VOLUME_DIR}/moodle/certbot/www
+	- sudo chown $$USER:$$USER ${VOLUME_DIR}/moodle/certbot/conf
+	- sudo chmod 755 ${VOLUME_DIR}/moodle/certbot/conf
 
 cp_aux:
 	@if docker ps -a --format '{{.Names}}' | grep -q "^${STACK}_aux$$"; then \
