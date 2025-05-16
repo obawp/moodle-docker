@@ -372,5 +372,8 @@ search_replace:
 	- docker exec -it -u www-data -w /var/www/html/ ${STACK}_moodle_web /usr/bin/php admin/tool/replace/cli/replace.php --search=$(search) --replace=$(replace) --shorten --non-interactive
 
 
-init_certbot:
-	- docker exec -it ${STACK}_moodle_certbot certbot certonly --webroot -w /var/www/certbot  --email ${CERT_EMAIL} -d ${DOMAIN} --rsa-key-size 4096 --agree-tos --force-renewal --debug-challenges -v
+certbot_init:
+	- docker exec -it ${STACK}_moodle_certbot certbot certonly --dry-run --webroot --cert-name ${DOMAIN} -w /var/www/certbot  --email ${CERT_EMAIL} -d ${DOMAIN} --rsa-key-size 4096 --agree-tos --force-renewal --debug-challenges -v
+
+certbot_list:
+	- docker exec -it ${STACK}_moodle_certbot certbot certificates
