@@ -379,8 +379,8 @@ certbot_init_dry:
 	- docker exec -it ${STACK}_moodle_certbot certbot certonly --dry-run --webroot --cert-name ${DOMAIN} -w /var/www/certbot  --email ${CERT_EMAIL} -d ${DOMAIN} --rsa-key-size 4096 --agree-tos --force-renewal --debug-challenges -v
 
 certbot_init:
-	docker exec -it ${STACK}_moodle_certbot certbot delete --cert-name ${DOMAIN} --non-interactive
-	docker exec -it ${STACK}_moodle_certbot rm -Rf /etc/letsencrypt/live/${DOMAIN} && \
-	rm -Rf /etc/letsencrypt/archive/${DOMAIN} && \
-	rm -Rf /etc/letsencrypt/renewal/${DOMAIN}.conf" certbot
-	- docker exec -it ${STACK}_moodle_certbot certbot certonly --webroot --cert-name ${DOMAIN} -w /var/www/certbot  --email ${CERT_EMAIL} -d ${DOMAIN} --rsa-key-size 4096 --agree-tos --force-renewal --debug-challenges -v
+	- docker exec -it ${STACK}_moodle_certbot certbot delete --cert-name ${DOMAIN} --non-interactive --quiet
+	docker exec -it ${STACK}_moodle_certbot certbot certonly --webroot --cert-name ${DOMAIN} -w /var/www/certbot  --email ${CERT_EMAIL} -d ${DOMAIN} --rsa-key-size 4096 --agree-tos --force-renewal --debug-challenges -v
+	- make --no-print-directory rm
+	- make --no-print-directory up
+# after test it here: https://www.ssllabs.com/ssltest/index.html
