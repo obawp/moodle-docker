@@ -41,7 +41,7 @@ mkdir_db:
 	- sudo mkdir -p ${VOLUME_DIR}/${DBTYPE}/data
 
 mkdir_certbot:
-	- sudo mkdir -p ${VOLUME_DIR}/moodle/certbot/www
+	- sudo mkdir -p ${VOLUME_DIR}/moodle/certbot/www/.well-known/acme-challenge/
 	- sudo mkdir -p ${VOLUME_DIR}/moodle/certbot/conf
 	- sudo chown $$USER:$$USER -R ${VOLUME_DIR}/moodle/certbot
 
