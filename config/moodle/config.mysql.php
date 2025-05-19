@@ -45,8 +45,11 @@ $CFG->wwwroot   = getenv_docker('WWWROOT', 'http://moodle.local');
 $CFG->dataroot  = '/var/www/moodledata';
 $CFG->dirroot   = '/var/www/html';
 $CFG->themedir  = $CFG->dirroot . '/theme';
-$CFG->routerconfigured = false;
 $CFG->directorypermissions = 02770;
+
+// When not configured on the web server it must be accessed via https://example.com/moodle/r.php
+// When configured the on the web server the 'r.php' may be removed.
+$CFG->routerconfigured = false; 
 
 $CFG->admin = "admin";
 
@@ -55,6 +58,9 @@ $CFG->cookiepath    = $CFG->dataroot .'/sessions/';
 $CFG->cookiesecure  = false;
 $CFG->cookiehttponly = true;
 // $CFG->cookiehttponly = false;
+$CFG->slasharguments = true; // if PATH_INFO is not enabled
+$CFG->overridetossl = false;
+// define('CACHE_DISABLE_ALL', true);
 
 // Moodle language settings
 // $CFG->lang = 'en';
@@ -64,16 +70,19 @@ $CFG->passwordsaltmain =  getenv_docker('SALT','geiTheiz4yo7tanaeyoo9KohwohdAeyu
 
 // Timezone settings
 $CFG->timezone =  getenv_docker('TZ','America/Sao_Paulo');
-
+// $CFG->timezone = 'America/Sao_Paulo';
 // Proxy settings (optional)
 // $CFG->proxyhost  = '';
 // $CFG->proxyport  = 0;
 
-// X-Sendfile settings (Nginx only)
-$CFG->xsendfile = 'X-Accel-Redirect';
-$CFG->xsendfilealiases = array(
-    '/dataroot/' => $CFG->dataroot
-);
+$webserver = getenv_docker('WEBSERVER', false);
+if($webserver == 'nginx'){	
+	// X-Sendfile settings (Nginx only)
+	$CFG->xsendfile = 'X-Accel-Redirect';
+	$CFG->xsendfilealiases = array(
+		'/dataroot/' => $CFG->dataroot
+	);
+}
 
 // Debugging settings (not for production use)
 $debug = getenv_docker('FORCE_DEBUG', false);

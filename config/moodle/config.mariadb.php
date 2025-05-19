@@ -59,7 +59,7 @@ $CFG->cookiepath    = $CFG->dataroot .'/sessions/';
 $CFG->cookiesecure  = false;
 $CFG->cookiehttponly = true;
 // $CFG->cookiehttponly = false;
-$CFG->slasharguments = true; // only use false to http:my-url.com/index.php/path-info/slasharguments issue
+$CFG->slasharguments = true; // if PATH_INFO is not enabled
 $CFG->overridetossl = false;
 // define('CACHE_DISABLE_ALL', true);
 
@@ -76,11 +76,14 @@ $CFG->timezone =  getenv_docker('TZ','America/Sao_Paulo');
 // $CFG->proxyhost  = '';
 // $CFG->proxyport  = 0;
 
-// X-Sendfile settings (Nginx only)
-$CFG->xsendfile = 'X-Accel-Redirect';
-$CFG->xsendfilealiases = array(
-    '/dataroot/' => $CFG->dataroot
-);
+$webserver = getenv_docker('WEBSERVER', false);
+if($webserver == 'nginx'){	
+	// X-Sendfile settings (Nginx only)
+	$CFG->xsendfile = 'X-Accel-Redirect';
+	$CFG->xsendfilealiases = array(
+		'/dataroot/' => $CFG->dataroot
+	);
+}
 
 // Debugging settings (not for production use)
 $debug = getenv_docker('FORCE_DEBUG', false);

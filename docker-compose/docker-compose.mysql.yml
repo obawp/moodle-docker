@@ -20,6 +20,7 @@ services:
       - MYSQL_PREFIX=${MYSQL_PREFIX}
       - MYSQL_PORT=${MYSQL_PORT}
       - FORCE_DEBUG=${FORCE_DEBUG}
+      - WEBSERVER=${WEBSERVER}
       - WEB_PORT=${WEB_PORT}
       - WEBS_PORT=${WEBS_PORT}
       - DOMAIN=${DOMAIN}
