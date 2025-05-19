@@ -126,8 +126,10 @@ RUN apt-get install -y cron
 
 # creating php,ini in all folders
 RUN touch /var/www/html/php.ini
-RUN find /var/www/html -not -path '/var/www/html' -type d -exec ln -s $PWD/php.ini {}/php.ini \;
-RUN find /var/www/html -not -path '/var/www/html/php.ini' -type f -iname php.ini  -exec chown root:root {} \;
+
+# enable below for ionos
+# RUN find /var/www/html -not -path '/var/www/html' -type d -exec ln -s $PWD/php.ini {}/php.ini \;
+# RUN find /var/www/html -not -path '/var/www/html/php.ini' -type f -iname php.ini  -exec chown root:root {} \;
 
 # php.ini configuration
 RUN echo "upload_max_filesize = 500M" > /var/www/html/php.ini && \
@@ -158,14 +160,20 @@ RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/8.3/f
     sed -i -e 's/post_max_size = 8M/post_max_size = 500M/g' /etc/php/8.3/fpm/php.ini && \
     sed -i -e 's/max_execution_time = 30/max_execution_time = 600/g' /etc/php/8.3/fpm/php.ini && \
     sed -i -e 's/memory_limit = 128M/memory_limit = 512M/g' /etc/php/8.3/fpm/php.ini && \
-    sed -i -e 's/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/g' /etc/php/8.3/fpm/php.ini && \
+
+    # enable below for ionos
+    # sed -i -e 's/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/g' /etc/php/8.3/fpm/php.ini && \
+    
     sed -i -e 's/variables_order = "GPCS"/variables_order = "EGPCS"/g' /etc/php/8.3/fpm/php.ini
 RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/8.3/cli/php.ini && \
     sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 500M/g' /etc/php/8.3/cli/php.ini && \
     sed -i -e 's/post_max_size = 8M/post_max_size = 500M/g' /etc/php/8.3/cli/php.ini && \
     sed -i -e 's/max_execution_time = 30/max_execution_time = 600/g' /etc/php/8.3/cli/php.ini && \
     sed -i -e 's/memory_limit = 128M/memory_limit = 512M/g' /etc/php/8.3/cli/php.ini && \
-    sed -i -e 's/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/g' /etc/php/8.3/cli/php.ini && \
+
+    # enable below for ionos
+    # sed -i -e 's/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/g' /etc/php/8.3/cli/php.ini && \
+
     sed -i -e 's/variables_order = "GPCS"/variables_order = "EGPCS"/g' /etc/php/8.3/cli/php.ini
 
 # Adding  Non-interactive self-signed Certificate and 10 years expiration

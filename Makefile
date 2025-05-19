@@ -115,7 +115,7 @@ perm_dev:
 	- make --no-print-directory perm_php_ini
 
 perm_php_ini:
-	- find ./src -type f -iname php.ini  -exec sudo chown $$USER:www-data {} \;
+	- find ./src -type l -iname php.ini  -exec sudo chown $$USER:www-data {} \;
 
 perm_dev_dir:
 	- sudo chown $$USER:www-data -R ./src/${WORK_DIR}

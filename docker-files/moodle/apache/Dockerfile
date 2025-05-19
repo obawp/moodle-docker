@@ -40,11 +40,6 @@ RUN apt-get install -y php8.3-redis
 RUN apt-get install -y php8.3-pgsql
 RUN apt-get install -y php8.3-imap
 
-# Enable Apache modules
-RUN a2enmod rewrite
-RUN a2enmod php8.3
-RUN a2enmod proxy_fcgi setenvif
-RUN a2enconf php8.3-fpm
 
 # Install Nodejs and build-essential
 RUN apt-get install -y nodejs
@@ -138,8 +133,10 @@ RUN apt-get install -y cron
 
 # creating php,ini in all folders
 RUN touch /var/www/html/php.ini
-RUN find /var/www/html -not -path '/var/www/html' -type d -exec ln -s $PWD/php.ini {}/php.ini \;
-RUN find /var/www/html -not -path '/var/www/html/php.ini' -type f -iname php.ini  -exec chown root:root {} \;
+
+# enable below for ionos
+# RUN find /var/www/html -not -path '/var/www/html' -type d -exec ln -s $PWD/php.ini {}/php.ini \;
+# RUN find /var/www/html -not -path '/var/www/html/php.ini' -type f -iname php.ini  -exec chown root:root {} \;
 
 # moodle cron
 RUN echo '* * * * * sudo -u www-data /usr/bin/php /var/www/html/admin/cli/cron.php' > /etc/cron.d/moodle
@@ -161,42 +158,47 @@ RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/8.3/f
     sed -i -e 's/post_max_size = 8M/post_max_size = 500M/g' /etc/php/8.3/fpm/php.ini && \
     sed -i -e 's/max_execution_time = 30/max_execution_time = 600/g' /etc/php/8.3/fpm/php.ini && \
     sed -i -e 's/memory_limit = 128M/memory_limit = 512M/g' /etc/php/8.3/fpm/php.ini && \
-    sed -i -e 's/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/g' /etc/php/8.3/fpm/php.ini && \
+
+    # enable below for ionos
+    # this makes PATH_INFO not working sed -i -e 's/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/g' /etc/php/8.3/fpm/php.ini && \ 
+    
     sed -i -e 's/variables_order = "GPCS"/variables_order = "EGPCS"/g' /etc/php/8.3/fpm/php.ini
 RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/8.3/cli/php.ini && \
     sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 500M/g' /etc/php/8.3/cli/php.ini && \
     sed -i -e 's/post_max_size = 8M/post_max_size = 500M/g' /etc/php/8.3/cli/php.ini && \
     sed -i -e 's/max_execution_time = 30/max_execution_time = 600/g' /etc/php/8.3/cli/php.ini && \
     sed -i -e 's/memory_limit = 128M/memory_limit = 512M/g' /etc/php/8.3/cli/php.ini && \
-    sed -i -e 's/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/g' /etc/php/8.3/cli/php.ini && \
+
+    # enable below for ionos
+    # this makes PATH_INFO not working sed -i -e 's/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/g' /etc/php/8.3/cli/php.ini && \
+    
     sed -i -e 's/variables_order = "GPCS"/variables_order = "EGPCS"/g' /etc/php/8.3/cli/php.ini
 
 # php-fpm configuration
 RUN echo "security.limit_extensions = .php" >> /etc/php/8.3/fpm/pool.d/www.conf
 RUN sed -i -e 's/;clear_env = no/clear_env = no/g' /etc/php/8.3/fpm/pool.d/www.conf
 
-# Modify Apache's 000-default.conf to include PHP-FPM proxy handler
-RUN echo '<Directory /var/www/html>\n\
-Options Indexes FollowSymLinks\n\
-AllowOverride All\n\
-Require all granted\n\
-SetHandler "proxy:unix:/var/run/php/php8.3-fpm.sock|fcgi://localhost"\n\
-</Directory>' >> /etc/apache2/sites-available/moodle.conf || true
+# Adding  Non-interactive self-signed Certificate and 10 years expiration
+WORKDIR /etc/letsencrypt/live/moodle.local/
+RUN openssl req -x509 -newkey rsa:4096 -keyout privkey.pem -out fullchain.pem -sha256 -days 3650 -nodes -subj "/C=XX/ST=StateName/L=CityName/O=CompanyName/OU=CompanySectionName/CN=moodle.local"
+WORKDIR /var/www/html
+
+# Copy custom Apache configuration file
+COPY moodle.conf /etc/apache2/sites-available/moodle.conf
 RUN a2ensite moodle.conf
+
+# Enable Apache modules
+RUN a2enmod rewrite
+RUN a2enmod php8.3
+RUN a2enmod proxy_fcgi setenvif
+RUN a2enconf php8.3-fpm
+RUN a2enmod ssl
+RUN a2enmod headers
+
 RUN echo "ServerName moodle.local" > /etc/apache2/conf-available/servername.conf
 RUN /etc/init.d/apache2 stop
 
-RUN echo '#!/bin/bash' > /cmd.sh && \
-    echo 'set -e' >> /cmd.sh && \
-    echo 'rm /etc/localtime && ln -fs /usr/share/zoneinfo/$TZ /etc/localtime && dpkg-reconfigure -f noninteractive tzdata' >> /cmd.sh && \
-    echo 'printenv | grep -v "no_proxy" >> /etc/environment' >> /cmd.sh && \
-    echo 'export $(cat /etc/environment | xargs)' >> /cmd.sh && \
-    echo 'sed -i "s/Listen 80/Listen $WEB_PORT/" /etc/apache2/ports.conf' >> /cmd.sh && \
-    echo 'sed -i "s/<VirtualHost \*:80>/<VirtualHost *:$WEB_PORT>/" /etc/apache2/sites-enabled/000-default.conf' >> /cmd.sh && \
-    echo '/etc/init.d/php8.3-fpm start' >> /cmd.sh && \
-    echo '/etc/init.d/cron start' >> /cmd.sh && \
-    echo 'redis-server & # do not remove the &' >> /cmd.sh && \
-    echo 'apache2ctl -D FOREGROUND' >> /cmd.sh
+COPY cmd.sh /cmd.sh
 RUN chmod +x /cmd.sh
 
 # Start services
