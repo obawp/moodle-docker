@@ -13,6 +13,7 @@ RUN apt-get install -y nano
 RUN apt-get install -y htop
 RUN apt-get install -y git
 RUN apt-get install -y curl
+RUN apt-get install -y iputils-ping
 RUN apt-get install -y nginx
 
 # Add PHP repository
@@ -54,8 +55,15 @@ RUN mkdir -p /var/www/html
 RUN rm -Rf /var/www/html/*
 WORKDIR /var/www/html
 
-# Clone Moodle repository
-RUN git clone -b MOODLE_405_STABLE git://git.moodle.org/moodle.git /var/www/html
+# Add build argument to choose between moodle and iomad
+ARG IOMAD
+
+# Conditionally clone Moodle or Iomad
+RUN if [ "$IOMAD" = "true" ]; then \
+      git clone -b IOMAD_405_STABLE https://github.com/iomad/iomad.git /var/www/html ; \
+    else \
+      git clone -b MOODLE_405_STABLE git://git.moodle.org/moodle.git /var/www/html ; \
+    fi
 RUN git config --global --add safe.directory /var/www/html
 
 # PHP Sodium

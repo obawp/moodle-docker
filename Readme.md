@@ -1,6 +1,6 @@
 ## What's this?
 
-This is a fast, simple and clean install for Moodle with docker in few steps.
+This is a fast, simple and clean install for Moodle (or Iomad) with docker in few steps.
 
 ## Demonstration
 
@@ -10,12 +10,12 @@ This gif is demonstration only, it cannot be used as guide.
 
 ## Customize
 
-The Moodle current version is the 4.5 but you can customize it if do you want in your `Dockerfile`.
+You can easily install **IOMAD** instead Moodle if do you want.
 
 Supported:
 
-- Apache (moodle default)
-- Nginx (this repo default - recommmended here)
+- Apache
+- Nginx 
 - MariaDB (this repo default - recommmended here)
 - MySQL
 - Postgres (moodle default)
@@ -73,10 +73,6 @@ make perm_dev
 ```bash
 make install
 ```
-
-### Configuring the config.php file
-
-Go to `./config/moodle/config.php` and change the passwords
 
 ## Access
 

@@ -86,7 +86,7 @@ if($webserver == 'nginx'){
 
 // Debugging settings (not for production use)
 $debug = getenv_docker('FORCE_DEBUG', false);
-if($debug){	
+if($debug == 'true'){	
 	@error_reporting(E_ALL | E_STRICT);
 	@ini_set('display_errors', '1');
 	$CFG->debug = (E_ALL | E_STRICT);
@@ -94,7 +94,7 @@ if($debug){
 }
 
 $phpu_enabled = getenv_docker('PHPU_ENABLED', false);
-if($phpu_enabled){
+if($phpu_enabled == 'true'){
 	$CFG->phpunit_prefix =    getenv_docker('PHPU_MYSQL_PREFIX','phpu_');
 	$CFG->phpunit_dataroot =  '/var/www/phpu_moodledata';
 	$CFG->phpunit_dbtype    = 'mysqli';
