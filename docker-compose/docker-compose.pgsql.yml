@@ -4,8 +4,8 @@ services:
     container_name: ${STACK_NAME}_web
     restart: always
     ports:
-      - "${WEB_PORT}:${WEB_PORT}"
-      - "${WEBS_PORT}:${WEBS_PORT}"
+      - "${HOST_IP}:${WEB_PORT}:${WEB_PORT}"
+      - "${HOST_IP}:${WEBS_PORT}:${WEBS_PORT}"
     volumes:
       - ${STACK_SRC}:/var/www/html
       - ./config/moodle/config.pgsql.php:/var/www/html/config.php

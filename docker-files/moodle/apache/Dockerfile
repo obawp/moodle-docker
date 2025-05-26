@@ -90,7 +90,7 @@ RUN apt-get install -y build-essential
 # RUN npm install -g n
 # RUN n 22.14.0
 RUN npm i
-    
+
 # Setting permissions
 RUN chown www-data:www-data -R /var/www/html/
 RUN find /var/www/html -type d -exec chmod 0750 {} \;
@@ -210,4 +210,4 @@ COPY cmd.sh /cmd.sh
 RUN chmod +x /cmd.sh
 
 # Start services
-ENTRYPOINT ["sh", "/cmd.sh"]
+CMD ["sh", "/cmd.sh"]

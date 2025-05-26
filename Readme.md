@@ -80,7 +80,9 @@ make install
 
 #### Ubuntu
 
-Go to `/etc/hosts` and add `0.0.0.0 moodle.local` or `0.0.0.0 your.url` 
+Use `0.0.0.0` to expose and `127.0.0.1` to local in your `.env` file
+
+Go to `/etc/hosts` and add `127.0.0.1 moodle.local` or `yo.ur.host.ip your.url` 
 
 To Moodle, access this url in the browser.
 

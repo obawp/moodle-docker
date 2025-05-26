@@ -32,7 +32,7 @@ pull:
 	- docker pull ${REPO}-${WEBSERVER}
 
 run:
-	- docker run -d --name ${STACK_NAME}_aux ${REPO}-${WEBSERVER}
+	- docker run -d --name ${STACK_NAME}_aux -e DOMAIN=${DOMAIN} ${REPO}-${WEBSERVER}
 
 mkdir:
 	- sudo mkdir -p ${STACK_VOLUME}/moodle/data
@@ -55,7 +55,7 @@ mkdir_db:
 mkdir_certbot:
 	- sudo mkdir -p ${STACK_VOLUME}/moodle/certbot/www/.well-known/acme-challenge/
 	- sudo mkdir -p ${STACK_VOLUME}/moodle/certbot/conf
-	- sudo chown $$USER:$$USER -R ${STACK_VOLUME}/moodle/certbot
+	- sudo chown $$USER:$$USER ${STACK_VOLUME}/moodle/certbot
 	- sudo chmod 755 ${STACK_VOLUME}/moodle/certbot
 	- sudo chown $$USER:$$USER ${STACK_VOLUME}/moodle/certbot/www
 	- sudo chmod 755 ${STACK_VOLUME}/moodle/certbot/www
@@ -67,6 +67,8 @@ cp_aux:
 		sudo rm -Rf ${STACK_SRC}; \
 		mkdir ./src; \
 		docker cp ${STACK_NAME}_aux:/var/www/html ${STACK_SRC}; \
+		sudo rm -Rf ${STACK_VOLUME}/moodle/certbot/conf; \
+		docker cp ${STACK_NAME}_aux:/etc/letsencrypt ${STACK_VOLUME}/moodle/certbot/conf; \
 	else \
 		echo "Skipping src folder copy of the container ${STACK_NAME}_aux."; \
 	fi

@@ -1,12 +1,14 @@
 #!/bin/bash
 set -e
 
+# Set VARIABLE to default value if not already set
+: "${TZ:=America/Sao_Paulo}"
+: "${WEB_PORT:=80}"
+: "${WEBS_PORT:=443}"
+: "${DOMAIN:=moodle.local}"
+
 # Set timezone
 rm /etc/localtime && ln -fs /usr/share/zoneinfo/$TZ /etc/localtime && dpkg-reconfigure -f noninteractive tzdata
-
-# Export environment variables
-printenv | grep -v "no_proxy" >> /etc/environment
-export $(cat /etc/environment | xargs)
 
 # Update Nginx configuration to use the specified web port
 sed -i -e "s/listen 80;/listen $WEB_PORT;/g" /etc/nginx/sites-available/moodle
