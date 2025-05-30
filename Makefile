@@ -437,3 +437,22 @@ certbot_init:
 	- make --no-print-directory rm
 	- make --no-print-directory up
 # after test it here: https://www.ssllabs.com/ssltest/index.html
+
+
+maintenance_on:
+	- docker exec -u www-data -w /var/www/html/ ${STACK_NAME}_web php admin/cli/maintenance.php --enable
+
+maintenance_off:
+	- docker exec -u www-data -w /var/www/html/ ${STACK_NAME}_web php admin/cli/maintenance.php --disable
+
+update:
+	make --no-print-directory maintenance_on
+	- docker exec -u 0 -w /var/www/html/ ${STACK_NAME}_web git config --global --add safe.directory /var/www/html
+	docker exec -u www-data -w /var/www/html/ ${STACK_NAME}_web git remote update
+	docker exec -u www-data -w /var/www/html/ ${STACK_NAME}_web git checkout MOODLE_405_STABLE
+	docker exec -u www-data -w /var/www/html/ ${STACK_NAME}_web git pull
+	docker exec -it -u www-data -w /var/www/html/ ${STACK_NAME}_web php admin/cli/upgrade.php
+	make --no-print-directory perm
+	make --no-print-directory purge_caches
+	make --no-print-directory maintenance_off
+	
