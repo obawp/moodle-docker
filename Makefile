@@ -67,11 +67,14 @@ cp_aux:
 		sudo rm -Rf ${STACK_SRC}; \
 		mkdir ./src; \
 		docker cp ${STACK_NAME}_aux:/var/www/html ${STACK_SRC}; \
-		sudo rm -Rf ${STACK_VOLUME}/moodle/certbot/conf; \
-		docker cp ${STACK_NAME}_aux:/etc/letsencrypt ${STACK_VOLUME}/moodle/certbot/conf; \
+		make --no-print-directory cp_certbot \
 	else \
 		echo "Skipping src folder copy of the container ${STACK_NAME}_aux."; \
 	fi
+
+cp_certbot:
+	sudo rm -Rf ${STACK_VOLUME}/moodle/certbot/conf;
+	docker cp ${STACK_NAME}_aux:/etc/letsencrypt ${STACK_VOLUME}/moodle/certbot/conf;
 
 rmdir:
 	- make --no-print-directory rmdir_html
@@ -92,6 +95,11 @@ rmdir_certbot:
 	- sudo rm -Rf ${STACK_VOLUME}/moodle/certbot/
 
 up:
+	make --no-print-directory rm_web
+	make --no-print-directory rm_pma
+	make --no-print-directory run
+	make --no-print-directory cp_certbot
+	make --no-print-directory rm_aux
 	- docker compose -p ${STACK} --project-directory ./ -f "./docker-compose/docker-compose.${DBTYPE}.yml" up -d
 
 bash:
@@ -160,9 +168,18 @@ phpu_rmdir:
 	- sudo rm -Rf ${STACK_VOLUME}/phpunit/moodle/data/*
 	- sudo rm -Rf ${STACK_VOLUME}/phpunit/${DBTYPE}/data/*
 
+rm_web:
+	- docker rm ${STACK_NAME}_web -f
+
+rm_pma:
+	- docker rm ${STACK_NAME}_phpmyadmin -f
+	- docker rm ${STACK_NAME}_phpunit_phpmyadmin -f
+
+rm_aux:
+	- docker rm ${STACK_NAME}_aux -f
 
 rm:
-	- docker rm ${STACK_NAME}_aux -f
+	- make --no-print-directory rm_aux
 	- docker compose -p ${STACK} -f "./docker-compose/docker-compose.${DBTYPE}.yml" down
 
 purge_caches:
@@ -305,7 +322,7 @@ bkp_restore_body:
 	make --no-print-directory mkdir
 	make --no-print-directory bkp_mkdir
 	make --no-print-directory bkp_perm
-	make --no-print-directory bkp_untar
+	- make --no-print-directory bkp_untar
 	make --no-print-directory bkp_restore_html
 	make --no-print-directory bkp_restore_moodledata
 
@@ -364,12 +381,32 @@ bkp_rm_tgz:
 	- sudo rm -Rf ${STACK_VOLUME}/backup/${CURRENT_BACKUP_DIR}.tgz
 
 
-bkp_to_remote:
+bkp_to_remote_tgz:
 	- sudo scp -P ${SSH_PORT} ${STACK_VOLUME}/backup/${CURRENT_BACKUP_DIR}.tgz ${SSH_USER}@${SSH_HOST}:${SSH_VOLUME_DIR}/backup/
 
-bkp_from_remote:
+bkp_from_remote_tgz:
 	- sudo scp -P ${SSH_PORT} ${SSH_USER}@${SSH_HOST}:${SSH_VOLUME_DIR}/backup/${CURRENT_BACKUP_DIR}.tgz ${STACK_VOLUME}/backup/
 
+bkp_from_remote:
+	- make --no-print-directory bkp_mkdir
+	- make --no-print-directory bkp_perm
+	- make --no-print-directory bkp_from_remote_html
+	- make --no-print-directory bkp_from_remote_moodledata
+	- make --no-print-directory bkp_from_remote_db
+
+bkp_from_remote_html:
+	- sudo scp -r -P ${SSH_PORT} ${SSH_USER}@${SSH_HOST}:${SSH_HTML_DIR}/. ${STACK_VOLUME}/backup/${CURRENT_BACKUP_DIR}/html
+
+bkp_from_remote_moodledata:
+	- sudo scp -r -P ${SSH_PORT} ${SSH_USER}@${SSH_HOST}:${SSH_MOODLEDATA_DIR}/. ${STACK_VOLUME}/backup/${CURRENT_BACKUP_DIR}/moodledata
+
+bkp_from_remote_db:
+	mysqldump --skip-ssl -P ${REMOTE_MYSQL_PORT} -h ${REMOTE_MYSQL_HOST} -u${REMOTE_MYSQL_USER} -p${REMOTE_MYSQL_PASSWORD} \
+	${REMOTE_MYSQL_DATABASE} > ${STACK_VOLUME}/backup/${CURRENT_BACKUP_DIR}/data.sql
+	# ssh -p "${REMOTE_MYSQL_SSH_PORT}" "${REMOTE_MYSQL_SSH_USER}@${REMOTE_MYSQL_SSH_HOST}" \
+	# "mysqldump -P '${REMOTE_MYSQL_PORT}' -h 127.0.0.1 -u'${REMOTE_MYSQL_USER}' -p${REMOTE_MYSQL_PASSWORD} '${REMOTE_MYSQL_DATABASE}' > /root/data.sql"
+	# sudo scp -P ${REMOTE_MYSQL_SSH_PORT} ${REMOTE_MYSQL_SSH_USER}@${REMOTE_MYSQL_SSH_HOST}:/root/data.sql ${STACK_VOLUME}/backup/${CURRENT_BACKUP_DIR}/data.sql
+	# ssh -p ${REMOTE_MYSQL_SSH_PORT} ${REMOTE_MYSQL_SSH_USER}@${REMOTE_MYSQL_SSH_HOST} bash -c "rm /root/data.sql"
 
 # the url_replace command are for migration from http to https
 url_replace_list:
