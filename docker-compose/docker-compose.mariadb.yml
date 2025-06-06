@@ -60,7 +60,9 @@ services:
       - ${STACK_VOLUME}/moodle/certbot/conf/:/etc/letsencrypt/:rw
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
   db:
-    image: mariadb:10.6
+    # image: mariadb:10.6
+    build:
+      context: ./docker-files/db/mariadb
     container_name: ${STACK_NAME}_db
     restart: always
     # ports:
@@ -70,14 +72,15 @@ services:
       - MARIADB_DATABASE=${MARIADB_DATABASE}
       - MARIADB_USER=${MARIADB_USER}
       - MARIADB_PASSWORD=${MARIADB_PASSWORD}
-      - TZ=${MARIADB_TZ}
+      - TZ=${TZ}
       - --character-set-server=utf8mb4 
       - --collation-server=utf8mb4_unicode_ci
     volumes:
       - ${STACK_VOLUME}/mariadb/data:/var/lib/mysql
       - ./config/db/mariadb/my.cnf:/etc/my.cnf
-      - ./config/db/mariadb/init.sql:/docker-entrypoint-initdb.d/init.sql
-      # - ./backup/mariadb:/var/mariadb/backup/
+      - ./config/db/mariadb/init.sql.template:/init.sql.template
+      - ./config/db/mariadb/custom-docker-entrypoint.sh:/custom-docker-entrypoint.sh
+    entrypoint: ["/custom-docker-entrypoint.sh"]
     networks:
       - moodle_network
       - pma_network
@@ -121,7 +124,9 @@ services:
           memory: ${MEMORY}
 
   phpu_db:
-    image: mariadb:10.6
+    # image: mariadb:10.6
+    build:
+      context: ./docker-files/db/mariadb
     container_name: ${STACK_NAME}_phpunit_db
     restart: always
     # ports:
@@ -131,13 +136,15 @@ services:
       - MARIADB_DATABASE=${PHPU_MARIADB_DATABASE}
       - MARIADB_USER=${PHPU_MARIADB_USER}
       - MARIADB_PASSWORD=${PHPU_MARIADB_PASSWORD}
-      - TZ=${PHPU_MARIADB_TZ}
+      - TZ=${TZ}
       - --character-set-server=utf8mb4 
       - --collation-server=utf8mb4_unicode_ci
     volumes:
-      - ${STACK_VOLUME}/phpunit/mariadb/data:/var/lib/mariadb
+      - ${STACK_VOLUME}/phpunit/mariadb/data:/var/lib/mysql
       - ./config/phpunit/mariadb/my.cnf:/etc/my.cnf
-      - ./config/phpunit/mariadb/init.sql:/docker-entrypoint-initdb.d/init.sql 
+      - ./config/db/mariadb/init.sql.template:/init.sql.template
+      - ./config/db/mariadb/custom-docker-entrypoint.sh:/custom-docker-entrypoint.sh
+    entrypoint: ["/custom-docker-entrypoint.sh"]
     networks:
       - moodle_network
       - phpu_pma_network

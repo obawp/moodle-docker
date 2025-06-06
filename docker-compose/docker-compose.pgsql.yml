@@ -60,7 +60,9 @@ services:
       - ${STACK_VOLUME}/moodle/certbot/conf/:/etc/letsencrypt/:rw
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
   db:
-    image: postgres:13
+    # image: postgres:13
+    build:
+      context: ./docker-files/db/pgsql
     container_name: ${STACK_NAME}_db
     restart: always
     # ports:
@@ -69,10 +71,12 @@ services:
       - POSTGRES_DB=${PGSQL_DB}
       - POSTGRES_USER=${PGSQL_USER}
       - POSTGRES_PASSWORD=${PGSQL_PASSWORD}
-      - TZ=${PGSQL_TZ}
+      - TZ=${TZ}
     volumes:
       - ${STACK_VOLUME}/pgsql/data:/var/lib/postgresql/data
-      - ./config/db/pgsql/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./config/db/pgsql/init.sql.template:/init.sql.template
+      - ./config/db/pgsql/custom-docker-entrypoint.sh:/custom-docker-entrypoint.sh
+    entrypoint: ["/custom-docker-entrypoint.sh"]
     networks:
       - moodle_network
     deploy:
@@ -82,7 +86,9 @@ services:
           memory: ${MEMORY}
 
   phpu_db:
-    image: postgres:13
+    # image: postgres:13
+    build:
+      context: ./docker-files/db/pgsql
     container_name: ${STACK_NAME}_phpunit_db
     restart: always
     # ports:
@@ -91,10 +97,12 @@ services:
       - POSTGRES_DB=${PHPU_PGSQL_DB}
       - POSTGRES_USER=${PHPU_PGSQL_USER}
       - POSTGRES_PASSWORD=${PHPU_PGSQL_PASSWORD}
-      - TZ=${PHPU_PGSQL_TZ}
+      - TZ=${TZ}
     volumes:
       - ${STACK_VOLUME}/phpunit/pgsql/data:/var/lib/postgresql/data
-      - ${STACK_VOLUME}/phpunit/pgsql/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./config/db/pgsql/init.sql.template:/init.sql.template
+      - ./config/db/pgsql/custom-docker-entrypoint.sh:/custom-docker-entrypoint.sh
+    entrypoint: ["/custom-docker-entrypoint.sh"]
     networks:
       - moodle_network
     deploy:

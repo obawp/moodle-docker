@@ -44,10 +44,12 @@ mkdir:
 	- sudo chown $$USER:www-data ${STACK_VOLUME}/${DBTYPE}/
 	- sudo chown $$USER:www-data ./config/moodle/config.${DBTYPE}.php
 	- sudo chmod 640 ./config/moodle/config.${DBTYPE}.php
+	- sudo chmod +x ./config/db/${DBTYPE}/custom-docker-entrypoint.sh
 	- sudo chown $$USER:www-data ${STACK_VOLUME}/moodle/data
 	- sudo chown $$USER:www-data ${STACK_VOLUME}/${DBTYPE}/data
 	- make --no-print-directory mkdir_certbot
 	- make --no-print-directory cp_aux
+	- make --no-print-directory phpu_mkdir
 
 mkdir_db:
 	- sudo mkdir -p ${STACK_VOLUME}/${DBTYPE}/data
@@ -67,7 +69,7 @@ cp_aux:
 		sudo rm -Rf ${STACK_SRC}; \
 		mkdir ./src; \
 		docker cp ${STACK_NAME}_aux:/var/www/html ${STACK_SRC}; \
-		make --no-print-directory cp_certbot \
+		make --no-print-directory cp_certbot; \
 	else \
 		echo "Skipping src folder copy of the container ${STACK_NAME}_aux."; \
 	fi
@@ -81,6 +83,7 @@ rmdir:
 	- make --no-print-directory rmdir_moodledata
 	- make --no-print-directory rmdir_db
 	- make --no-print-directory rmdir_certbot
+	- make --no-print-directory phpu_rmdir
 
 rmdir_html:
 	- sudo rm -Rf ${STACK_SRC}/
@@ -101,6 +104,14 @@ up:
 	make --no-print-directory cp_certbot
 	make --no-print-directory rm_aux
 	- docker compose -p ${STACK} --project-directory ./ -f "./docker-compose/docker-compose.${DBTYPE}.yml" up -d
+
+up_force_recreate:
+	make --no-print-directory rm_web
+	make --no-print-directory rm_pma
+	make --no-print-directory run
+	make --no-print-directory cp_certbot
+	make --no-print-directory rm_aux
+	- docker compose -p ${STACK} --project-directory ./ -f "./docker-compose/docker-compose.${DBTYPE}.yml" up --force-recreate -d
 
 bash:
 	- docker exec -it -u 0 -w /var/www/html ${STACK_NAME}_web bash

@@ -39,6 +39,9 @@ RUN apt-get install -y php8.3-redis
 RUN apt-get install -y php8.3-pgsql
 RUN apt-get install -y php8.3-imap
 
+# Install clamav
+RUN apt-get install -y clamav clamav-daemon
+
 # Install Nodejs and build-essential
 RUN apt-get install -y nodejs
 RUN apt-get install -y build-essential
@@ -148,10 +151,10 @@ echo "zlib.output_compression = on" >> /var/www/html/php.ini && \
 echo "zlib.output_compression_level = -1" >> /var/www/html/php.ini
 
 # cron configuration
-RUN echo '* * * * * sudo -u www-data /usr/bin/php /var/www/html/admin/cli/cron.php' > /etc/cron.d/moodle
+RUN echo '* * * * * www-data /usr/bin/php /var/www/html/admin/cli/cron.php &> /var/log/moodle_cron.log' > /etc/cron.d/moodle
 RUN chmod 0644 /etc/cron.d/moodle
-RUN crontab /etc/cron.d/moodle
 RUN touch /var/log/cron.log
+RUN crontab /etc/cron.d/moodle
 
 # php-fpm configuration
 RUN echo "security.limit_extensions = .php" >> /etc/php/8.3/fpm/pool.d/www.conf
@@ -168,20 +171,16 @@ RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/8.3/f
     sed -i -e 's/post_max_size = 8M/post_max_size = 500M/g' /etc/php/8.3/fpm/php.ini && \
     sed -i -e 's/max_execution_time = 30/max_execution_time = 600/g' /etc/php/8.3/fpm/php.ini && \
     sed -i -e 's/memory_limit = 128M/memory_limit = 512M/g' /etc/php/8.3/fpm/php.ini && \
-
-    # enable below for ionos
+    # enable below for ionos (not tested). If enabled, this makes PATH_INFO not work
     # sed -i -e 's/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/g' /etc/php/8.3/fpm/php.ini && \
-    
     sed -i -e 's/variables_order = "GPCS"/variables_order = "EGPCS"/g' /etc/php/8.3/fpm/php.ini
 RUN sed -i -e 's/;max_input_vars = 1000/max_input_vars = 10000/g' /etc/php/8.3/cli/php.ini && \
     sed -i -e 's/upload_max_filesize = 2M/upload_max_filesize = 500M/g' /etc/php/8.3/cli/php.ini && \
     sed -i -e 's/post_max_size = 8M/post_max_size = 500M/g' /etc/php/8.3/cli/php.ini && \
     sed -i -e 's/max_execution_time = 30/max_execution_time = 600/g' /etc/php/8.3/cli/php.ini && \
     sed -i -e 's/memory_limit = 128M/memory_limit = 512M/g' /etc/php/8.3/cli/php.ini && \
-
-    # enable below for ionos
+    # enable below for ionos (not tested). If enabled, this makes PATH_INFO not work
     # sed -i -e 's/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/g' /etc/php/8.3/cli/php.ini && \
-
     sed -i -e 's/variables_order = "GPCS"/variables_order = "EGPCS"/g' /etc/php/8.3/cli/php.ini
 
 # Adding  Non-interactive self-signed Certificate and 10 years expiration

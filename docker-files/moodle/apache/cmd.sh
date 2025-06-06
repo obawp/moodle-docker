@@ -7,6 +7,10 @@ set -e
 : "${WEBS_PORT:=443}"
 : "${DOMAIN:=moodle.local}"
 
+# Export environment variables - If you remove this line the cron (and cli commands) may not work.
+printenv | grep -v "no_proxy" >> /etc/environment
+export $(cat /etc/environment | xargs)
+
 # Set timezone
 rm /etc/localtime && ln -fs /usr/share/zoneinfo/$TZ /etc/localtime && dpkg-reconfigure -f noninteractive tzdata
 
@@ -35,10 +39,10 @@ cd /var/www/html
 a2ensite moodle.conf
 
 # Start PHP-FPM service
-/etc/init.d/php8.3-fpm start
+/etc/init.d/php8.3-fpm start & # do not remove the &
 
 # Start Cron service
-/etc/init.d/cron start
+/etc/init.d/cron start & # do not remove the &
 
 # Start Redis server
 redis-server & # do not remove the &

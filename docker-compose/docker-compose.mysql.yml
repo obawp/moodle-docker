@@ -60,7 +60,9 @@ services:
       - ${STACK_VOLUME}/moodle/certbot/conf/:/etc/letsencrypt/:rw
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
   db:
-    image: mysql:8.0
+    # image: mysql:8.0
+    build:
+      context: ./docker-files/db/mysql
     container_name: ${STACK_NAME}_db
     restart: always
     # ports:
@@ -70,14 +72,16 @@ services:
       - MYSQL_DATABASE=${MYSQL_DATABASE}
       - MYSQL_USER=${MYSQL_USER}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-      - TZ=${MYSQL_TZ}
+      - TZ=${TZ}
       - --character-set-server=utf8mb4 
       - --collation-server=utf8mb4_unicode_ci
     volumes:
       - ${STACK_VOLUME}/mysql/data:/var/lib/mysql
       - ./config/db/mysql/my.cnf:/etc/my.cnf
-      - ./config/db/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql 
       # - ./backup/mariadb:/var/mariadb/backup/
+      - ./config/db/mysql/init.sql.template:/init.sql.template
+      - ./config/db/mysql/custom-docker-entrypoint.sh:/custom-docker-entrypoint.sh
+    entrypoint: ["/custom-docker-entrypoint.sh"]
     networks:
       - moodle_network
       - pma_network
@@ -121,7 +125,9 @@ services:
           memory: ${MEMORY}
 
   phpu_db:
-    image: mysql:8.0
+    # image: mysql:8.0
+    build:
+      context: ./docker-files/db/mysql
     container_name: ${STACK_NAME}_phpunit_db
     restart: always
     # ports:
@@ -131,13 +137,15 @@ services:
       - MYSQL_DATABASE=${PHPU_MYSQL_DATABASE}
       - MYSQL_USER=${PHPU_MYSQL_USER}
       - MYSQL_PASSWORD=${PHPU_MYSQL_PASSWORD}
-      - TZ=${PHPU_MYSQL_TZ}
+      - TZ=${TZ}
       - --character-set-server=utf8mb4 
       - --collation-server=utf8mb4_unicode_ci
     volumes:
       - ${STACK_VOLUME}/phpunit/mysql/data:/var/lib/mysql
       - ./config/phpunit/mysql/my.cnf:/etc/my.cnf
-      - ./config/phpunit/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./config/db/mysql/init.sql.template:/init.sql.template
+      - ./config/db/mysql/custom-docker-entrypoint.sh:/custom-docker-entrypoint.sh
+    entrypoint: ["/custom-docker-entrypoint.sh"]
     networks:
       - moodle_network
       - phpu_pma_network
