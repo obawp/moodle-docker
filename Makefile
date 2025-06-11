@@ -77,6 +77,9 @@ cp_aux:
 cp_certbot:
 	sudo rm -Rf ${STACK_VOLUME}/moodle/certbot/conf;
 	docker cp ${STACK_NAME}_aux:/etc/letsencrypt ${STACK_VOLUME}/moodle/certbot/conf;
+	find ${STACK_VOLUME}/moodle/certbot/conf -type d -exec chmod 0700 {} \;
+	find ${STACK_VOLUME}/moodle/certbot/conf -type f -exec chmod 0600 {} \;
+	sudo chown -R root:root ${STACK_VOLUME}/moodle/certbot/conf
 
 rmdir:
 	- make --no-print-directory rmdir_html
@@ -246,9 +249,12 @@ checks:
 task_list:
 	- docker exec -u www-data -w /var/www/html/ ${STACK_NAME}_web php admin/cli/scheduled_task.php --list;
 
-# Example: make task=core\task\cron_task task_run
+# Example: make task='core\task\cron_task' task_run
 task_exec:
 	- docker exec -u www-data -w /var/www/html/ ${STACK_NAME}_web php admin/cli/scheduled_task.php --showdebugging --execute='$(task)';
+
+cron_run:
+	- docker exec -u www-data -w /var/www/html/ ${STACK_NAME}_web php admin/cli/cron.php
 
 
 bkp_mkdir:

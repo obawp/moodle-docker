@@ -106,18 +106,24 @@ services:
       # - PMA_DATABASE=${MARIADB_DATABASE}
       # - MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
     command: >
-      sh -c "if [ ! -f /etc/phpmyadmin/config.secret.inc.php ]; then
+      sh -c "sed 's|/etc/ssl/certs/ssl-cert-snakeoil.pem|/etc/letsencrypt/fullchain.pem|g' /etc/apache2/sites-available/default-ssl.conf > /tmp/default-ssl.conf &&
+            sed -i 's|/etc/ssl/private/ssl-cert-snakeoil.key|/etc/letsencrypt/privkey.pem|g' /tmp/default-ssl.conf &&
+            mv /tmp/default-ssl.conf /etc/apache2/sites-available/default-ssl.conf &&
+            if [ ! -f /etc/phpmyadmin/config.secret.inc.php ]; then
               echo \"<?php\\n\\\$$cfg['blowfish_secret'] = '$(php -r 'echo bin2hex(random_bytes(32));')';\" > /etc/phpmyadmin/config.secret.inc.php;
-            fi &&
-            a2enmod ssl && a2ensite 000-default && a2ensite default-ssl &&
-            apache2-foreground"
+            fi && 
+            apache2ctl -D FOREGROUND &
+            while true; do
+                sleep 12h
+                apache2ctl graceful
+            done
+        "
     depends_on:
       - db
     networks:
       - pma_network
     volumes:
-      - ${STACK_VOLUME}/moodle/certbot/conf/live/${DOMAIN}/fullchain.pem:/etc/ssl/certs/ssl-cert-snakeoil.pem:ro
-      - ${STACK_VOLUME}/moodle/certbot/conf/live/${DOMAIN}/privkey.pem:/etc/ssl/private/ssl-cert-snakeoil.key:ro
+      - ${STACK_VOLUME}/moodle/certbot/conf/live/${DOMAIN}/:/etc/letsencrypt/:ro
     deploy:
       resources:
         limits:
@@ -171,18 +177,26 @@ services:
       # - PMA_DATABASE=${PHPU_MARIADB_DATABASE}
       # - MARIADB_ROOT_PASSWORD=${PHPU_MARIADB_ROOT_PASSWORD}
     command: >
-      sh -c "if [ ! -f /etc/phpmyadmin/config.secret.inc.php ]; then
+      sh -c "sed 's|/etc/ssl/certs/ssl-cert-snakeoil.pem|/etc/letsencrypt/fullchain.pem|g' /etc/apache2/sites-available/default-ssl.conf > /tmp/default-ssl.conf &&
+            sed -i 's|/etc/ssl/private/ssl-cert-snakeoil.key|/etc/letsencrypt/privkey.pem|g' /tmp/default-ssl.conf &&
+            mv /tmp/default-ssl.conf /etc/apache2/sites-available/default-ssl.conf &&
+            if [ ! -f /etc/phpmyadmin/config.secret.inc.php ]; then
               echo \"<?php\\n\\\$$cfg['blowfish_secret'] = '$(php -r 'echo bin2hex(random_bytes(32));')';\" > /etc/phpmyadmin/config.secret.inc.php;
-            fi &&
-            a2enmod ssl && a2ensite 000-default && a2ensite default-ssl &&
-            apache2-foreground"
+            fi && 
+            apache2ctl -D FOREGROUND &
+            while true; do
+                sleep 12h
+                apache2ctl graceful
+            done
+        "
     depends_on:
       - db
     networks:
       - phpu_pma_network
     volumes:
-      - ${STACK_VOLUME}/moodle/certbot/conf/live/${DOMAIN}/fullchain.pem:/etc/ssl/certs/ssl-cert-snakeoil.pem:ro
-      - ${STACK_VOLUME}/moodle/certbot/conf/live/${DOMAIN}/privkey.pem:/etc/ssl/private/ssl-cert-snakeoil.key:ro
+      - ${STACK_VOLUME}/moodle/certbot/conf/live/${DOMAIN}/:/etc/letsencrypt/:ro
+      # - ${STACK_VOLUME}/moodle/certbot/conf/live/${DOMAIN}/fullchain.pem:/etc/ssl/certs/ssl-cert-snakeoil.pem:ro
+      # - ${STACK_VOLUME}/moodle/certbot/conf/live/${DOMAIN}/privkey.pem:/etc/ssl/private/ssl-cert-snakeoil.key:ro
     deploy:
       resources:
         limits:
