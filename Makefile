@@ -539,10 +539,10 @@ mariadb_slave_config:
 	docker exec -u 0 ${STACK_NAME}_db_slave1 mysql -u root -p${MARIADB_ROOT_PASSWORD} -e "SHOW SLAVE STATUS\G"
 	docker exec -u 0 ${STACK_NAME}_db mariadb -u root -p${MARIADB_ROOT_PASSWORD} -e "REVOKE RELOAD ON *.* FROM '${MARIADB_USER}'@'%'; FLUSH PRIVILEGES;"
 
-make_test_course:
-	docker exec -u 0 ${STACK_NAME}_web php admin/tool/generator/cli/maketestcourse.php --shortname=SIZE_L --size=L
+make_test_course_XS:
+	docker exec -u 0 ${STACK_NAME}_web php admin/tool/generator/cli/maketestcourse.php --shortname=SIZE_XS--size=XS
 
-make_test_course:
+make_test_course_L:
 	docker exec -u 0 ${STACK_NAME}_web php admin/tool/generator/cli/maketestcourse.php --shortname=SIZE_L --size=L
 
 brcli_backup:
