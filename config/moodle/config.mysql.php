@@ -99,7 +99,7 @@ if($phpu_enabled == 'true'){
 	$CFG->phpunit_dataroot =  '/var/www/phpu_moodledata';
 	$CFG->phpunit_dbtype    = 'mysqli';
 	$CFG->phpunit_dblibrary = 'native';
-	$CFG->phpunit_dbhost    = 'phpu_db';
+	$CFG->phpunit_dbhost    = 'db_phpu';
 	$CFG->phpunit_dbname    = getenv_docker('PHPU_MYSQL_DATABASE','phpu');
 	$CFG->phpunit_dbuser    = getenv_docker('PHPU_MYSQL_USER','phpu');
 	$CFG->phpunit_dbpass    = getenv_docker('PHPU_MYSQL_PASSWORD','aecaathah9heiP');

@@ -7,6 +7,17 @@ set -e
 : "${WEBS_PORT:=443}"
 : "${DOMAIN:=moodle.local}"
 
+: "${WEBSERVER_MEMORY:=512M}"
+: "${WEBSERVER_TIMEOUT:=600}"
+
+sed -i -e "s/memory_limit = 512M/memory_limit = $WEBSERVER_MEMORY/g" /etc/php/8.3/fpm/php.ini
+sed -i -e "s/memory_limit = 512M/memory_limit = $WEBSERVER_MEMORY/g" /etc/php/8.3/cli/php.ini
+sed -i -e "s/max_execution_time = 600/max_execution_time = $WEBSERVER_TIMEOUT/g" /etc/php/8.3/fpm/php.ini
+sed -i -e "s/max_execution_time = 600/max_execution_time = $WEBSERVER_TIMEOUT/g" /etc/php/8.3/cli/php.ini
+sed -i "s/Timeout 300/Timeout $WEBSERVER_TIMEOUT/" /etc/apache2/apache2.conf
+sed -i -e "s/default_socket_timeout = 60/default_socket_timeout = $WEBSERVER_TIMEOUT/g" /etc/php/8.3/fpm/php.ini
+sed -i -e "s/default_socket_timeout = 60/default_socket_timeout = $WEBSERVER_TIMEOUT/g" /etc/php/8.3/cli/php.ini
+
 # Export environment variables - If you remove this line the cron (and cli commands) may not work.
 printenv | grep -v "no_proxy" >> /etc/environment
 export $(cat /etc/environment | xargs)

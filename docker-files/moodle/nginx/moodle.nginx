@@ -4,7 +4,10 @@ server {
     root /var/www/html;
     index index.php index.html index.htm;
 
-    fastcgi_read_timeout 1800; 
+    proxy_send_timeout 600;
+    proxy_read_timeout 600;
+    fastcgi_send_timeout 600;
+    fastcgi_read_timeout 600;
     
 
     # Restrict direct access to sensitive files
@@ -79,8 +82,10 @@ server {
     ssl_certificate /etc/letsencrypt/live/moodle.local/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/moodle.local/privkey.pem;
     
-    fastcgi_read_timeout 1800; 
-    
+    proxy_send_timeout 600;
+    proxy_read_timeout 600;
+    fastcgi_send_timeout 600;
+    fastcgi_read_timeout 600;
 
     # Restrict direct access to sensitive files
     location ~ (/vendor/|/node_modules/|composer\.json|/readme|/README|readme\.txt|/upgrade\.txt|/UPGRADING\.md|db/install\.xml|/fixtures/|/behat/|phpunit\.xml|\.lock|environment\.xml) {

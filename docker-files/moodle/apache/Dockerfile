@@ -195,7 +195,6 @@ RUN a2ensite moodle.conf
 
 # Enable Apache modules
 RUN a2enmod rewrite
-RUN a2enmod php8.3
 RUN a2enmod proxy_fcgi setenvif
 RUN a2enconf php8.3-fpm
 RUN a2enmod ssl

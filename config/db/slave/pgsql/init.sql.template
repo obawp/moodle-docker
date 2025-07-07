@@ -1,0 +1,21 @@
+DO $$
+BEGIN
+    -- Create database if it doesn't exist
+    IF NOT EXISTS (
+        SELECT FROM pg_database WHERE datname = '$POSTGRES_DB'
+    ) THEN
+        EXECUTE format('CREATE DATABASE %I ENCODING ''UTF8'' LC_COLLATE=''en_US.utf8'' LC_CTYPE=''en_US.utf8''', '$POSTGRES_DB');
+    END IF;
+END
+$$;
+
+-- Create user if not exists
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT FROM pg_roles WHERE rolname = '$POSTGRES_USER'
+    ) THEN
+        EXECUTE format('CREATE USER %I WITH PASSWORD %L', '$POSTGRES_USER', '$POSTGRES_PASSWORD');
+    END IF;
+END
+$$;

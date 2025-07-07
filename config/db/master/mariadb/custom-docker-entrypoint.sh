@@ -7,4 +7,5 @@ envsubst '$MARIADB_DATABASE:$MARIADB_USER:$MARIADB_PASSWORD' < /init.sql.templat
 # echo "Database initialization script created."
 # cat /docker-entrypoint-initdb.d/init.sql
 
+
 exec docker-entrypoint.sh mariadbd

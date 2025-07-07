@@ -20,6 +20,7 @@ if (!function_exists('getenv_docker')) {
 	}
 }
 
+// $CFG->block_configurable_reports_enable_sql_execution = 0;
 
 // Database settings
 $CFG->dbtype    =  'mariadb';
@@ -31,18 +32,40 @@ $CFG->dbpass    = getenv_docker('MARIADB_PASSWORD', 'meeF9av3geegh9');
 $CFG->prefix    = getenv_docker('MARIADB_PREFIX', 'mdl_');
 $CFG->dbport    = getenv_docker('MARIADB_PORT', '3306');
 
+// $CFG->dboptions = array(
+//     'dbpersist' => false,
+//     'dbsocket'  => false,
+//     'dbport'    => $CFG->dbport,
+//     'dbhandlesoptions' => false,
+//     'dbcollation' => 'utf8mb4_unicode_ci'
+// );
 $CFG->dboptions = array(
+    'dbcollation' => 'utf8mb4_unicode_ci',
     'dbpersist' => false,
     'dbsocket'  => false,
     'dbport'    => $CFG->dbport,
     'dbhandlesoptions' => false,
-    'dbcollation' => 'utf8mb4_unicode_ci'
+    // 'readonly' => array(
+    //     'instance' => [
+    //         // [
+    //         //     'dbhost' => 'db_slave',
+    //         //     'dbname' => $CFG->dbname,
+    //         //     'dbuser' => $CFG->dbuser,
+    //         //     'dbpass' => $CFG->dbpass,
+    //         //     'prefix' => $CFG->prefix,
+    //         //     'dbport' => $CFG->dbport,
+    //         // ]
+    //     ]
+    // ),
+    'readonlyrandom' => true,
+    'readonlyrole' => null,
+    'connecttimeout' => 2,
 );
 
 
 // Moodle's webroot and dataroot
-$CFG->serverurl = getenv_docker('SERVERURL', 'http://moodle.local');
-$CFG->wwwroot   = getenv_docker('WWWROOT', 'http://moodle.local');
+$CFG->serverurl = getenv_docker('SERVERURL', 'https://moodle.local'). ':'.getenv_docker('WEBS_PORT', '443');
+$CFG->wwwroot   = getenv_docker('WWWROOT', 'https://moodle.local'). ':'.getenv_docker('WEBS_PORT', '443');
 $CFG->dataroot  = '/var/www/moodledata';
 $CFG->dirroot   = '/var/www/html';
 $CFG->themedir  = $CFG->dirroot . '/theme';
@@ -100,7 +123,7 @@ if($phpu_enabled == 'true'){
 	$CFG->phpunit_dataroot =  '/var/www/phpu_moodledata';
 	$CFG->phpunit_dbtype    = 'mariadb';
 	$CFG->phpunit_dblibrary = 'native';
-	$CFG->phpunit_dbhost    = 'phpu_db';
+	$CFG->phpunit_dbhost    = 'db_phpu';
 	$CFG->phpunit_dbname    = getenv_docker('PHPU_MARIADB_DATABASE','phpu');
 	$CFG->phpunit_dbuser    = getenv_docker('PHPU_MARIADB_USER','phpu');
 	$CFG->phpunit_dbpass    = getenv_docker('PHPU_MARIADB_PASSWORD','aecaathah9heiP');
