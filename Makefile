@@ -59,7 +59,7 @@ mkdir:
 
 	- sudo chown $$USER:www-data ./config/moodle/config.${DBTYPE}.php
 	- sudo chmod 640 ./config/moodle/config.${DBTYPE}.php
-	- sudo chmod +x ./config/db/${DBTYPE}/custom-docker-entrypoint.sh
+	- sudo chmod +x ./config/db/**/**/custom-docker-entrypoint.sh
 
 	- make --no-print-directory mkdir_certbot
 	- make --no-print-directory cp_aux
