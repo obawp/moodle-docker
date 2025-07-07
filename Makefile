@@ -49,11 +49,9 @@ mkdir:
 	- sudo chown $$USER:www-data ${STACK_VOLUME_DB}
 	- sudo chown $$USER:www-data ${STACK_VOLUME_DB}/master
 	- sudo chown $$USER:www-data ${STACK_VOLUME_DB}/slave
-	- sudo chown $$USER:www-data ${STACK_VOLUME_DB}/slave1
 	- sudo chown $$USER:www-data ${STACK_VOLUME_DB}/phpunit
 	- sudo chown $$USER:www-data ${STACK_VOLUME_DB}/master/${DBTYPE}/
 	- sudo chown $$USER:www-data ${STACK_VOLUME_DB}/slave/${DBTYPE}/
-	- sudo chown $$USER:www-data ${STACK_VOLUME_DB}/slave1/${DBTYPE}/
 	- sudo chown $$USER:www-data ${STACK_VOLUME_DB}/phpunit/${DBTYPE}/
 	- sudo chown $$USER:www-data ${STACK_VOLUME_DB}/master/${DBTYPE}/data
 	- sudo chown $$USER:www-data ${STACK_VOLUME_DB}/slave/${DBTYPE}/data
@@ -75,8 +73,6 @@ mkdir_db:
 mkdir_db_slave:
 	- sudo mkdir -p ${STACK_VOLUME_DB}/slave/${DBTYPE}/data
 
-mkdir_db_slave1:
-	- sudo mkdir -p ${STACK_VOLUME_DB}/slave1/${DBTYPE}/data
 
 mkdir_certbot:
 	- sudo mkdir -p ${STACK_VOLUME}/moodle/certbot/www/.well-known/acme-challenge/
@@ -517,13 +513,13 @@ update:
 mariadb_rebuild_slave:
 	make --no-print-directory maintenance_on
 	docker exec -u 0 ${STACK_NAME}_db mariadb -u root -p${MARIADB_ROOT_PASSWORD} -e "GRANT RELOAD ON *.* TO '${MARIADB_USER}'@'%'; FLUSH PRIVILEGES;"
-	docker exec -u 0 ${STACK_NAME}_db mysqldump --all-databases --single-transaction --master-data=2 --flush-logs --hex-blob --triggers --routines --events -u${MARIADB_USER} -p${MARIADB_PASSWORD} > ${STACK_VOLUME}/backup/${CURRENT_BACKUP_DIR}/dump-rebuild-slave1.sql
-	docker cp ${STACK_VOLUME}/backup/${CURRENT_BACKUP_DIR}/dump-rebuild-slave1.sql ${STACK_NAME}_db_slave1:/dump-rebuild-slave1.sql
-	rm -f ${STACK_VOLUME}/backup/${CURRENT_BACKUP_DIR}/dump-rebuild-slave1.sql
-	docker exec -u 0 ${STACK_NAME}_db_slave1 mysql -u root -p${MARIADB_ROOT_PASSWORD} -e "DROP DATABASE IF EXISTS ${MARIADB_DATABASE};"
-	docker exec -u 0 ${STACK_NAME}_db_slave1 bash -c "mysql -u root -p${MARIADB_ROOT_PASSWORD} < /dump-rebuild-slave1.sql"
-	docker exec -u 0 ${STACK_NAME}_db_slave1 rm -f /dump-rebuild-slave1.sql
-	make  --no-print-directory  mariadb_slave1_config
+	docker exec -u 0 ${STACK_NAME}_db mysqldump --all-databases --single-transaction --master-data=2 --flush-logs --hex-blob --triggers --routines --events -u${MARIADB_USER} -p${MARIADB_PASSWORD} > ${STACK_VOLUME}/backup/${CURRENT_BACKUP_DIR}/dump-rebuild-slave.sql
+	docker cp ${STACK_VOLUME}/backup/${CURRENT_BACKUP_DIR}/dump-rebuild-slave.sql ${STACK_NAME}_db_slave:/dump-rebuild-slave.sql
+	rm -f ${STACK_VOLUME}/backup/${CURRENT_BACKUP_DIR}/dump-rebuild-slave.sql
+	docker exec -u 0 ${STACK_NAME}_db_slave mysql -u root -p${MARIADB_ROOT_PASSWORD} -e "DROP DATABASE IF EXISTS ${MARIADB_DATABASE};"
+	docker exec -u 0 ${STACK_NAME}_db_slave bash -c "mysql -u root -p${MARIADB_ROOT_PASSWORD} < /dump-rebuild-slave.sql"
+	docker exec -u 0 ${STACK_NAME}_db_slave rm -f /dump-rebuild-slave.sql
+	make  --no-print-directory  mariadb_slave_config
 	make --no-print-directory maintenance_off
 
 mariadb_slave_config:
@@ -533,10 +529,10 @@ mariadb_slave_config:
 	echo $$MASTER_LOG_FILE;
 	$(eval MASTER_LOG_POS := $(shell echo '$(MASTER_STATUS)' | grep -oP 'Position: \K[0-9]+'))
 	echo $$MASTER_LOG_POS;
-	docker exec -u 0 ${STACK_NAME}_db_slave1 mysql -u root -p${MARIADB_ROOT_PASSWORD} -e "STOP SLAVE; RESET SLAVE ALL; \
+	docker exec -u 0 ${STACK_NAME}_db_slave mysql -u root -p${MARIADB_ROOT_PASSWORD} -e "STOP SLAVE; RESET SLAVE ALL; \
 	CHANGE MASTER TO MASTER_HOST='db', MASTER_USER='${MARIADB_USER}', MASTER_PASSWORD='${MARIADB_PASSWORD}', \
 	MASTER_LOG_FILE='$(MASTER_LOG_FILE)', MASTER_LOG_POS=$(MASTER_LOG_POS); START SLAVE;"
-	docker exec -u 0 ${STACK_NAME}_db_slave1 mysql -u root -p${MARIADB_ROOT_PASSWORD} -e "SHOW SLAVE STATUS\G"
+	docker exec -u 0 ${STACK_NAME}_db_slave mysql -u root -p${MARIADB_ROOT_PASSWORD} -e "SHOW SLAVE STATUS\G"
 	docker exec -u 0 ${STACK_NAME}_db mariadb -u root -p${MARIADB_ROOT_PASSWORD} -e "REVOKE RELOAD ON *.* FROM '${MARIADB_USER}'@'%'; FLUSH PRIVILEGES;"
 
 make_test_course_XS:
