@@ -88,6 +88,7 @@ cp_aux:
 	@if docker ps -a --format '{{.Names}}' | grep -q "^${STACK_NAME}_aux$$"; then \
 		sudo rm -Rf ${STACK_SRC}; \
 		mkdir ./src; \
+		sudo chown $$USER:$$USER ./src; \
 		docker cp ${STACK_NAME}_aux:/var/www/html ${STACK_SRC}; \
 		make --no-print-directory cp_certbot; \
 	else \
