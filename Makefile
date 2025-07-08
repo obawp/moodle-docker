@@ -290,6 +290,7 @@ bkp_mkdir:
 
 bkp_perm:
 	- sudo chown $$USER:www-data ${STACK_VOLUME}/
+	- sudo chown $$USER:www-data ${STACK_VOLUME}/backup/
 	- sudo chown $$USER:www-data -R ${STACK_VOLUME}/backup/${CURRENT_BACKUP_DIR}
 
 
@@ -314,8 +315,10 @@ bkp_untar:
 	- tar -xzf ${STACK_VOLUME}/backup/${CURRENT_BACKUP_DIR}.tgz -C ${STACK_VOLUME}/backup/${CURRENT_BACKUP_DIR}
 
 
-## CAREFUL: this will remove all the backup files
+## CAREFUL: this will remove all backup files
 bkp_dump:
+	make --no-print-directory bkp_rmdir
+	make --no-print-directory bkp_rm_tgz
 	make --no-print-directory bkp_mkdir
 	make --no-print-directory bkp_perm
 	- make --no-print-directory bkp_dump_html
@@ -480,12 +483,36 @@ certbot_list:
 certbot_init_dry:
 	- docker exec -it ${STACK_NAME}_certbot certbot certonly --dry-run --webroot --cert-name ${DOMAIN} -w /var/www/certbot  --email ${CERT_EMAIL} -d ${DOMAIN} --rsa-key-size 4096 --agree-tos --force-renewal --debug-challenges -v
 
-certbot_init:
+# certbot_perm:
+# 	- docker exec -u 0 ${STACK_NAME}_web chown -R www-data:www-data /var/www/certbot
+# 	- docker exec -u 0 ${STACK_NAME}_web find /var/www/certbot -type d -exec chmod 0750 {} \;
+# 	- docker exec -u 0 ${STACK_NAME}_web find /var/www/certbot -type f -exec chmod 0640 {} \;
+
+# certbot_init:
+# 	- docker exec -it ${STACK_NAME}_certbot certbot delete --cert-name ${DOMAIN} --non-interactive --quiet
+# 	( sleep 3; make --no-print-directory certbot_perm; echo "\n"; ) & \
+# 	make --no-print-directory certbot_init_dry 
+# 	- make --no-print-directory rm
+# 	- make --no-print-directory up
+
+certbot_delete:
 	- docker exec -it ${STACK_NAME}_certbot certbot delete --cert-name ${DOMAIN} --non-interactive --quiet
+
+certbot_init:
+	- make --no-print-directory certbot_delete
+	- docker exec -u 0 ${STACK_NAME}_certbot rm -rf /etc/letsencrypt/live/${DOMAIN}
+	- docker exec -u 0 ${STACK_NAME}_certbot rm -rf /etc/letsencrypt/archive/${DOMAIN}
+	- docker exec -u 0 ${STACK_NAME}_certbot rm -rf /etc/letsencrypt/renewal/${DOMAIN}.conf
 	docker exec -it ${STACK_NAME}_certbot certbot certonly --webroot --cert-name ${DOMAIN} -w /var/www/certbot  --email ${CERT_EMAIL} -d ${DOMAIN} --rsa-key-size 4096 --agree-tos --force-renewal --debug-challenges -v
-	- make --no-print-directory rm
-	- make --no-print-directory up
-# after test it here: https://www.ssllabs.com/ssltest/index.html
+	
+	- docker cp ${STACK_NAME}_certbot:/etc/letsencrypt/live/${DOMAIN} ./dump
+	- docker cp ${STACK_NAME}_certbot:/etc/letsencrypt/archive/${DOMAIN} ./dump
+	- docker cp ${STACK_NAME}_certbot:/etc/letsencrypt/renewal/${DOMAIN}.conf ./dump
+	
+	# - make --no-print-directory rm
+	# - make --no-print-directory up
+# # after test it here: https://www.ssllabs.com/ssltest/index.html
+
 
 
 maintenance_on:

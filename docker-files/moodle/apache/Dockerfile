@@ -192,6 +192,7 @@ WORKDIR /var/www/html
 # Copy custom Apache configuration file
 COPY moodle.conf /etc/apache2/sites-available/moodle.conf
 RUN a2ensite moodle.conf
+RUN a2dissite 000-default.conf
 
 # Enable Apache modules
 RUN a2enmod rewrite

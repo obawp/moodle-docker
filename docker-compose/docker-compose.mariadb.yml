@@ -116,8 +116,8 @@ services:
       # - PMA_DATABASE=${MARIADB_DATABASE}
       # - MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
     command: >
-      sh -c "sed 's|/etc/ssl/certs/ssl-cert-snakeoil.pem|/etc/letsencrypt/fullchain.pem|g' /etc/apache2/sites-available/default-ssl.conf > /tmp/default-ssl.conf &&
-            sed -i 's|/etc/ssl/private/ssl-cert-snakeoil.key|/etc/letsencrypt/privkey.pem|g' /tmp/default-ssl.conf &&
+      sh -c "sed 's|/etc/ssl/certs/ssl-cert-snakeoil.pem|/etc/letsencrypt/${DOMAIN}/fullchain.pem|g' /etc/apache2/sites-available/default-ssl.conf > /tmp/default-ssl.conf &&
+            sed -i 's|/etc/ssl/private/ssl-cert-snakeoil.key|/etc/letsencrypt/${DOMAIN}/privkey.pem|g' /tmp/default-ssl.conf &&
             mv /tmp/default-ssl.conf /etc/apache2/sites-available/default-ssl.conf &&
             if [ ! -f /etc/phpmyadmin/config.secret.inc.php ]; then
               echo \"<?php\\n\\\$$cfg['blowfish_secret'] = '$(php -r 'echo bin2hex(random_bytes(32));')';\" > /etc/phpmyadmin/config.secret.inc.php;
@@ -133,7 +133,7 @@ services:
     networks:
       - pma_network
     volumes:
-      - ${STACK_VOLUME}/moodle/certbot/conf/live/${DOMAIN}/:/etc/letsencrypt/:ro
+      - ${STACK_VOLUME}/moodle/certbot/conf/live/:/etc/letsencrypt/:ro
     deploy:
       resources:
         limits:
