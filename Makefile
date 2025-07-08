@@ -506,17 +506,18 @@ certbot_init:
 	- docker exec -u 0 ${STACK_NAME}_certbot rm -rf /etc/letsencrypt/archive/${DOMAIN}
 	- docker exec -u 0 ${STACK_NAME}_certbot rm -rf /etc/letsencrypt/renewal/${DOMAIN}.conf
 	docker exec -it ${STACK_NAME}_certbot certbot certonly --webroot --cert-name ${DOMAIN} -w /var/www/certbot  --email ${CERT_EMAIL} -d ${DOMAIN} --rsa-key-size 4096 --agree-tos --force-renewal --debug-challenges -v
+	- make --no-print-directory certbot_bkp
+	- make --no-print-directory rm
+	- make --no-print-directory up
+
+certbot_bkp:
+	- mkdir -p ${STACK_VOLUME}/backup/${CURRENT_BACKUP_DIR}/certbot/live/${DOMAIN}
+	- mkdir -p ${STACK_VOLUME}/backup/${CURRENT_BACKUP_DIR}/certbot/archive/${DOMAIN}
+	- mkdir -p ${STACK_VOLUME}/backup/${CURRENT_BACKUP_DIR}/certbot/renewal/
+	- docker cp ${STACK_NAME}_certbot:/etc/letsencrypt/live/${DOMAIN} ${STACK_VOLUME}/backup/${CURRENT_BACKUP_DIR}/certbot/live/${DOMAIN}
+	- docker cp ${STACK_NAME}_certbot:/etc/letsencrypt/archive/${DOMAIN} ${STACK_VOLUME}/backup/${CURRENT_BACKUP_DIR}/certbot/archive/${DOMAIN}
+	- docker cp ${STACK_NAME}_certbot:/etc/letsencrypt/renewal/${DOMAIN}.conf ${STACK_VOLUME}/backup/${CURRENT_BACKUP_DIR}/certbot/renewal/${DOMAIN}.conf
 	
-	- docker cp ${STACK_NAME}_certbot:/etc/letsencrypt/live/${DOMAIN} ./dump
-	- docker cp ${STACK_NAME}_certbot:/etc/letsencrypt/archive/${DOMAIN} ./dump
-	- docker cp ${STACK_NAME}_certbot:/etc/letsencrypt/renewal/${DOMAIN}.conf ./dump
-	
-	# - make --no-print-directory rm
-	# - make --no-print-directory up
-# # after test it here: https://www.ssllabs.com/ssltest/index.html
-
-
-
 maintenance_on:
 	- docker exec -u www-data -w /var/www/html/ ${STACK_NAME}_web php admin/cli/maintenance.php --enable
 
