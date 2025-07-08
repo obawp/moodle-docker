@@ -96,16 +96,10 @@ cp_aux:
 	fi
 
 cp_certbot:
-	@sudo bash -c '\
-	if [ ! -d "${STACK_VOLUME}/moodle/certbot/conf/live/${DOMAIN}" ]; then \
-		docker cp ${STACK_NAME}_aux:/etc/letsencrypt ${STACK_VOLUME}/moodle/certbot/conf; \
-	else \
-		echo "Certificate exists. Skipping."; \
-	fi'
+	docker cp ${STACK_NAME}_aux:/etc/letsencrypt ${STACK_VOLUME}/moodle/certbot/conf;
 	sudo find ${STACK_VOLUME}/moodle/certbot/conf -type d -exec chmod 0700 {} \;
 	sudo find ${STACK_VOLUME}/moodle/certbot/conf -type f -exec chmod 0600 {} \;
 	sudo chown -R root:root ${STACK_VOLUME}/moodle/certbot/conf
-
 
 rmdir:
 	- make --no-print-directory rmdir_html
@@ -129,20 +123,23 @@ rmdir_db_slave:
 rmdir_certbot:
 	- sudo rm -Rf ${STACK_VOLUME}/moodle/certbot/
 
-up:
+pre_up:
 	make --no-print-directory rm_web
 	make --no-print-directory rm_pma
-	make --no-print-directory run
-	make --no-print-directory cp_certbot
-	make --no-print-directory rm_aux
+	if sudo test ! -d "${STACK_VOLUME}/moodle/certbot/conf/live/${DOMAIN}"; then \
+		make --no-print-directory run; \
+		make --no-print-directory cp_certbot; \
+		make --no-print-directory rm_aux; \
+	else \
+		echo "Certificate exists. Skipping."; \
+	fi
+
+up:
+	make --no-print-directory pre_up
 	- docker compose -p ${STACK} --project-directory ./ -f "./docker-compose/docker-compose.${DBTYPE}.yml" up -d
 
 up_force_recreate:
-	make --no-print-directory rm_web
-	make --no-print-directory rm_pma
-	make --no-print-directory run
-	make --no-print-directory cp_certbot
-	make --no-print-directory rm_aux
+	make --no-print-directory pre_up
 	- docker compose -p ${STACK} --project-directory ./ -f "./docker-compose/docker-compose.${DBTYPE}.yml" up --force-recreate -d
 
 bash:
