@@ -96,11 +96,16 @@ cp_aux:
 	fi
 
 cp_certbot:
-	sudo rm -Rf ${STACK_VOLUME}/moodle/certbot/conf;
-	docker cp ${STACK_NAME}_aux:/etc/letsencrypt ${STACK_VOLUME}/moodle/certbot/conf;
-	find ${STACK_VOLUME}/moodle/certbot/conf -type d -exec chmod 0700 {} \;
-	find ${STACK_VOLUME}/moodle/certbot/conf -type f -exec chmod 0600 {} \;
+	@sudo bash -c '\
+	if [ ! -d "${STACK_VOLUME}/moodle/certbot/conf/live/${DOMAIN}" ]; then \
+		docker cp ${STACK_NAME}_aux:/etc/letsencrypt ${STACK_VOLUME}/moodle/certbot/conf; \
+	else \
+		echo "Certificate exists. Skipping."; \
+	fi'
+	sudo find ${STACK_VOLUME}/moodle/certbot/conf -type d -exec chmod 0700 {} \;
+	sudo find ${STACK_VOLUME}/moodle/certbot/conf -type f -exec chmod 0600 {} \;
 	sudo chown -R root:root ${STACK_VOLUME}/moodle/certbot/conf
+
 
 rmdir:
 	- make --no-print-directory rmdir_html
