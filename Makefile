@@ -127,9 +127,8 @@ pre_up:
 	make --no-print-directory rm_web
 	make --no-print-directory rm_pma
 	if sudo test ! -d "${STACK_VOLUME}/moodle/certbot/conf/live/${DOMAIN}"; then \
-		make --no-print-directory run; \
-		make --no-print-directory cp_certbot; \
-		make --no-print-directory rm_aux; \
+		mkdir -p ${STACK_VOLUME}/moodle/certbot/conf/live/${DOMAIN}; \
+		openssl req -x509 -newkey rsa:4096 -keyout ${STACK_VOLUME}/moodle/certbot/conf/live/${DOMAIN}/privkey.pem -out ${STACK_VOLUME}/moodle/certbot/conf/live/${DOMAIN}/fullchain.pem -sha256 -days 3650 -nodes -subj "/C=${CERT_COUNTRY}/ST=${CERT_STATE}/L=${CERT_CITY}/O=${CERT_ORG}/OU=${CERT_ORG_UNIT}/CN=${DOMAIN}"; \
 	else \
 		echo "Certificate exists. Skipping."; \
 	fi
