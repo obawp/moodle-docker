@@ -106,7 +106,8 @@ rmdir:
 	- make --no-print-directory rmdir_db
 	- make --no-print-directory rmdir_certbot
 	- make --no-print-directory phpu_rmdir
-
+	- make --no-print-directory rmdir_db_slave
+	
 rmdir_html:
 	- sudo rm -Rf ${STACK_SRC}/
 
@@ -540,6 +541,8 @@ update:
 	make --no-print-directory maintenance_off
 	
 mariadb_rebuild_slave:
+	make --no-print-directory bkp_mkdir
+	make --no-print-directory bkp_perm
 	make --no-print-directory maintenance_on
 	docker exec -u 0 ${STACK_NAME}_db mariadb -u root -p${MARIADB_ROOT_PASSWORD} -e "GRANT RELOAD ON *.* TO '${MARIADB_USER}'@'%'; FLUSH PRIVILEGES;"
 	docker exec -u 0 ${STACK_NAME}_db mysqldump --all-databases --single-transaction --master-data=2 --flush-logs --hex-blob --triggers --routines --events -u${MARIADB_USER} -p${MARIADB_PASSWORD} > ${STACK_VOLUME}/backup/${CURRENT_BACKUP_DIR}/dump-rebuild-slave.sql
@@ -563,6 +566,33 @@ mariadb_slave_config:
 	MASTER_LOG_FILE='$(MASTER_LOG_FILE)', MASTER_LOG_POS=$(MASTER_LOG_POS); START SLAVE;"
 	docker exec -u 0 ${STACK_NAME}_db_slave mysql -u root -p${MARIADB_ROOT_PASSWORD} -e "SHOW SLAVE STATUS\G"
 	docker exec -u 0 ${STACK_NAME}_db mariadb -u root -p${MARIADB_ROOT_PASSWORD} -e "REVOKE RELOAD ON *.* FROM '${MARIADB_USER}'@'%'; FLUSH PRIVILEGES;"
+
+mysql_rebuild_slave:
+	make --no-print-directory bkp_mkdir
+	make --no-print-directory bkp_perm
+	make --no-print-directory maintenance_on
+	docker exec -u 0 ${STACK_NAME}_db mysql -u root -p${MYSQL_ROOT_PASSWORD} -e "GRANT RELOAD, REPLICATION CLIENT, REPLICATION SLAVE, PROCESS ON *.* TO '${MYSQL_USER}'@'%'; FLUSH PRIVILEGES;"
+	docker exec -u 0 ${STACK_NAME}_db mysqldump --all-databases --single-transaction --source-data=2 --flush-logs --hex-blob --triggers --routines --events -uroot -p${MYSQL_ROOT_PASSWORD} > ${STACK_VOLUME}/backup/${CURRENT_BACKUP_DIR}/dump-rebuild-slave.sql
+	docker cp ${STACK_VOLUME}/backup/${CURRENT_BACKUP_DIR}/dump-rebuild-slave.sql ${STACK_NAME}_db_slave:/dump-rebuild-slave.sql
+	rm -f ${STACK_VOLUME}/backup/${CURRENT_BACKUP_DIR}/dump-rebuild-slave.sql
+	docker exec -u 0 ${STACK_NAME}_db_slave mysql -u root -p${MYSQL_ROOT_PASSWORD} -e "DROP DATABASE IF EXISTS ${MYSQL_DATABASE};"
+	docker exec -u 0 ${STACK_NAME}_db_slave bash -c "mysql -u root -p${MYSQL_ROOT_PASSWORD} < /dump-rebuild-slave.sql"
+	docker exec -u 0 ${STACK_NAME}_db_slave rm -f /dump-rebuild-slave.sql
+	make  --no-print-directory  mysql_slave_config
+	make --no-print-directory maintenance_off
+
+mysql_slave_config:
+	$(eval MASTER_STATUS := $(shell docker exec -u 0 ${STACK_NAME}_db mysql -u root -p${MYSQL_ROOT_PASSWORD} -e "SHOW MASTER STATUS\G"))
+	echo $$MASTER_STATUS;
+	$(eval MASTER_LOG_FILE := $(shell echo '$(MASTER_STATUS)'   | grep -oP 'File: \K[^ ]+'))
+	echo $$MASTER_LOG_FILE;
+	$(eval MASTER_LOG_POS := $(shell echo '$(MASTER_STATUS)' | grep -oP 'Position: \K[0-9]+'))
+	echo $$MASTER_LOG_POS;
+	docker exec -u 0 ${STACK_NAME}_db_slave mysql -u root -p${MYSQL_ROOT_PASSWORD} -e "STOP SLAVE; RESET SLAVE ALL; \
+	CHANGE MASTER TO MASTER_HOST='db', MASTER_USER='${MYSQL_USER}', MASTER_PASSWORD='${MYSQL_PASSWORD}', \
+	MASTER_LOG_FILE='$(MASTER_LOG_FILE)', MASTER_LOG_POS=$(MASTER_LOG_POS); START SLAVE;"
+	docker exec -u 0 ${STACK_NAME}_db_slave mysql -u root -p${MYSQL_ROOT_PASSWORD} -e "SHOW SLAVE STATUS\G"
+	docker exec -u 0 ${STACK_NAME}_db mysql -u root -p${MYSQL_ROOT_PASSWORD} -e "REVOKE RELOAD ON *.* FROM '${MYSQL_USER}'@'%'; FLUSH PRIVILEGES;"
 
 make_test_course_XS:
 	docker exec -u 0 ${STACK_NAME}_web php admin/tool/generator/cli/maketestcourse.php --shortname=SIZE_XS--size=XS

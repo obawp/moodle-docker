@@ -46,6 +46,10 @@ services:
       - db
     networks:
       - moodle_network
+      - certbot_network
+      - db_network
+      - db_phpu_network
+      - db_slave_network
     deploy:
       resources:
         limits:
@@ -56,7 +60,7 @@ services:
     container_name: ${STACK_NAME}_certbot
     restart: always
     networks:
-      - moodle_network
+      - certbot_network
     depends_on:
       - web
     volumes:
@@ -92,7 +96,7 @@ services:
       - ./config/db/master/mariadb/custom-docker-entrypoint.sh:/custom-docker-entrypoint.sh
     entrypoint: ["/custom-docker-entrypoint.sh"]
     networks:
-      - moodle_network
+      - db_network
       - pma_network
     deploy:
       resources:
@@ -165,7 +169,7 @@ services:
     entrypoint: ["/custom-docker-entrypoint.sh"]
     networks:
       - pma_network
-      - moodle_network
+      - db_slave_network
     depends_on:
       - db
     deploy:
@@ -196,8 +200,8 @@ services:
       - ./config/db/phpunit/mariadb/custom-docker-entrypoint.sh:/custom-docker-entrypoint.sh
     entrypoint: ["/custom-docker-entrypoint.sh"]
     networks:
-      - moodle_network
-      - phpu_pma_network
+      - db_phpu_network
+      - pma_network
     deploy:
       resources:
         limits:
@@ -206,6 +210,8 @@ services:
 
 networks:
   moodle_network:
+  certbot_network:
   pma_network:
-  phpu_pma_network:
-  db_replication_network:
+  db_network:
+  db_phpu_network:
+  db_slave_network:

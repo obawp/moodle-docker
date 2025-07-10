@@ -70,6 +70,8 @@ make perm_dev
 
 ### Install Moodle if not installed
 
+Wait the mysql start if needed
+
 ```bash
 make install
 ```

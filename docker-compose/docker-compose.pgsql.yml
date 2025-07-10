@@ -44,6 +44,9 @@ services:
       - db
     networks:
       - moodle_network
+      - certbot_network
+      - db_network
+      - db_phpu_network
     deploy:
       resources:
         limits:
@@ -54,7 +57,7 @@ services:
     container_name: ${STACK_NAME}_certbot
     restart: always
     networks:
-      - moodle_network
+      - certbot_network
     depends_on:
       - web
     volumes:
@@ -85,7 +88,8 @@ services:
       - ./config/db/master/pgsql/custom-docker-entrypoint.sh:/custom-docker-entrypoint.sh
     entrypoint: ["/custom-docker-entrypoint.sh"]
     networks:
-      - moodle_network
+      - db_network
+      - pgadmin_network
     deploy:
       resources:
         limits:
@@ -111,7 +115,8 @@ services:
       - ./config/db/phpunit/pgsql/custom-docker-entrypoint.sh:/custom-docker-entrypoint.sh
     entrypoint: ["/custom-docker-entrypoint.sh"]
     networks:
-      - moodle_network
+      - db_phpu_network
+      - pgadmin_network
     deploy:
       resources:
         limits:
@@ -143,13 +148,12 @@ services:
       - source: pgpass
         target: /pgpass
     networks:
-      - moodle_network
+      - pgadmin_network
     deploy:
       resources:
         limits:
           cpus: ${CPUS}
           memory: ${MEMORY}
-
 configs:
   pgpass:
     content: |
@@ -179,3 +183,7 @@ configs:
 
 networks:
   moodle_network:
+  certbot_network:
+  db_network:
+  db_phpu_network:
+  pgadmin_network:
