@@ -90,7 +90,6 @@ cp_aux:
 		mkdir ./src; \
 		sudo chown $$USER:$$USER ./src; \
 		docker cp ${STACK_NAME}_aux:/var/www/html ${STACK_SRC}; \
-		make --no-print-directory cp_certbot; \
 	else \
 		echo "Skipping src folder copy of the container ${STACK_NAME}_aux."; \
 	fi
