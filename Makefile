@@ -325,7 +325,7 @@ bkp_dump:
 	- make --no-print-directory bkp_dump_html
 	- make --no-print-directory bkp_dump_moodledata
 	- make --no-print-directory bkp_dump_${DBTYPE}
-	make --no-print-directory bkp_make_plugins_list
+	make --no-print-directory bkp_plugins_list_save
 	make --no-print-directory bkp_tar
 
 bkp_dump_html:
