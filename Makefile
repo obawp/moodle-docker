@@ -454,7 +454,7 @@ bkp_from_remote_moodledata:
 	- sudo scp -r -P ${SSH_PORT} ${SSH_USER}@${SSH_HOST}:${SSH_MOODLEDATA_DIR}/. ${STACK_VOLUME}/backup/${CURRENT_BACKUP_DIR}/moodledata
 
 bkp_from_remote_db:
-	mysqldump --skip-ssl -P ${REMOTE_MYSQL_PORT} -h ${REMOTE_MYSQL_HOST} -u${REMOTE_MYSQL_USER} -p${REMOTE_MYSQL_PASSWORD} \
+	mysqldump -P ${REMOTE_MYSQL_PORT} -h ${REMOTE_MYSQL_HOST} -u${REMOTE_MYSQL_USER} -p${REMOTE_MYSQL_PASSWORD} \
 	${REMOTE_MYSQL_DATABASE} > ${STACK_VOLUME}/backup/${CURRENT_BACKUP_DIR}/data.sql
 	# ssh -p "${REMOTE_MYSQL_SSH_PORT}" "${REMOTE_MYSQL_SSH_USER}@${REMOTE_MYSQL_SSH_HOST}" \
 	# "mysqldump -P '${REMOTE_MYSQL_PORT}' -h 127.0.0.1 -u'${REMOTE_MYSQL_USER}' -p${REMOTE_MYSQL_PASSWORD} '${REMOTE_MYSQL_DATABASE}' > /root/data.sql"
