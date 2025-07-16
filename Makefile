@@ -310,6 +310,7 @@ bkp_plugins_uninstall:
 
 
 bkp_tar:
+	- rm -f ${STACK_VOLUME}/backup/${CURRENT_BACKUP_DIR}.tgz
 	- find ${STACK_VOLUME}/backup/${CURRENT_BACKUP_DIR} -printf "%P\n" | tar -czf ${STACK_VOLUME}/backup/${CURRENT_BACKUP_DIR}.tgz --no-recursion -C ${STACK_VOLUME}/backup/${CURRENT_BACKUP_DIR} -T -
 
 bkp_untar:
