@@ -9,10 +9,10 @@ services:
     volumes:
       - ${STACK_SRC}:/var/www/html
       - ./config/moodle/config.pgsql.php:/var/www/html/config.php
-      - ${STACK_VOLUME}/moodle/data:/var/www/moodledata
-      - ${STACK_VOLUME}/phpunit/moodle/data:/var/www/phpu_moodledata
-      - ${STACK_VOLUME}/moodle/certbot/www/:/var/www/certbot/:rw
-      - ${STACK_VOLUME}/moodle/certbot/conf/:/etc/letsencrypt/:rw
+      - ${STACK_VOLUME_WEB}/moodle/data:/var/www/moodledata
+      - ${STACK_VOLUME_WEB}/phpunit/moodle/data:/var/www/phpu_moodledata
+      - ${STACK_VOLUME_WEB}/moodle/certbot/www/:/var/www/certbot/:rw
+      - ${STACK_VOLUME_WEB}/moodle/certbot/conf/:/etc/letsencrypt/:rw
     environment:
       - PGSQL_DB=${PGSQL_DB}
       - PGSQL_USER=${PGSQL_USER}
@@ -61,8 +61,8 @@ services:
     depends_on:
       - web
     volumes:
-      - ${STACK_VOLUME}/moodle/certbot/www/:/var/www/certbot/:rw
-      - ${STACK_VOLUME}/moodle/certbot/conf/:/etc/letsencrypt/:rw
+      - ${STACK_VOLUME_WEB}/moodle/certbot/www/:/var/www/certbot/:rw
+      - ${STACK_VOLUME_WEB}/moodle/certbot/conf/:/etc/letsencrypt/:rw
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
     deploy:
       resources:
