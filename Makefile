@@ -448,7 +448,13 @@ bkp_restore_pgsql:
 bkp_rmdir:
 	- sudo rm -Rf ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}
 
-bkp_rm_tgz:
+bkp_tgz_mkdir:
+	- sudo mkdir -p ${STACK_VOLUME_BKP}/compressed
+	- sudo chown $$USER:www-data -R ${STACK_VOLUME_BKP}/compressed
+	- sudo chmod 0750 ${STACK_VOLUME_BKP}/compressed
+	- sudo chmod 0640 ${STACK_VOLUME_BKP}/compressed/*.tgz
+
+bkp_tgz_rm:
 	- sudo rm -Rf ${STACK_VOLUME_BKP}/compressed/${CURRENT_BACKUP_DIR}.tgz
 
 
