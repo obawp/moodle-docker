@@ -337,12 +337,11 @@ bkp_untar:
 ## CAREFUL: this will remove all backup files
 bkp_dump:
 	make --no-print-directory bkp_rmdir
-	make --no-print-directory bkp_rm_tgz
 	make --no-print-directory bkp_mkdir
 	make --no-print-directory bkp_perm
-	- make --no-print-directory bkp_dump_html
-	- make --no-print-directory bkp_dump_moodledata
-	- make --no-print-directory bkp_dump_${DBTYPE}
+	make --no-print-directory bkp_dump_html
+	make --no-print-directory bkp_dump_moodledata
+	make --no-print-directory bkp_dump_${DBTYPE}
 	make --no-print-directory bkp_plugins_list_save
 	make --no-print-directory bkp_tar
 
