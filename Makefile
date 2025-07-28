@@ -240,13 +240,13 @@ clear_restores_in_progress_list:
 	- docker exec -u 0 ${STACK_NAME}_db mariadb -u ${MARIADB_USER} -p${MARIADB_PASSWORD} ${MARIADB_DATABASE} -e "DELETE FROM mdl_backup_controllers WHERE interactive = 1;"
 
 bkp_ls_courses_restore:
-	- ls ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/courses
+	- ls ${STACK_VOLUME_BKP}/courses
 	
 bkp_courses_restore:
 	docker exec -it -u 0 -w / ${STACK_NAME}_web mkdir -p /var/www/backup/courses
 	docker exec -it -u 0 -w / ${STACK_NAME}_web chown root:www-data /var/www/backup
-	docker  cp ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/courses ${STACK_NAME}_web:/var/www/backup
-	ls ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/courses | while IFS= read -r course; do docker exec -u www-data -w /var/www/html/ ${STACK_NAME}_web bash -c "echo "$$course"; /usr/bin/php admin/cli/restore_backup.php --file=/var/www/backup/courses/$$course --categoryid=1 & wait;"; done
+	docker  cp ${STACK_VOLUME_BKP}/courses ${STACK_NAME}_web:/var/www/backup
+	ls ${STACK_VOLUME_BKP}/courses | while IFS= read -r course; do docker exec -u www-data -w /var/www/html/ ${STACK_NAME}_web bash -c "echo "$$course"; /usr/bin/php admin/cli/restore_backup.php --file=/var/www/backup/courses/$$course --categoryid=1 & wait;"; done
 
 plugins_purge_missing_dry:
 	-  docker exec -it -u www-data -w /var/www/html/ ${STACK_NAME}_web /usr/bin/php admin/cli/uninstall_plugins.php --purge-missing
@@ -279,7 +279,7 @@ courses_install:
 	@echo "$(courses)" | tr ',' '\n' | while read -r course; do \
 		docker exec -u 0 -w /var/www/html/ $${STACK_NAME}_web bash -c "sudo -u www-data moosh course-backup --template -f /var/www/courses_backup/demo_data/backup_$$course.mbz $$course"; \
 	done
-	docker cp "${STACK_NAME}_web:/var/www/courses_backup/." ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/courses
+	docker cp "${STACK_NAME}_web:/var/www/courses_backup/." ${STACK_VOLUME_BKP}/courses
 	docker exec -u 0 -w /var/www/html/ ${STACK_NAME}_web rm -rf /var/www/courses_backup
 
 checks:
@@ -299,7 +299,7 @@ cron_run:
 bkp_mkdir:
 	- sudo mkdir -p ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/html
 	- sudo mkdir -p ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/moodledata
-	- sudo mkdir -p ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/courses
+	- sudo mkdir -p ${STACK_VOLUME_BKP}/courses
 
 bkp_perm:
 	- sudo chown $$USER:www-data ${STACK_VOLUME_WEB}/
