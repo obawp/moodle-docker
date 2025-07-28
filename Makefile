@@ -248,15 +248,6 @@ plugins_list:
 clear_restores_in_progress_list:
 	- docker exec -u 0 ${STACK_NAME}_db mariadb -u ${MARIADB_USER} -p${MARIADB_PASSWORD} ${MARIADB_DATABASE} -e "DELETE FROM mdl_backup_controllers WHERE interactive = 1;"
 
-bkp_ls_courses_restore:
-	- ls ${STACK_VOLUME_COURSES}
-	
-bkp_courses_restore:
-	docker exec -it -u 0 -w / ${STACK_NAME}_web mkdir -p /var/www/backup/courses
-	docker exec -it -u 0 -w / ${STACK_NAME}_web chown root:www-data /var/www/backup
-	docker  cp ${STACK_VOLUME_COURSES} ${STACK_NAME}_web:/var/www/backup
-	ls ${STACK_VOLUME_COURSES} | while IFS= read -r course; do docker exec -u www-data -w /var/www/html/ ${STACK_NAME}_web bash -c "echo "$$course"; /usr/bin/php admin/cli/restore_backup.php --file=/var/www/backup/courses/$$course --categoryid=1 & wait;"; done
-
 plugins_purge_missing_dry:
 	-  docker exec -it -u www-data -w /var/www/html/ ${STACK_NAME}_web /usr/bin/php admin/cli/uninstall_plugins.php --purge-missing
 
@@ -280,8 +271,23 @@ plugins_uninstall:
 	done
 	@docker exec -u www-data -w /var/www/html/ $${STACK_NAME}_web /usr/bin/php admin/cli/uninstall_plugins.php --plugins="$(plugins)" --run
 
-# Usage: make courses=123,234,456 courses_install
-courses_install:
+courses_mkdir:
+	- sudo mkdir -p ${STACK_VOLUME_COURSES}
+	- sudo chown $$USER:www-data -R ${STACK_VOLUME_COURSES}
+	- sudo chmod 0750 ${STACK_VOLUME_COURSES}
+	- sudo chmod 0640 ${STACK_VOLUME_COURSES}/*.mbz
+
+courses_ls:
+	- ls ${STACK_VOLUME_COURSES}
+	
+courses_restore_all:
+	docker exec -it -u 0 -w / ${STACK_NAME}_web mkdir -p /var/www/backup/courses
+	docker exec -it -u 0 -w / ${STACK_NAME}_web chown root:www-data /var/www/backup
+	docker cp ${STACK_VOLUME_COURSES} ${STACK_NAME}_web:/var/www/backup
+	ls ${STACK_VOLUME_COURSES} | while IFS= read -r course; do docker exec -u www-data -w /var/www/html/ ${STACK_NAME}_web bash -c "echo "$$course"; /usr/bin/php admin/cli/restore_backup.php --file=/var/www/backup/courses/$$course --categoryid=1 & wait;"; done
+
+# Usage: make courses=123,234,456 courses_dump
+courses_dump:
 	- docker exec -u 0 -w /var/www/html/ ${STACK_NAME}_web mkdir /var/www/courses_backup
 	- docker exec -u 0 -w /var/www/html/ ${STACK_NAME}_web chown www-data:www-data /var/www/courses_backup
 	- docker exec -u 0 -w /var/www/html/ ${STACK_NAME}_web chmod 750 /var/www/courses_backup
@@ -290,12 +296,6 @@ courses_install:
 	done
 	docker cp "${STACK_NAME}_web:/var/www/courses_backup/." ${STACK_VOLUME_COURSES}
 	docker exec -u 0 -w /var/www/html/ ${STACK_NAME}_web rm -rf /var/www/courses_backup
-
-courses_mkdir:
-	- sudo mkdir -p ${STACK_VOLUME_COURSES}
-	- sudo chown $$USER:www-data -R ${STACK_VOLUME_COURSES}
-	- sudo chmod 0750 ${STACK_VOLUME_COURSES}
-	- sudo chmod 0640 ${STACK_VOLUME_COURSES}/*.mbz
 
 checks:
 	- docker exec -u www-data -w /var/www/html/ ${STACK_NAME}_web php admin/cli/checks.php
