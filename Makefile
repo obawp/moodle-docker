@@ -16,6 +16,15 @@ STACK_VOLUME_DB := ${VOLUME_DIR_DB}/${STACK_NAME}
 STACK_VOLUME_BKP := ${VOLUME_DIR_BKP}/${STACK_NAME}
 STACK_VOLUME_COURSES := ${VOLUME_DIR_COURSES}/${STACK_NAME}
 
+
+install:
+	make --no-print-directory run
+	make --no-print-directory mkdir
+	make --no-print-directory rm
+	make --no-print-directory up
+	make --no-print-directory perm
+	make --no-print-directory install
+
 build:
 	- docker build --build-arg IOMAD=${IOMAD} -t ${REPO}-${WEBSERVER} ./docker-files/moodle/${WEBSERVER}/
 
