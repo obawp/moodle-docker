@@ -17,7 +17,7 @@ STACK_VOLUME_BKP := ${VOLUME_DIR_BKP}/${STACK_NAME}
 STACK_VOLUME_COURSES := ${VOLUME_DIR_COURSES}/${STACK_NAME}
 
 
-install:
+full_install:
 	make --no-print-directory run
 	make --no-print-directory mkdir
 	make --no-print-directory rm
