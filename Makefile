@@ -281,10 +281,10 @@ courses_ls:
 	- ls ${STACK_VOLUME_COURSES}
 	
 courses_restore_all:
-	docker exec -it -u 0 -w / ${STACK_NAME}_web mkdir -p /var/www/backup/courses
-	docker exec -it -u 0 -w / ${STACK_NAME}_web chown root:www-data /var/www/backup
-	docker cp ${STACK_VOLUME_COURSES} ${STACK_NAME}_web:/var/www/backup
-	ls ${STACK_VOLUME_COURSES} | while IFS= read -r course; do docker exec -u www-data -w /var/www/html/ ${STACK_NAME}_web bash -c "echo "$$course"; /usr/bin/php admin/cli/restore_backup.php --file=/var/www/backup/courses/$$course --categoryid=1 & wait;"; done
+	docker exec -it -u 0 -w / ${STACK_NAME}_web mkdir -p /var/www/courses
+	docker exec -it -u 0 -w / ${STACK_NAME}_web chown root:www-data /var/www/courses
+	docker cp ${STACK_VOLUME_COURSES}/. ${STACK_NAME}_web:/var/www/courses
+	ls ${STACK_VOLUME_COURSES} | while IFS= read -r course; do docker exec -u www-data -w /var/www/html/ ${STACK_NAME}_web bash -c "echo "$$course"; /usr/bin/php admin/cli/restore_backup.php --file=/var/www/courses/$$course --categoryid=1 & wait;"; done
 
 # Usage: make courses=123,234,456 courses_dump
 courses_dump:
