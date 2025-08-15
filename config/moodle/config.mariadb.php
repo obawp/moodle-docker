@@ -117,13 +117,13 @@ if($debug == 'true'){
 	$CFG->debugdisplay = 1;
 }
 
-$phpu_enabled = getenv_docker('PHPU_ENABLED', false);
+$phpu_enabled = getenv_docker('PHPUNIT_ENABLED', false);
 if($phpu_enabled == 'true'){	
 	$CFG->phpunit_prefix =    getenv_docker('PHPU_MARIADB_PREFIX','phpu_');
 	$CFG->phpunit_dataroot =  '/var/www/phpu_moodledata';
 	$CFG->phpunit_dbtype    = 'mariadb';
 	$CFG->phpunit_dblibrary = 'native';
-	$CFG->phpunit_dbhost    = 'db_phpu';
+	$CFG->phpunit_dbhost    = 'db_phpunit';
 	$CFG->phpunit_dbname    = getenv_docker('PHPU_MARIADB_DATABASE','phpu');
 	$CFG->phpunit_dbuser    = getenv_docker('PHPU_MARIADB_USER','phpu');
 	$CFG->phpunit_dbpass    = getenv_docker('PHPU_MARIADB_PASSWORD','aecaathah9heiP');

@@ -145,11 +145,51 @@ pre_up:
 
 up:
 	make --no-print-directory pre_up
-	- docker compose -p ${STACK} --project-directory ./ -f "./docker-compose/docker-compose.${DBTYPE}.yml" up -d
+
+	- docker network create ${STACK_NAME}_pma_network || true
+	- docker network create ${STACK_NAME}_pgadmin_network || true
+	- docker network create ${STACK_NAME}_db_phpunit_network || true
+	- docker network create ${STACK_NAME}_db_slave_network || true
+
+	- docker compose -p ${STACK} --project-directory ./ \
+	  -f "./docker-compose/${DBTYPE}/docker-compose.yml" \
+	  up -d
+
+	@if [ "$(DB_PHPUNIT_ENABLED)" = "true" ]; then \
+		docker compose -p ${STACK}_db_phpunit --project-directory ./ \
+		  -f "./docker-compose/${DBTYPE}/docker-compose.db_phpunit.yml" \
+		  up -d; \
+	fi
+	@if [ "$(DB_SLAVE_ENABLED)" = "true" ]; then \
+		docker compose -p ${STACK}_db_slave --project-directory ./ \
+		  -f "./docker-compose/${DBTYPE}/docker-compose.db_slave.yml" \
+		  up -d; \
+	fi
+
 
 up_force_recreate:
 	make --no-print-directory pre_up
-	- docker compose -p ${STACK} --project-directory ./ -f "./docker-compose/docker-compose.${DBTYPE}.yml" up --force-recreate -d
+
+	- docker network create ${STACK_NAME}_pma_network || true
+	- docker network create ${STACK_NAME}_pgadmin_network || true
+	- docker network create ${STACK_NAME}_db_phpunit_network || true
+	- docker network create ${STACK_NAME}_db_slave_network || true
+
+	- docker compose -p ${STACK} --project-directory ./ \
+	  -f "./docker-compose/${DBTYPE}/docker-compose.yml" \
+	  up --force-recreate -d
+
+	@if [ "$(DB_PHPUNIT_ENABLED)" = "true" ]; then \
+		docker compose -p ${STACK}_db_phpunit --project-directory ./ \
+		  -f "./docker-compose/${DBTYPE}/docker-compose.db_phpunit.yml" \
+		  up --force-recreate -d; \
+	fi
+	@if [ "$(DB_SLAVE_ENABLED)" = "true" ]; then \
+		docker compose -p ${STACK}_db_slave --project-directory ./ \
+		  -f "./docker-compose/${DBTYPE}/docker-compose.db_slave.yml" \
+		  up --force-recreate -d; \
+	fi
+
 
 bash:
 	- docker exec -it -u 0 -w /var/www/html ${STACK_NAME}_web bash
@@ -229,7 +269,15 @@ rm_aux:
 
 rm:
 	- make --no-print-directory rm_aux
-	- docker compose -p ${STACK} -f "./docker-compose/docker-compose.${DBTYPE}.yml" down
+
+	- docker compose -p ${STACK} -f "./docker-compose/${DBTYPE}/docker-compose.yml" down
+	- docker compose -p ${STACK}_db_phpunit -f "./docker-compose/${DBTYPE}/docker-compose.db_phpunit.yml" down
+	- docker compose -p ${STACK}_db_slave -f "./docker-compose/${DBTYPE}/docker-compose.db_slave.yml" down
+	
+	- docker network rm ${STACK_NAME}_pma_network || true
+	- docker network rm ${STACK_NAME}_pgadmin_network || true
+	- docker network rm ${STACK_NAME}_db_phpunit_network || true
+	- docker network rm ${STACK_NAME}_db_slave_network || true
 
 purge_caches:
 	-  docker exec -u www-data -w /var/www/html/ ${STACK_NAME}_web /usr/bin/php admin/cli/purge_caches.php
@@ -655,6 +703,34 @@ mysql_slave_config:
 	MASTER_LOG_FILE='$(MASTER_LOG_FILE)', MASTER_LOG_POS=$(MASTER_LOG_POS); START SLAVE;"
 	docker exec -u 0 ${STACK_NAME}_db_slave mysql -u root -p${MYSQL_ROOT_PASSWORD} -e "SHOW SLAVE STATUS\G"
 	docker exec -u 0 ${STACK_NAME}_db mysql -u root -p${MYSQL_ROOT_PASSWORD} -e "REVOKE RELOAD ON *.* FROM '${MYSQL_USER}'@'%'; FLUSH PRIVILEGES;"
+
+# not implemented yet
+# postgres_rebuild_slave:
+# 	make --no-print-directory bkp_mkdir
+# 	make --no-print-directory bkp_perm
+# 	make --no-print-directory maintenance_on
+# 	# Dump de todos os bancos do master
+# 	docker exec -u 0 ${STACK_NAME}_db pg_dumpall -U ${POSTGRES_USER} > ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/dump-rebuild-slave.sql
+# 	# Copia dump para o slave
+# 	docker cp ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/dump-rebuild-slave.sql ${STACK_NAME}_db_slave:/dump-rebuild-slave.sql
+# 	# Remove dump local
+# 	rm -f ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/dump-rebuild-slave.sql
+# 	# Restaura no slave (dropando db existente)
+# 	docker exec -u 0 ${STACK_NAME}_db_slave bash -c "psql -U ${POSTGRES_USER} -c \"DROP DATABASE IF EXISTS ${POSTGRES_DB};\""
+# 	docker exec -u 0 ${STACK_NAME}_db_slave bash -c "psql -U ${POSTGRES_USER} -f /dump-rebuild-slave.sql"
+# 	# Remove dump no slave
+# 	docker exec -u 0 ${STACK_NAME}_db_slave rm -f /dump-rebuild-slave.sql
+# 	make --no-print-directory postgres_slave_config
+# 	make --no-print-directory maintenance_off
+
+# postgres_slave_config:
+# 	# Configuração do slave para replicação lógica/streaming
+# 	docker exec -u 0 ${STACK_NAME}_db_slave bash -c "\
+# 		echo \"standby_mode = 'on'\" > /var/lib/postgresql/data/recovery.conf && \
+# 		echo \"primary_conninfo = 'host=db port=5432 user=${POSTGRES_REPL_USER} password=${POSTGRES_REPL_PASSWORD}'\" >> /var/lib/postgresql/data/recovery.conf && \
+# 		echo \"trigger_file = '/tmp/postgresql.trigger'\" >> /var/lib/postgresql/data/recovery.conf \
+# 	"
+# 	docker restart ${STACK_NAME}_db_slave
 
 make_test_course_XS:
 	docker exec -u 0 ${STACK_NAME}_web php admin/tool/generator/cli/maketestcourse.php --shortname=SIZE_XS--size=XS

@@ -52,8 +52,10 @@ a2ensite moodle.conf
 # Start PHP-FPM service
 /etc/init.d/php8.3-fpm start & # do not remove the &
 
-# Start Cron service
-/etc/init.d/cron start & # do not remove the &
+# Start Cron service if ENABLE_CRON is set to true
+if [ "${ENABLE_CRON}" = "true" ]; then
+    /etc/init.d/cron start & # do not remove the &
+fi
 
 # Start Redis server
 redis-server & # do not remove the &
