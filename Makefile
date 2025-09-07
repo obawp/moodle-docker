@@ -16,6 +16,22 @@ STACK_VOLUME_DB := ${VOLUME_DIR_DB}/${STACK_NAME}
 STACK_VOLUME_BKP := ${VOLUME_DIR_BKP}/${STACK_NAME}
 STACK_VOLUME_COURSES := ${VOLUME_DIR_COURSES}/${STACK_NAME}
 
+# with the domain and subdomain defined, get the second and top level domain
+# e.g. if DOMAIN=moodle.obawp.com and SUBDOMAIN=moodle. then
+ifneq ($(DOMAIN),$(SUBDOMAIN))
+SECOND_AND_TOP_LEVEL_DOMAIN=$(shell echo ${DOMAIN} | sed "s/^${SUBDOMAIN}//")
+endif
+
+print_vars:
+	@echo "REPO: ${REPO}"
+	@echo "STACK_NAME: ${STACK_NAME}"
+	@echo "STACK_SRC: ${STACK_SRC}"
+	@echo "STACK_VOLUME_WEB: ${STACK_VOLUME_WEB}"
+	@echo "STACK_VOLUME_DB: ${STACK_VOLUME_DB}"
+	@echo "STACK_VOLUME_BKP: ${STACK_VOLUME_BKP}"
+	@echo "DOMAIN: ${DOMAIN}"
+	@echo "SUBDOMAIN: ${SUBDOMAIN}"
+	@echo "SECOND_AND_TOP_LEVEL_DOMAIN: ${SECOND_AND_TOP_LEVEL_DOMAIN}"
 
 full_install:
 	make --no-print-directory run
@@ -47,9 +63,10 @@ run:
 	- docker run -d --name ${STACK_NAME}_aux -e DOMAIN=${DOMAIN} ${REPO}-${WEBSERVER}
 
 mkdir:
-	- sudo mkdir -p ${STACK_VOLUME_WEB}/moodle/data
-	- sudo mkdir -p ${STACK_VOLUME_WEB}/moodle/certbot/www
-	- sudo mkdir -p ${STACK_VOLUME_WEB}/moodle/certbot/conf
+# don't put sudo in mkdir because the sub-folders owner will be root
+	mkdir -p ${STACK_VOLUME_WEB}/moodle/data
+	mkdir -p ${STACK_VOLUME_WEB}/moodle/certbot/www
+	mkdir -p ${STACK_VOLUME_WEB}/moodle/certbot/conf
 	- make --no-print-directory mkdir_db
 
 	- sudo chown $$USER:www-data ${STACK_VOLUME_WEB}/
@@ -73,20 +90,37 @@ mkdir:
 
 	- make --no-print-directory mkdir_certbot
 	- make --no-print-directory cp_aux
-	- make --no-print-directory phpu_mkdir
 
 mkdir_db:
-	- sudo mkdir -p ${STACK_VOLUME_DB}/master/${DBTYPE}/data
-	- sudo mkdir -p ${STACK_VOLUME_DB}/slave/${DBTYPE}/data
-	- sudo mkdir -p ${STACK_VOLUME_DB}/phpunit/${DBTYPE}/data
+# don't put sudo in mkdir because the sub-folders owner will be root
+	mkdir -p ${STACK_VOLUME_DB}/master/${DBTYPE}/data
+	mkdir -p ${STACK_VOLUME_DB}/slave/${DBTYPE}/data
+	mkdir -p ${STACK_VOLUME_DB}/phpunit/${DBTYPE}/data
+	- sudo chown $$USER:www-data ${STACK_VOLUME_DB}
+	make --no-print-directory mkdir_db_master
+
+mkdir_db_master:
+	mkdir -p ${STACK_VOLUME_DB}/master/${DBTYPE}/data
+	- sudo chown $$USER:www-data ${STACK_VOLUME_DB}/master
+	- sudo chown $$USER:www-data ${STACK_VOLUME_DB}/master/${DBTYPE}/
+	- sudo chown $$USER:www-data ${STACK_VOLUME_DB}/master/${DBTYPE}/data
+
+mkdir_db_phpunit:
+	mkdir -p ${STACK_VOLUME_DB}/phpunit/${DBTYPE}/data
+	- sudo chown $$USER:www-data ${STACK_VOLUME_DB}/phpunit
+	- sudo chown $$USER:www-data ${STACK_VOLUME_DB}/phpunit/${DBTYPE}/
+	- sudo chown $$USER:www-data ${STACK_VOLUME_DB}/phpunit/${DBTYPE}/data
 
 mkdir_db_slave:
-	- sudo mkdir -p ${STACK_VOLUME_DB}/slave/${DBTYPE}/data
-
+	mkdir -p ${STACK_VOLUME_DB}/slave/${DBTYPE}/data
+	- sudo chown $$USER:www-data ${STACK_VOLUME_DB}/slave
+	- sudo chown $$USER:www-data ${STACK_VOLUME_DB}/slave/${DBTYPE}/
+	- sudo chown $$USER:www-data ${STACK_VOLUME_DB}/slave/${DBTYPE}/data
 
 mkdir_certbot:
-	- sudo mkdir -p ${STACK_VOLUME_WEB}/moodle/certbot/www/.well-known/acme-challenge/
-	- sudo mkdir -p ${STACK_VOLUME_WEB}/moodle/certbot/conf
+# don't put sudo in mkdir because the sub-folders owner will be root
+	mkdir -p ${STACK_VOLUME_WEB}/moodle/certbot/www/.well-known/acme-challenge/
+	mkdir -p ${STACK_VOLUME_WEB}/moodle/certbot/conf
 	- sudo chown $$USER:$$USER ${STACK_VOLUME_WEB}/moodle/certbot
 	- sudo chmod 755 ${STACK_VOLUME_WEB}/moodle/certbot
 	- sudo chown $$USER:$$USER ${STACK_VOLUME_WEB}/moodle/certbot/www
@@ -141,6 +175,15 @@ pre_up:
 		openssl req -x509 -newkey rsa:4096 -keyout ${STACK_VOLUME_WEB}/moodle/certbot/conf/live/${DOMAIN}/privkey.pem -out ${STACK_VOLUME_WEB}/moodle/certbot/conf/live/${DOMAIN}/fullchain.pem -sha256 -days 3650 -nodes -subj "/C=${CERT_COUNTRY}/ST=${CERT_STATE}/L=${CERT_CITY}/O=${CERT_ORG}/OU=${CERT_ORG_UNIT}/CN=${DOMAIN}"; \
 	else \
 		echo "Certificate exists. Skipping."; \
+	fi
+# if phpunit enabled make folders
+	if [ "$(DB_PHPUNIT_ENABLED)" = "true" ]; then \
+		make --no-print-directory mkdir_db_phpunit; \
+		make --no-print-directory phpu_mkdir; \
+		make --no-print-directory phpu_perm; \
+	fi
+	if [ "$(DB_SLAVE_ENABLED)" = "true" ]; then \
+		make --no-print-directory mkdir_db_slave; \
 	fi
 
 up:
@@ -240,7 +283,6 @@ perm_db:
 
 phpu_mkdir:
 	- sudo mkdir -p ${STACK_VOLUME_WEB}/phpunit/moodle/data
-	- sudo mkdir -p ${STACK_VOLUME_DB}/phpunit/${DBTYPE}/data
 	- sudo chown $$USER:www-data ${STACK_VOLUME_WEB}/phpunit/
 
 phpu_perm:
@@ -364,8 +406,9 @@ cron_run:
 
 
 bkp_mkdir:
-	- sudo mkdir -p ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/html
-	- sudo mkdir -p ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/moodledata
+# don't put sudo in mkdir because the sub-folders owner will be root
+	mkdir -p ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/html
+	mkdir -p ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/moodledata
 
 bkp_perm:
 	- sudo chown $$USER:www-data ${STACK_VOLUME_WEB}/
@@ -601,17 +644,20 @@ certbot_init:
 	- docker exec -u 0 ${STACK_NAME}_certbot rm -rf /etc/letsencrypt/archive/${DOMAIN}
 	- docker exec -u 0 ${STACK_NAME}_certbot rm -rf /etc/letsencrypt/renewal/${DOMAIN}.conf
 	docker exec -it ${STACK_NAME}_certbot certbot certonly --webroot --cert-name ${DOMAIN} -w /var/www/certbot  --email ${CERT_EMAIL} -d ${DOMAIN} --rsa-key-size 4096 --agree-tos --force-renewal --debug-challenges -v
-	- make --no-print-directory certbot_bkp
+	
+# certbot_bkp must be without the - to avoid remove the certificate if restart the container
+	make --no-print-directory certbot_bkp
 	- make --no-print-directory rm
 	- make --no-print-directory up
 
 certbot_bkp:
-	- mkdir -p ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/certbot/live/${DOMAIN}
-	- mkdir -p ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/certbot/archive/${DOMAIN}
-	- mkdir -p ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/certbot/renewal/
-	- docker cp ${STACK_NAME}_certbot:/etc/letsencrypt/live/${DOMAIN} ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/certbot/live/${DOMAIN}
-	- docker cp ${STACK_NAME}_certbot:/etc/letsencrypt/archive/${DOMAIN} ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/certbot/archive/${DOMAIN}
-	- docker cp ${STACK_NAME}_certbot:/etc/letsencrypt/renewal/${DOMAIN}.conf ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/certbot/renewal/${DOMAIN}.conf
+# certbot_bkp must be without the - to avoid remove the certificate if restart the container
+	mkdir -p ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/certbot/live/${DOMAIN}
+	mkdir -p ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/certbot/archive/${DOMAIN}
+	mkdir -p ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/certbot/renewal/
+	docker cp ${STACK_NAME}_certbot:/etc/letsencrypt/live/${DOMAIN} ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/certbot/live/${DOMAIN}
+	docker cp ${STACK_NAME}_certbot:/etc/letsencrypt/archive/${DOMAIN} ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/certbot/archive/${DOMAIN}
+	docker cp ${STACK_NAME}_certbot:/etc/letsencrypt/renewal/${DOMAIN}.conf ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/certbot/renewal/${DOMAIN}.conf
 	
 maintenance_on:
 	- docker exec -u www-data -w /var/www/html/ ${STACK_NAME}_web php admin/cli/maintenance.php --enable
