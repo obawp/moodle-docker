@@ -67,8 +67,8 @@ services:
       - "traefik.http.routers.${STACK_NAME}_webs.entrypoints=webs"
       - "traefik.http.routers.${STACK_NAME}_webs.tls=true"
       # - "traefik.http.routers.${STACK_NAME}_webs.tls.certresolver=cloudflare"
-      - "traefik.http.routers.${STACK_NAME}_webs.tls.domains[0].main=${HOSTNAME}"
-      - "traefik.http.routers.${STACK_NAME}_webs.tls.domains[0].sans=*.${HOSTNAME}"
+      - "traefik.http.routers.${STACK_NAME}_webs.tls.domains[0].main=${SECOND_AND_TOP_LEVEL_DOMAIN}"
+      - "traefik.http.routers.${STACK_NAME}_webs.tls.domains[0].sans=*.${SECOND_AND_TOP_LEVEL_DOMAIN}"
     deploy:
       resources:
         limits:
@@ -92,7 +92,7 @@ services:
         limits:
           cpus: ${CPUS}
           memory: ${MEMORY}
-          
+
   db:
     runtime: runc
     # image: mariadb:10.6
@@ -142,9 +142,11 @@ services:
       # - PMA_DATABASE=${MARIADB_DATABASE}
       # - MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
     command: >
-      sh -c "sed 's|/etc/ssl/certs/ssl-cert-snakeoil.pem|/etc/letsencrypt/${DOMAIN}/fullchain.pem|g' /etc/apache2/sites-available/default-ssl.conf > /tmp/default-ssl.conf &&
-            sed -i 's|/etc/ssl/private/ssl-cert-snakeoil.key|/etc/letsencrypt/${DOMAIN}/privkey.pem|g' /tmp/default-ssl.conf &&
+      sh -c "sed 's|/etc/ssl/certs/ssl-cert-snakeoil.pem|/etc/letsencrypt/live/${DOMAIN}/fullchain.pem|g' /etc/apache2/sites-available/default-ssl.conf > /tmp/default-ssl.conf &&
+            sed -i 's|/etc/ssl/private/ssl-cert-snakeoil.key|/etc/letsencrypt/live/${DOMAIN}/privkey.pem|g' /tmp/default-ssl.conf &&
             mv /tmp/default-ssl.conf /etc/apache2/sites-available/default-ssl.conf &&
+            a2enmod ssl &&
+            a2ensite default-ssl &&
             if [ ! -f /etc/phpmyadmin/config.secret.inc.php ]; then
               echo \"<?php\\n\\\$$cfg['blowfish_secret'] = '$(php -r 'echo bin2hex(random_bytes(32));')';\" > /etc/phpmyadmin/config.secret.inc.php;
             fi && 
@@ -160,7 +162,7 @@ services:
       - pma_network
       - traefik_overlay
     volumes:
-      - ${STACK_VOLUME_WEB}/moodle/certbot/conf/live/:/etc/letsencrypt/:ro
+      - ${STACK_VOLUME_WEB}/moodle/certbot/conf/:/etc/letsencrypt/:ro
     labels:
       - "traefik.enable=true"
 
@@ -176,8 +178,8 @@ services:
       - "traefik.http.routers.${STACK_NAME}_pmas.entrypoints=pmas"
       - "traefik.http.routers.${STACK_NAME}_pmas.tls=true"
       # - "traefik.http.routers.${STACK_NAME}_aaps.tls.certresolver=cloudflare"
-      - "traefik.http.routers.${STACK_NAME}_pmas.tls.domains[0].main=${HOSTNAME}"
-      - "traefik.http.routers.${STACK_NAME}_pmas.tls.domains[0].sans=*.${HOSTNAME}"
+      - "traefik.http.routers.${STACK_NAME}_pmas.tls.domains[0].main=${SECOND_AND_TOP_LEVEL_DOMAIN}"
+      - "traefik.http.routers.${STACK_NAME}_pmas.tls.domains[0].sans=*.${SECOND_AND_TOP_LEVEL_DOMAIN}"
     deploy:
       resources:
         limits:
