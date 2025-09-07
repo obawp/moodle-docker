@@ -1,5 +1,6 @@
 services:
   db_phpunit:
+    runtime: runc
     # image: mariadb:10.6
     build:
       context: ./docker-files/db/mariadb

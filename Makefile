@@ -44,7 +44,7 @@ pull:
 	- docker pull ${REPO}-${WEBSERVER}
 
 run:
-	- docker run -d --name ${STACK_NAME}_aux -e DOMAIN=${DOMAIN} ${REPO}-${WEBSERVER}
+	- docker run -d --name ${STACK_NAME}_aux --runtime=runc -e DOMAIN=${DOMAIN} ${REPO}-${WEBSERVER}
 
 mkdir:
 	- sudo mkdir -p ${STACK_VOLUME_WEB}/moodle/data
@@ -55,17 +55,6 @@ mkdir:
 	- sudo chown $$USER:www-data ${STACK_VOLUME_WEB}/
 	- sudo chown $$USER:www-data ${STACK_VOLUME_WEB}/moodle/
 	- sudo chown $$USER:www-data ${STACK_VOLUME_WEB}/moodle/data
-
-	- sudo chown $$USER:www-data ${STACK_VOLUME_DB}
-	- sudo chown $$USER:www-data ${STACK_VOLUME_DB}/master
-	- sudo chown $$USER:www-data ${STACK_VOLUME_DB}/slave
-	- sudo chown $$USER:www-data ${STACK_VOLUME_DB}/phpunit
-	- sudo chown $$USER:www-data ${STACK_VOLUME_DB}/master/${DBTYPE}/
-	- sudo chown $$USER:www-data ${STACK_VOLUME_DB}/slave/${DBTYPE}/
-	- sudo chown $$USER:www-data ${STACK_VOLUME_DB}/phpunit/${DBTYPE}/
-	- sudo chown $$USER:www-data ${STACK_VOLUME_DB}/master/${DBTYPE}/data
-	- sudo chown $$USER:www-data ${STACK_VOLUME_DB}/slave/${DBTYPE}/data
-	- sudo chown $$USER:www-data ${STACK_VOLUME_DB}/phpunit/${DBTYPE}/data
 
 	- sudo chown $$USER:www-data ./config/moodle/config.${DBTYPE}.php
 	- sudo chmod 640 ./config/moodle/config.${DBTYPE}.php
@@ -79,6 +68,16 @@ mkdir_db:
 	- sudo mkdir -p ${STACK_VOLUME_DB}/master/${DBTYPE}/data
 	- sudo mkdir -p ${STACK_VOLUME_DB}/slave/${DBTYPE}/data
 	- sudo mkdir -p ${STACK_VOLUME_DB}/phpunit/${DBTYPE}/data
+	- sudo chown $$USER:www-data ${STACK_VOLUME_DB}
+	- sudo chown $$USER:www-data ${STACK_VOLUME_DB}/master
+	- sudo chown $$USER:www-data ${STACK_VOLUME_DB}/slave
+	- sudo chown $$USER:www-data ${STACK_VOLUME_DB}/phpunit
+	- sudo chown $$USER:www-data ${STACK_VOLUME_DB}/master/${DBTYPE}/
+	- sudo chown $$USER:www-data ${STACK_VOLUME_DB}/slave/${DBTYPE}/
+	- sudo chown $$USER:www-data ${STACK_VOLUME_DB}/phpunit/${DBTYPE}/
+	- sudo chown $$USER:www-data ${STACK_VOLUME_DB}/master/${DBTYPE}/data
+	- sudo chown $$USER:www-data ${STACK_VOLUME_DB}/slave/${DBTYPE}/data
+	- sudo chown $$USER:www-data ${STACK_VOLUME_DB}/phpunit/${DBTYPE}/data
 
 mkdir_db_slave:
 	- sudo mkdir -p ${STACK_VOLUME_DB}/slave/${DBTYPE}/data

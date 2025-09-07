@@ -1,5 +1,6 @@
 services:
   web:
+    runtime: runc
     image: ${REPO}-${WEBSERVER}
     container_name: ${STACK_NAME}_web
     restart: always
@@ -14,6 +15,7 @@ services:
       - ${STACK_VOLUME_WEB}/moodle/certbot/www/:/var/www/certbot/:rw
       - ${STACK_VOLUME_WEB}/moodle/certbot/conf/:/etc/letsencrypt/:rw
     environment:
+      - MARIADB_HOST=${STACK_NAME}_db
       - MARIADB_DATABASE=${MARIADB_DATABASE}
       - MARIADB_USER=${MARIADB_USER}
       - MARIADB_PASSWORD=${MARIADB_PASSWORD}
@@ -48,6 +50,7 @@ services:
       - db_network
       - db_phpunit_network
       - db_slave_network
+      - traefik_overlay
     labels:
       - "traefik.enable=true"
 
@@ -66,27 +69,13 @@ services:
       # - "traefik.http.routers.${STACK_NAME}_webs.tls.certresolver=cloudflare"
       - "traefik.http.routers.${STACK_NAME}_webs.tls.domains[0].main=${HOSTNAME}"
       - "traefik.http.routers.${STACK_NAME}_webs.tls.domains[0].sans=*.${HOSTNAME}"
-
-      - "traefik.http.routers.${STACK_NAME}_pma.rule=Host(`${DOMAIN}`)"
-      - "traefik.http.routers.${STACK_NAME}_pma.service=${STACK_NAME}_pma_serv"
-      - "traefik.http.services.${STACK_NAME}_pma_serv.loadbalancer.server.port=${MARIADB_PMA_PORT}"
-      - "traefik.http.routers.${STACK_NAME}_pma.entrypoints=pma"
-
-      - "traefik.http.routers.${STACK_NAME}_pmas.rule=Host(`${DOMAIN}`)"
-      - "traefik.http.routers.${STACK_NAME}_pmas.service=${STACK_NAME}_pmas_serv"
-      - "traefik.http.services.${STACK_NAME}_pmas_serv.loadbalancer.server.port=${MARIADB_PMAS_PORT}"
-      - "traefik.http.services.${STACK_NAME}_pmas_serv.loadbalancer.server.scheme=https"
-      - "traefik.http.routers.${STACK_NAME}_pmas.entrypoints=pmas"
-      - "traefik.http.routers.${STACK_NAME}_pmas.tls=true"
-      # - "traefik.http.routers.${STACK_NAME}_aaps.tls.certresolver=cloudflare"
-      - "traefik.http.routers.${STACK_NAME}_pmas.tls.domains[0].main=${HOSTNAME}"
-      - "traefik.http.routers.${STACK_NAME}_pmas.tls.domains[0].sans=*.${HOSTNAME}"
     deploy:
       resources:
         limits:
           cpus: ${CPUS}
           memory: ${MEMORY}
   certbot:
+    runtime: runc
     image: certbot/certbot:latest
     container_name: ${STACK_NAME}_certbot
     restart: always
@@ -105,6 +94,7 @@ services:
           memory: ${MEMORY}
           
   db:
+    runtime: runc
     # image: mariadb:10.6
     build:
       context: ./docker-files/db/mariadb
@@ -135,6 +125,7 @@ services:
           cpus: ${CPUS}
           memory: ${MEMORY}
   pma:
+    runtime: runc
     image: phpmyadmin/phpmyadmin
     container_name: ${STACK_NAME}_phpmyadmin
     restart: always
@@ -167,8 +158,26 @@ services:
       - db
     networks:
       - pma_network
+      - traefik_overlay
     volumes:
       - ${STACK_VOLUME_WEB}/moodle/certbot/conf/live/:/etc/letsencrypt/:ro
+    labels:
+      - "traefik.enable=true"
+
+      - "traefik.http.routers.${STACK_NAME}_pma.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.${STACK_NAME}_pma.service=${STACK_NAME}_pma_serv"
+      - "traefik.http.services.${STACK_NAME}_pma_serv.loadbalancer.server.port=80"
+      - "traefik.http.routers.${STACK_NAME}_pma.entrypoints=pma"
+
+      - "traefik.http.routers.${STACK_NAME}_pmas.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.${STACK_NAME}_pmas.service=${STACK_NAME}_pmas_serv"
+      - "traefik.http.services.${STACK_NAME}_pmas_serv.loadbalancer.server.port=443"
+      - "traefik.http.services.${STACK_NAME}_pmas_serv.loadbalancer.server.scheme=https"
+      - "traefik.http.routers.${STACK_NAME}_pmas.entrypoints=pmas"
+      - "traefik.http.routers.${STACK_NAME}_pmas.tls=true"
+      # - "traefik.http.routers.${STACK_NAME}_aaps.tls.certresolver=cloudflare"
+      - "traefik.http.routers.${STACK_NAME}_pmas.tls.domains[0].main=${HOSTNAME}"
+      - "traefik.http.routers.${STACK_NAME}_pmas.tls.domains[0].sans=*.${HOSTNAME}"
     deploy:
       resources:
         limits:
@@ -187,3 +196,5 @@ networks:
   db_slave_network:
     external: true
     name: ${STACK_NAME}_db_slave_network
+  traefik_overlay:
+    external: true

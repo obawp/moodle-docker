@@ -25,12 +25,14 @@ if (!function_exists('getenv_docker')) {
 // Database settings
 $CFG->dbtype    =  'mariadb';
 $CFG->dblibrary =  'native';
-$CFG->dbhost    = 'db';
+// $CFG->dbhost    = 'db';
+$CFG->dbhost    = getenv_docker('MARIADB_HOST', 'db');
 $CFG->dbname    = getenv_docker('MARIADB_DATABASE', 'moodle');
 $CFG->dbuser    = getenv_docker('MARIADB_USER', 'moodleuser');
 $CFG->dbpass    = getenv_docker('MARIADB_PASSWORD', 'meeF9av3geegh9');
 $CFG->prefix    = getenv_docker('MARIADB_PREFIX', 'mdl_');
 $CFG->dbport    = getenv_docker('MARIADB_PORT', '3306');
+
 
 // $CFG->dboptions = array(
 //     'dbpersist' => false,
