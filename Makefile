@@ -320,7 +320,8 @@ rm:
 	- docker compose -p ${STACK} -f "./docker-compose/${DBTYPE}/docker-compose.yml" down
 	- docker compose -p ${STACK}_db_phpunit -f "./docker-compose/${DBTYPE}/docker-compose.db_phpunit.yml" down
 	- docker compose -p ${STACK}_db_slave -f "./docker-compose/${DBTYPE}/docker-compose.db_slave.yml" down
-	
+	- docker compose -p ${STACK}_web_report -f "./docker-compose/${DBTYPE}/docker-compose.web_report.yml" down
+
 	- docker network rm ${STACK_NAME}_pma_network || true
 	- docker network rm ${STACK_NAME}_pgadmin_network || true
 	- docker network rm ${STACK_NAME}_db_phpunit_network || true
