@@ -56,13 +56,13 @@ services:
 
       - "traefik.http.routers.${STACK_NAME}_web.rule=Host(`${DOMAIN}`)"
       - "traefik.http.routers.${STACK_NAME}_web.service=${STACK_NAME}_web_serv"
-      - "traefik.http.services.${STACK_NAME}_web_serv.loadbalancer.server.port=80"
+      - "traefik.http.services.${STACK_NAME}_web_serv.loadbalancer.server.port=${WEB_PORT}"
       - "traefik.http.services.${STACK_NAME}_web_serv.loadbalancer.server.scheme=http"
       - "traefik.http.routers.${STACK_NAME}_web.entrypoints=web"
 
       - "traefik.http.routers.${STACK_NAME}_webs.rule=Host(`${DOMAIN}`)"
       - "traefik.http.routers.${STACK_NAME}_webs.service=${STACK_NAME}_webs_serv"
-      - "traefik.http.services.${STACK_NAME}_webs_serv.loadbalancer.server.port=443"
+      - "traefik.http.services.${STACK_NAME}_webs_serv.loadbalancer.server.port=${WEBS_PORT}"
       - "traefik.http.services.${STACK_NAME}_webs_serv.loadbalancer.server.scheme=https"
       - "traefik.http.routers.${STACK_NAME}_webs.entrypoints=webs"
       - "traefik.http.routers.${STACK_NAME}_webs.tls=true"

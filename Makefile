@@ -197,6 +197,11 @@ up:
 		  -f "./docker-compose/${DBTYPE}/docker-compose.db_slave.yml" \
 		  up -d; \
 	fi
+	@if [ "$(REPORT_ENABLED)" = "true" ]; then \
+		docker compose -p ${STACK}_web_report --project-directory ./ \
+		  -f "./docker-compose/${DBTYPE}/docker-compose.web_report.yml" \
+		  up -d; \
+	fi
 
 
 up_force_recreate:
@@ -219,6 +224,11 @@ up_force_recreate:
 	@if [ "$(DB_SLAVE_ENABLED)" = "true" ]; then \
 		docker compose -p ${STACK}_db_slave --project-directory ./ \
 		  -f "./docker-compose/${DBTYPE}/docker-compose.db_slave.yml" \
+		  up --force-recreate -d; \
+	fi
+	@if [ "$(REPORT_ENABLED)" = "true" ]; then \
+		docker compose -p ${STACK}_web_report --project-directory ./ \
+		  -f "./docker-compose/${DBTYPE}/docker-compose.web_report.yml" \
 		  up --force-recreate -d; \
 	fi
 
@@ -269,6 +279,12 @@ perm_dev_dir:
 
 perm_db:
 	- docker exec -u 0 ${STACK_NAME}_db chown -R mysql:mysql /var/lib/mysql
+
+perm_db_slave:
+	- docker exec -u 0 ${STACK_NAME}_db_slave chown -R mysql:mysql /var/lib/mysql
+
+perm_db_phpunit:
+	- docker exec -u 0 ${STACK_NAME}_db_phpunit chown -R mysql:mysql /var/lib/mysql
 
 phpu_mkdir:
 	- sudo mkdir -p ${STACK_VOLUME_WEB}/phpunit/moodle/data
@@ -691,6 +707,7 @@ mariadb_rebuild_slave:
 	make --no-print-directory maintenance_on
 	docker exec -u 0 ${STACK_NAME}_db mariadb -u root -p${MARIADB_ROOT_PASSWORD} -e "GRANT RELOAD ON *.* TO '${MARIADB_USER}'@'%'; FLUSH PRIVILEGES;"
 	docker exec -u 0 ${STACK_NAME}_db mysqldump --all-databases --single-transaction --master-data=2 --flush-logs --hex-blob --triggers --routines --events -u${MARIADB_USER} -p${MARIADB_PASSWORD} > ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/dump-rebuild-slave.sql
+	make --no-print-directory perm_db_slave
 	docker cp ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/dump-rebuild-slave.sql ${STACK_NAME}_db_slave:/dump-rebuild-slave.sql
 	rm -f ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/dump-rebuild-slave.sql
 	docker exec -u 0 ${STACK_NAME}_db_slave mysql -u root -p${MARIADB_ROOT_PASSWORD} -e "DROP DATABASE IF EXISTS ${MARIADB_DATABASE};"
@@ -718,6 +735,7 @@ mysql_rebuild_slave:
 	make --no-print-directory maintenance_on
 	docker exec -u 0 ${STACK_NAME}_db mysql -u root -p${MYSQL_ROOT_PASSWORD} -e "GRANT RELOAD, REPLICATION CLIENT, REPLICATION SLAVE, PROCESS ON *.* TO '${MYSQL_USER}'@'%'; FLUSH PRIVILEGES;"
 	docker exec -u 0 ${STACK_NAME}_db mysqldump --all-databases --single-transaction --source-data=2 --flush-logs --hex-blob --triggers --routines --events -uroot -p${MYSQL_ROOT_PASSWORD} > ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/dump-rebuild-slave.sql
+	make --no-print-directory perm_db_slave
 	docker cp ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/dump-rebuild-slave.sql ${STACK_NAME}_db_slave:/dump-rebuild-slave.sql
 	rm -f ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/dump-rebuild-slave.sql
 	docker exec -u 0 ${STACK_NAME}_db_slave mysql -u root -p${MYSQL_ROOT_PASSWORD} -e "DROP DATABASE IF EXISTS ${MYSQL_DATABASE};"

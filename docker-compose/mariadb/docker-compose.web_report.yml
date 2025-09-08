@@ -1,0 +1,76 @@
+services:
+  web:
+    runtime: runc
+    image: ${REPO}-${WEBSERVER}
+    container_name: ${STACK_NAME}_web_report
+    restart: always
+    # ports:
+    #   - "${HOST_IP}:${REPORT_WEB_PORT}:${REPORT_WEB_PORT}"
+    #   - "${HOST_IP}:${REPORT_WEBS_PORT}:${REPORT_WEBS_PORT}"
+    volumes:
+      - ${STACK_SRC}:/var/www/html
+      - ./config/moodle/config.mariadb.php:/var/www/html/config.php
+      - ${STACK_VOLUME_WEB}/moodle/data:/var/www/moodledata
+      - ${STACK_VOLUME_WEB}/phpunit/moodle/data:/var/www/phpu_moodledata
+      - ${STACK_VOLUME_WEB}/moodle/certbot/www/:/var/www/certbot/:rw
+      - ${STACK_VOLUME_WEB}/moodle/certbot/conf/:/etc/letsencrypt/:rw
+    environment:
+      - MARIADB_HOST=${STACK_NAME}_db_slave
+      - MARIADB_DATABASE=${MARIADB_DATABASE}
+      - MARIADB_USER=${MARIADB_USER}
+      - MARIADB_PASSWORD=${MARIADB_PASSWORD}
+      - MARIADB_PREFIX=${MARIADB_PREFIX}
+      - MARIADB_PORT=${MARIADB_PORT}
+      - FORCE_DEBUG=${FORCE_DEBUG}
+      - ENABLE_CRON=${ENABLE_CRON}
+      - WEBSERVER=${WEBSERVER}
+      - WEBSERVER_MEMORY=${REPORT_WEBSERVER_MEMORY}
+      - WEBSERVER_TIMEOUT=${REPORT_WEBSERVER_TIMEOUT}
+      - WEB_PORT=${REPORT_WEB_PORT}
+      - WEBS_PORT=${REPORT_WEBS_PORT}
+      - DOMAIN=${DOMAIN}
+      - CERT_COUNTRY=${CERT_COUNTRY}
+      - CERT_STATE=${CERT_STATE}
+      - CERT_CITY=${CERT_CITY}
+      - CERT_ORG=${CERT_ORG}
+      - CERT_ORG_UNIT=${CERT_ORG_UNIT}
+      - SERVERURL=${SERVERURL}
+      - WWWROOT=${WWWROOT}
+      - TZ=${TZ}
+      - PHPUNIT_ENABLED=${PHPUNIT_ENABLED}
+      - PHPU_MARIADB_PREFIX=${PHPU_MARIADB_PREFIX}
+      - PHPU_MARIADB_DATABASE=${PHPU_MARIADB_DATABASE}
+      - PHPU_MARIADB_USER=${PHPU_MARIADB_USER}
+      - PHPU_MARIADB_PASSWORD=${PHPU_MARIADB_PASSWORD}
+    networks:
+      - db_slave_network
+      - traefik_overlay
+    labels:
+      - "traefik.enable=true"
+
+      - "traefik.http.routers.${STACK_NAME}_p2052.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.${STACK_NAME}_p2052.service=${STACK_NAME}_p2052_serv"
+      - "traefik.http.services.${STACK_NAME}_p2052_serv.loadbalancer.server.port=${REPORT_WEB_PORT}"
+      - "traefik.http.services.${STACK_NAME}_p2052_serv.loadbalancer.server.scheme=http"
+      - "traefik.http.routers.${STACK_NAME}_p2052.entrypoints=p2052"
+
+      - "traefik.http.routers.${STACK_NAME}_p2053.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.${STACK_NAME}_p2053.service=${STACK_NAME}_p2053_serv"
+      - "traefik.http.services.${STACK_NAME}_p2053_serv.loadbalancer.server.port=${REPORT_WEBS_PORT}"
+      - "traefik.http.services.${STACK_NAME}_p2053_serv.loadbalancer.server.scheme=https"
+      - "traefik.http.routers.${STACK_NAME}_p2053.entrypoints=p2053"
+      - "traefik.http.routers.${STACK_NAME}_p2053.tls=true"
+      # - "traefik.http.routers.${STACK_NAME}_p2053.tls.certresolver=cloudflare"
+      - "traefik.http.routers.${STACK_NAME}_p2053.tls.domains[0].main=${SECOND_AND_TOP_LEVEL_DOMAIN}"
+      - "traefik.http.routers.${STACK_NAME}_p2053.tls.domains[0].sans=*.${SECOND_AND_TOP_LEVEL_DOMAIN}"
+    deploy:
+      resources:
+        limits:
+          cpus: ${REPORT_CPUS}
+          memory: ${REPORT_MEMORY}
+networks:
+  db_slave_network:
+    external: true
+    name: ${STACK_NAME}_db_slave_network
+  traefik_overlay:
+    external: true
