@@ -28,8 +28,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: ${CPUS}
-          memory: ${MEMORY}
+          cpus: ${DB_SLAVE_CPUS}
+          memory: ${DB_SLAVE_MEMORY}
 
 networks:
   pma_network:
