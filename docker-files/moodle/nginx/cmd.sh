@@ -15,7 +15,6 @@ sed -i -e "s/memory_limit = 512M/memory_limit = $WEBSERVER_MEMORY/g" /etc/php/8.
 sed -i -e "s/memory_limit = 512M/memory_limit = $WEBSERVER_MEMORY/g" /etc/php/8.3/cli/php.ini
 sed -i -e "s/max_execution_time = 600/max_execution_time = $WEBSERVER_TIMEOUT/g" /etc/php/8.3/fpm/php.ini
 sed -i -e "s/max_execution_time = 600/max_execution_time = $WEBSERVER_TIMEOUT/g" /etc/php/8.3/cli/php.ini
-sed -i "s/Timeout 300/Timeout $WEBSERVER_TIMEOUT/" /etc/apache2/apache2.conf
 sed -i -e "s/default_socket_timeout = 60/default_socket_timeout = $WEBSERVER_TIMEOUT/g" /etc/php/8.3/fpm/php.ini
 sed -i -e "s/default_socket_timeout = 60/default_socket_timeout = $WEBSERVER_TIMEOUT/g" /etc/php/8.3/cli/php.ini
 sed -i -e "s/proxy_send_timeout 600;/proxy_send_timeout $WEBSERVER_TIMEOUT;/g" /etc/nginx/sites-available/moodle
