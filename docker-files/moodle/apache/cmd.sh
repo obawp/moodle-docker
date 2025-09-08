@@ -27,13 +27,13 @@ rm /etc/localtime && ln -fs /usr/share/zoneinfo/$TZ /etc/localtime && dpkg-recon
 
 a2dissite moodle.conf
 
-# Update Nginx configuration to use the specified web port
+# Update Apache configuration to use the specified web port
 sed -i "s/Listen 80/Listen $WEB_PORT/" /etc/apache2/ports.conf
 sed -i "s/<VirtualHost \*:80>/<VirtualHost *:$WEB_PORT>/" /etc/apache2/sites-available/moodle.conf
 sed -i "s/Listen 443/Listen $WEBS_PORT/" /etc/apache2/ports.conf
 sed -i "s/<VirtualHost \*:443>/<VirtualHost *:$WEBS_PORT>/" /etc/apache2/sites-available/moodle.conf
 
-# Update Nginx configuration to use the specified domain
+# Update Apache configuration to use the specified domain
 sed -i -e "s/moodle.local/$DOMAIN/g" /etc/apache2/sites-available/moodle.conf
 
 # Adding  Non-interactive self-signed Certificate and 10 years expiration
