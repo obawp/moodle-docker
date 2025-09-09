@@ -379,7 +379,11 @@ plugins_uninstall:
 	@docker exec -u www-data -w /var/www/html/ $${STACK_NAME}_web /usr/bin/php admin/cli/uninstall_plugins.php --plugins="$(plugins)" --run
 
 courses_mkdir:
-	- sudo mkdir -p ${STACK_VOLUME_COURSES}
+	mkdir -p ${STACK_VOLUME_COURSES}
+	sudo chown $$USER:www-data -R ${STACK_VOLUME_COURSES}
+	sudo chmod 0750 ${STACK_VOLUME_COURSES}
+
+courses_perm:
 	- sudo chown $$USER:www-data -R ${STACK_VOLUME_COURSES}
 	- sudo chmod 0750 ${STACK_VOLUME_COURSES}
 	- sudo chmod 0640 ${STACK_VOLUME_COURSES}/*.mbz
@@ -672,10 +676,8 @@ certbot_bkp:
 	mkdir -p ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/certbot/live/${DOMAIN}
 	mkdir -p ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/certbot/archive/${DOMAIN}
 	mkdir -p ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/certbot/renewal/
-	docker cp ${STACK_NAME}_certbot:/etc/letsencrypt/live/${DOMAIN} ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/certbot/live/${DOMAIN}
-	docker cp ${STACK_NAME}_certbot:/etc/letsencrypt/archive/${DOMAIN} ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/certbot/archive/${DOMAIN}
-	docker cp ${STACK_NAME}_certbot:/etc/letsencrypt/renewal/${DOMAIN}.conf ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/certbot/renewal/${DOMAIN}.conf
-	
+	docker cp ${STACK_NAME}_certbot:/etc/letsencrypt/. ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/certbot/
+
 maintenance_on:
 	- docker exec -u www-data -w /var/www/html/ ${STACK_NAME}_web php admin/cli/maintenance.php --enable
 
