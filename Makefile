@@ -452,6 +452,7 @@ bkp_plugins_uninstall:
 
 
 bkp_tar:
+	- make -no-print-directory bkp_tgz_mkdir
 	- rm -f ${STACK_VOLUME_BKP}/compressed/${CURRENT_BACKUP_DIR}.tgz
 	- find ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR} -printf "%P\n" | tar -czf ${STACK_VOLUME_BKP}/compressed/${CURRENT_BACKUP_DIR}.tgz --no-recursion -C ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR} -T -
 
