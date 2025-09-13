@@ -574,7 +574,7 @@ bkp_rmdir:
 	- sudo rm -Rf ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}
 
 bkp_tgz_mkdir:
-	- sudo mkdir -p ${STACK_VOLUME_BKP}/compressed
+	mkdir -p ${STACK_VOLUME_BKP}/compressed
 	- sudo chown $$USER:www-data -R ${STACK_VOLUME_BKP}/compressed
 	- sudo chmod 0750 ${STACK_VOLUME_BKP}/compressed
 	- sudo chmod 0640 ${STACK_VOLUME_BKP}/compressed/*.tgz
