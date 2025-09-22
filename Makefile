@@ -60,10 +60,10 @@ push:
 	- docker push ${DOCKERHUB_REPO}-${WEBSERVER}
 
 pull:
-	- docker pull ${REPO}-${WEBSERVER}
+	- docker pull ${DOCKERHUB_REPO}-${WEBSERVER}
 
 run:
-	- docker run -d --name ${STACK_NAME}_aux -e DOMAIN=${DOMAIN} ${REPO}-${WEBSERVER}
+	- docker run -d --name ${STACK_NAME}_aux -e DOMAIN=${DOMAIN} ${DOCKERHUB_REPO}-${WEBSERVER}
 
 mkdir:
 # don't put sudo in mkdir because the sub-folders owner will be root
