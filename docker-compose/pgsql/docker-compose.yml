@@ -1,6 +1,6 @@
 services:
   web:
-    image: ${REPO}-${WEBSERVER}
+    image: ${DOCKERHUB_REPO}-${WEBSERVER}
     container_name: ${STACK_NAME}_web
     restart: always
     ports:

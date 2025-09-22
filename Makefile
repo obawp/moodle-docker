@@ -22,8 +22,11 @@ ifneq ($(DOMAIN),$(SUBDOMAIN))
 SECOND_AND_TOP_LEVEL_DOMAIN=$(shell echo ${DOMAIN} | sed "s/^${SUBDOMAIN}//")
 endif
 
+# use CURRENT_BACKUP_DIR if CURRENT_AUTOBACKUP_DIR is'nt setted
+CURRENT_AUTOBACKUP_DIR ?= $(CURRENT_BACKUP_DIR)
+
 print_vars:
-	@echo "REPO: ${REPO}"
+	@echo "DOCKERHUB_REPO: ${DOCKERHUB_REPO}"
 	@echo "STACK_NAME: ${STACK_NAME}"
 	@echo "STACK_SRC: ${STACK_SRC}"
 	@echo "STACK_VOLUME_WEB: ${STACK_VOLUME_WEB}"
@@ -42,19 +45,19 @@ full_install:
 	make --no-print-directory install
 
 build:
-	- docker build --build-arg IOMAD=${IOMAD} -t ${REPO}-${WEBSERVER} ./docker-files/moodle/${WEBSERVER}/
+	- docker build --build-arg IOMAD=${IOMAD} -t ${DOCKERHUB_REPO}-${WEBSERVER} ./docker-files/moodle/${WEBSERVER}/
 
 build_verbose:
-	- docker build --build-arg IOMAD=${IOMAD} --progress=plain -t ${REPO}-${WEBSERVER} ./docker-files/moodle/${WEBSERVER}/
+	- docker build --build-arg IOMAD=${IOMAD} --progress=plain -t ${DOCKERHUB_REPO}-${WEBSERVER} ./docker-files/moodle/${WEBSERVER}/
 
 build_no_cache:
-	- docker build --build-arg IOMAD=${IOMAD} --no-cache --pull -t ${REPO}-${WEBSERVER} ./docker-files/moodle/${WEBSERVER}/
+	- docker build --build-arg IOMAD=${IOMAD} --no-cache --pull -t ${DOCKERHUB_REPO}-${WEBSERVER} ./docker-files/moodle/${WEBSERVER}/
 
 login:
 	- echo "${DOCKERHUB_PASS}" | docker login -u ${DOCKERHUB_USER} --password-stdin
 
 push:
-	- docker push ${REPO}-${WEBSERVER}
+	- docker push ${DOCKERHUB_REPO}-${WEBSERVER}
 
 pull:
 	- docker pull ${REPO}-${WEBSERVER}
@@ -428,36 +431,36 @@ cron_run:
 
 bkp_mkdir:
 # don't put sudo in mkdir because the sub-folders owner will be root
-	mkdir -p ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/html
-	mkdir -p ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/moodledata
+	mkdir -p ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_AUTOBACKUP_DIR}/html
+	mkdir -p ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_AUTOBACKUP_DIR}/moodledata
 
 bkp_perm:
 	- sudo chown $$USER:www-data ${STACK_VOLUME_WEB}/
 	- sudo chown $$USER:www-data ${STACK_VOLUME_BKP}/
-	- sudo chown $$USER:www-data -R ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}
+	- sudo chown $$USER:www-data -R ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_AUTOBACKUP_DIR}
 
 
 bkp_plugins_list:
-	- cat ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/plugins-list.txt
+	- cat ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_AUTOBACKUP_DIR}/plugins-list.txt
 
 bkp_plugins_list_save:
-	- @docker exec -u 0 ${STACK_NAME}_db mariadb -u ${MARIADB_USER} -p${MARIADB_PASSWORD} ${MARIADB_DATABASE} -e "SELECT p.plugin FROM mdl_config_plugins p WHERE p.plugin NOT IN ( 'adminpresets', 'adminpresets', 'aiplacement_courseassist', 'aiplacement_editor', 'aiprovider_azureai', 'aiprovider_openai', 'analytics', 'antivirus', 'antivirus_clamav', 'areafiles', 'assign', 'assignfeedback_comments', 'assignfeedback_editpdf', 'assignfeedback_file', 'assignfeedback_offline', 'assignsubmission_comments', 'assignsubmission_file', 'assignsubmission_onlinetext', 'atto_accessibilitychecker', 'atto_accessibilityhelper', 'atto_align', 'atto_backcolor', 'atto_bold', 'atto_charmap', 'atto_clear', 'atto_collapse', 'atto_emojipicker', 'atto_emoticon', 'atto_equation', 'atto_fontcolor', 'atto_h5p', 'atto_html', 'atto_image', 'atto_indent', 'atto_italic', 'atto_link', 'atto_managefiles', 'atto_media', 'atto_noautolink', 'atto_orderedlist', 'atto_recordrtc', 'atto_rtl', 'atto_strike', 'atto_subscript', 'atto_superscript', 'atto_table', 'atto_title', 'atto_underline', 'atto_undo', 'atto_unorderedlist', 'auth_cas', 'auth_db', 'auth_email', 'auth_ldap', 'auth_lti', 'auth_manual', 'auth_mnet', 'auth_nologin', 'auth_none', 'auth_oauth2', 'auth_shibboleth', 'auth_webservice', 'availability_completion', 'availability_date', 'availability_grade', 'availability_group', 'availability_grouping', 'availability_profile', 'backup', 'block_accessreview', 'block_activity_modules', 'block_activity_results', 'block_admin_bookmarks', 'block_badges', 'block_blog_menu', 'block_blog_recent', 'block_blog_tags', 'block_calendar_month', 'block_calendar_upcoming', 'block_comments', 'block_completionstatus', 'block_course_list', 'block_course_summary', 'block_feedback', 'block_globalsearch', 'block_glossary_random', 'block_html', 'block_login', 'block_lp', 'block_mentees', 'block_mnet_hosts', 'block_myoverview', 'block_myprofile', 'block_navigation', 'block_news_items', 'block_online_users', 'block_private_files', 'block_recent_activity', 'block_recentlyaccessedcourses', 'block_recentlyaccesseditems', 'block_rss_client', 'block_search_forums', 'block_section_links', 'block_selfcompletion', 'block_settings', 'block_site_main_menu', 'block_social_activities', 'block_starredcourses', 'block_tag_flickr', 'block_tag_youtube', 'block_tags', 'block_timeline', 'book', 'booktool_exportimscp', 'booktool_importhtml', 'booktool_print', 'cachelock_file', 'cachestore_apcu', 'cachestore_file', 'cachestore_redis', 'cachestore_session', 'cachestore_static', 'calendartype_gregorian', 'communication_customlink', 'communication_matrix', 'contentbank', 'contenttype_h5p', 'core_admin', 'core_competency', 'core_h5p', 'customfield_checkbox', 'customfield_date', 'customfield_number', 'customfield_select', 'customfield_text', 'customfield_textarea', 'datafield_checkbox', 'datafield_date', 'datafield_file', 'datafield_latlong', 'datafield_menu', 'datafield_multimenu', 'datafield_number', 'datafield_picture', 'datafield_radiobutton', 'datafield_text', 'datafield_textarea', 'datafield_url', 'dataformat_csv', 'dataformat_excel', 'dataformat_html', 'dataformat_json', 'dataformat_ods', 'dataformat_pdf', 'datapreset_imagegallery', 'datapreset_journal', 'datapreset_proposals', 'datapreset_resources', 'editor_atto', 'editor_textarea', 'editor_tiny', 'enrol_category', 'enrol_cohort', 'enrol_database', 'enrol_fee', 'enrol_flatfile', 'enrol_guest', 'enrol_imsenterprise', 'enrol_ldap', 'enrol_lti', 'enrol_manual', 'enrol_meta', 'enrol_mnet', 'enrol_paypal', 'enrol_self', 'factor_admin', 'factor_auth', 'factor_capability', 'factor_cohort', 'factor_email', 'factor_grace', 'factor_iprange', 'factor_nosetup', 'factor_role', 'factor_sms', 'factor_token', 'factor_totp', 'factor_webauthn', 'fileconverter_googledrive', 'fileconverter_unoconv', 'filter_activitynames', 'filter_algebra', 'filter_codehighlighter', 'filter_data', 'filter_displayh5p', 'filter_emailprotect', 'filter_emoticon', 'filter_glossary', 'filter_mathjaxloader', 'filter_mediaplugin', 'filter_multilang', 'filter_tex', 'filter_urltolink', 'folder', 'format_singleactivity', 'format_social', 'format_topics', 'format_weeks', 'forumreport_summary', 'gradeexport_ods', 'gradeexport_txt', 'gradeexport_xls', 'gradeexport_xml', 'gradeimport_csv', 'gradeimport_direct', 'gradeimport_xml', 'gradereport_grader', 'gradereport_history', 'gradereport_outcomes', 'gradereport_overview', 'gradereport_singleview', 'gradereport_summary', 'gradereport_user', 'gradingform_guide', 'gradingform_rubric', 'h5plib_v127', 'imscp', 'label', 'local', 'logstore_database', 'logstore_standard', 'ltiservice_basicoutcomes', 'ltiservice_gradebookservices', 'ltiservice_memberships', 'ltiservice_profile', 'ltiservice_toolproxy', 'ltiservice_toolsettings', 'media_html5audio', 'media_html5video', 'media_videojs', 'media_vimeo', 'media_youtube', 'message', 'message_airnotifier', 'message_email', 'message_popup', 'mlbackend_php', 'mlbackend_python', 'mnetservice_enrol', 'mod_assign', 'mod_bigbluebuttonbn', 'mod_book', 'mod_chat', 'mod_choice', 'mod_data', 'mod_feedback', 'mod_folder', 'mod_forum', 'mod_glossary', 'mod_h5pactivity', 'mod_imscp', 'mod_label', 'mod_lesson', 'mod_lti', 'mod_page', 'mod_quiz', 'mod_resource', 'mod_scorm', 'mod_subsection', 'mod_survey', 'mod_url', 'mod_wiki', 'mod_workshop', 'moodlecourse', 'page', 'paygw_paypal', 'portfolio_download', 'portfolio_flickr', 'portfolio_googledocs', 'portfolio_mahara', 'profilefield_checkbox', 'profilefield_datetime', 'profilefield_menu', 'profilefield_social', 'profilefield_text', 'profilefield_textarea', 'qbank_bulkmove', 'qbank_columnsortorder', 'qbank_comment', 'qbank_customfields', 'qbank_deletequestion', 'qbank_editquestion', 'qbank_exportquestions', 'qbank_exporttoxml', 'qbank_history', 'qbank_importquestions', 'qbank_managecategories', 'qbank_previewquestion', 'qbank_statistics', 'qbank_tagquestion', 'qbank_usage', 'qbank_viewcreator', 'qbank_viewquestionname', 'qbank_viewquestiontext', 'qbank_viewquestiontype', 'qbehaviour_adaptive', 'qbehaviour_adaptivenopenalty', 'qbehaviour_deferredcbm', 'qbehaviour_deferredfeedback', 'qbehaviour_immediatecbm', 'qbehaviour_immediatefeedback', 'qbehaviour_informationitem', 'qbehaviour_interactive', 'qbehaviour_interactivecountback', 'qbehaviour_manualgraded', 'qbehaviour_missing', 'qformat_aiken', 'qformat_blackboard_six', 'qformat_gift', 'qformat_missingword', 'qformat_multianswer', 'qformat_xhtml', 'qformat_xml', 'qtype_calculated', 'qtype_calculatedmulti', 'qtype_calculatedsimple', 'qtype_ddimageortext', 'qtype_ddmarker', 'qtype_ddwtos', 'qtype_description', 'qtype_essay', 'qtype_gapselect', 'qtype_match', 'qtype_missingtype', 'qtype_multianswer', 'qtype_multichoice', 'qtype_numerical', 'qtype_ordering', 'qtype_random', 'qtype_randomsamatch', 'qtype_shortanswer', 'qtype_truefalse', 'question', 'question_preview', 'quiz', 'quiz_grading', 'quiz_overview', 'quiz_responses', 'quiz_statistics', 'quizaccess_delaybetweenattempts', 'quizaccess_ipaddress', 'quizaccess_numattempts', 'quizaccess_offlineattempts', 'quizaccess_openclosedate', 'quizaccess_password', 'quizaccess_seb', 'quizaccess_securewindow', 'quizaccess_timelimit', 'recent', 'report_backups', 'report_competency', 'report_completion', 'report_configlog', 'report_courseoverview', 'report_eventlist', 'report_infectedfiles', 'report_insights', 'report_log', 'report_loglive', 'report_outline', 'report_participation', 'report_performance', 'report_progress', 'report_questioninstances', 'report_security', 'report_stats', 'report_status', 'report_themeusage', 'report_usersessions', 'repository_areafiles', 'repository_contentbank', 'repository_coursefiles', 'repository_dropbox', 'repository_equella', 'repository_filesystem', 'repository_flickr', 'repository_flickr_public', 'repository_googledocs', 'repository_local', 'repository_merlot', 'repository_nextcloud', 'repository_onedrive', 'repository_recent', 'repository_s3', 'repository_upload', 'repository_url', 'repository_user', 'repository_webdav', 'repository_wikimedia', 'repository_youtube', 'resource', 'restore', 'scorm', 'scormreport_basic', 'scormreport_graphs', 'scormreport_interactions', 'scormreport_objectives', 'search_simpledb', 'search_solr', 'smsgateway_aws', 'theme_boost', 'theme_classic', 'tiny_accessibilitychecker', 'tiny_aiplacement', 'tiny_autosave', 'tiny_equation', 'tiny_h5p', 'tiny_html', 'tiny_link', 'tiny_media', 'tiny_noautolink', 'tiny_premium', 'tiny_recordrtc', 'tool_admin_presets', 'tool_analytics', 'tool_availabilityconditions', 'tool_behat', 'tool_brickfield', 'tool_capability', 'tool_cohortroles', 'tool_componentlibrary', 'tool_customlang', 'tool_dataprivacy', 'tool_dbtransfer', 'tool_filetypes', 'tool_generator', 'tool_httpsreplace', 'tool_installaddon', 'tool_langimport', 'tool_licensemanager', 'tool_log', 'tool_lp', 'tool_lpimportcsv', 'tool_lpmigrate', 'tool_messageinbound', 'tool_mfa', 'tool_mobile', 'tool_monitor', 'tool_moodlenet', 'tool_multilangupgrade', 'tool_oauth2', 'tool_phpunit', 'tool_policy', 'tool_profiling', 'tool_recyclebin', 'tool_replace', 'tool_spamcleaner', 'tool_task', 'tool_templatelibrary', 'tool_unsuproles', 'tool_uploadcourse', 'tool_uploaduser', 'tool_usertours', 'tool_xmldb', 'upload', 'url', 'user', 'webservice_rest', 'webservice_soap', 'wikimedia', 'workshop', 'workshopallocation_manual', 'workshopallocation_random', 'workshopallocation_scheduled', 'workshopeval_best', 'workshopform_accumulative', 'workshopform_comments', 'workshopform_numerrors', 'workshopform_rubric'  ) GROUP BY p.plugin ORDER BY p.plugin"  > ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/plugins-list.txt
+	- @docker exec -u 0 ${STACK_NAME}_db mariadb -u ${MARIADB_USER} -p${MARIADB_PASSWORD} ${MARIADB_DATABASE} -e "SELECT p.plugin FROM mdl_config_plugins p WHERE p.plugin NOT IN ( 'adminpresets', 'adminpresets', 'aiplacement_courseassist', 'aiplacement_editor', 'aiprovider_azureai', 'aiprovider_openai', 'analytics', 'antivirus', 'antivirus_clamav', 'areafiles', 'assign', 'assignfeedback_comments', 'assignfeedback_editpdf', 'assignfeedback_file', 'assignfeedback_offline', 'assignsubmission_comments', 'assignsubmission_file', 'assignsubmission_onlinetext', 'atto_accessibilitychecker', 'atto_accessibilityhelper', 'atto_align', 'atto_backcolor', 'atto_bold', 'atto_charmap', 'atto_clear', 'atto_collapse', 'atto_emojipicker', 'atto_emoticon', 'atto_equation', 'atto_fontcolor', 'atto_h5p', 'atto_html', 'atto_image', 'atto_indent', 'atto_italic', 'atto_link', 'atto_managefiles', 'atto_media', 'atto_noautolink', 'atto_orderedlist', 'atto_recordrtc', 'atto_rtl', 'atto_strike', 'atto_subscript', 'atto_superscript', 'atto_table', 'atto_title', 'atto_underline', 'atto_undo', 'atto_unorderedlist', 'auth_cas', 'auth_db', 'auth_email', 'auth_ldap', 'auth_lti', 'auth_manual', 'auth_mnet', 'auth_nologin', 'auth_none', 'auth_oauth2', 'auth_shibboleth', 'auth_webservice', 'availability_completion', 'availability_date', 'availability_grade', 'availability_group', 'availability_grouping', 'availability_profile', 'backup', 'block_accessreview', 'block_activity_modules', 'block_activity_results', 'block_admin_bookmarks', 'block_badges', 'block_blog_menu', 'block_blog_recent', 'block_blog_tags', 'block_calendar_month', 'block_calendar_upcoming', 'block_comments', 'block_completionstatus', 'block_course_list', 'block_course_summary', 'block_feedback', 'block_globalsearch', 'block_glossary_random', 'block_html', 'block_login', 'block_lp', 'block_mentees', 'block_mnet_hosts', 'block_myoverview', 'block_myprofile', 'block_navigation', 'block_news_items', 'block_online_users', 'block_private_files', 'block_recent_activity', 'block_recentlyaccessedcourses', 'block_recentlyaccesseditems', 'block_rss_client', 'block_search_forums', 'block_section_links', 'block_selfcompletion', 'block_settings', 'block_site_main_menu', 'block_social_activities', 'block_starredcourses', 'block_tag_flickr', 'block_tag_youtube', 'block_tags', 'block_timeline', 'book', 'booktool_exportimscp', 'booktool_importhtml', 'booktool_print', 'cachelock_file', 'cachestore_apcu', 'cachestore_file', 'cachestore_redis', 'cachestore_session', 'cachestore_static', 'calendartype_gregorian', 'communication_customlink', 'communication_matrix', 'contentbank', 'contenttype_h5p', 'core_admin', 'core_competency', 'core_h5p', 'customfield_checkbox', 'customfield_date', 'customfield_number', 'customfield_select', 'customfield_text', 'customfield_textarea', 'datafield_checkbox', 'datafield_date', 'datafield_file', 'datafield_latlong', 'datafield_menu', 'datafield_multimenu', 'datafield_number', 'datafield_picture', 'datafield_radiobutton', 'datafield_text', 'datafield_textarea', 'datafield_url', 'dataformat_csv', 'dataformat_excel', 'dataformat_html', 'dataformat_json', 'dataformat_ods', 'dataformat_pdf', 'datapreset_imagegallery', 'datapreset_journal', 'datapreset_proposals', 'datapreset_resources', 'editor_atto', 'editor_textarea', 'editor_tiny', 'enrol_category', 'enrol_cohort', 'enrol_database', 'enrol_fee', 'enrol_flatfile', 'enrol_guest', 'enrol_imsenterprise', 'enrol_ldap', 'enrol_lti', 'enrol_manual', 'enrol_meta', 'enrol_mnet', 'enrol_paypal', 'enrol_self', 'factor_admin', 'factor_auth', 'factor_capability', 'factor_cohort', 'factor_email', 'factor_grace', 'factor_iprange', 'factor_nosetup', 'factor_role', 'factor_sms', 'factor_token', 'factor_totp', 'factor_webauthn', 'fileconverter_googledrive', 'fileconverter_unoconv', 'filter_activitynames', 'filter_algebra', 'filter_codehighlighter', 'filter_data', 'filter_displayh5p', 'filter_emailprotect', 'filter_emoticon', 'filter_glossary', 'filter_mathjaxloader', 'filter_mediaplugin', 'filter_multilang', 'filter_tex', 'filter_urltolink', 'folder', 'format_singleactivity', 'format_social', 'format_topics', 'format_weeks', 'forumreport_summary', 'gradeexport_ods', 'gradeexport_txt', 'gradeexport_xls', 'gradeexport_xml', 'gradeimport_csv', 'gradeimport_direct', 'gradeimport_xml', 'gradereport_grader', 'gradereport_history', 'gradereport_outcomes', 'gradereport_overview', 'gradereport_singleview', 'gradereport_summary', 'gradereport_user', 'gradingform_guide', 'gradingform_rubric', 'h5plib_v127', 'imscp', 'label', 'local', 'logstore_database', 'logstore_standard', 'ltiservice_basicoutcomes', 'ltiservice_gradebookservices', 'ltiservice_memberships', 'ltiservice_profile', 'ltiservice_toolproxy', 'ltiservice_toolsettings', 'media_html5audio', 'media_html5video', 'media_videojs', 'media_vimeo', 'media_youtube', 'message', 'message_airnotifier', 'message_email', 'message_popup', 'mlbackend_php', 'mlbackend_python', 'mnetservice_enrol', 'mod_assign', 'mod_bigbluebuttonbn', 'mod_book', 'mod_chat', 'mod_choice', 'mod_data', 'mod_feedback', 'mod_folder', 'mod_forum', 'mod_glossary', 'mod_h5pactivity', 'mod_imscp', 'mod_label', 'mod_lesson', 'mod_lti', 'mod_page', 'mod_quiz', 'mod_resource', 'mod_scorm', 'mod_subsection', 'mod_survey', 'mod_url', 'mod_wiki', 'mod_workshop', 'moodlecourse', 'page', 'paygw_paypal', 'portfolio_download', 'portfolio_flickr', 'portfolio_googledocs', 'portfolio_mahara', 'profilefield_checkbox', 'profilefield_datetime', 'profilefield_menu', 'profilefield_social', 'profilefield_text', 'profilefield_textarea', 'qbank_bulkmove', 'qbank_columnsortorder', 'qbank_comment', 'qbank_customfields', 'qbank_deletequestion', 'qbank_editquestion', 'qbank_exportquestions', 'qbank_exporttoxml', 'qbank_history', 'qbank_importquestions', 'qbank_managecategories', 'qbank_previewquestion', 'qbank_statistics', 'qbank_tagquestion', 'qbank_usage', 'qbank_viewcreator', 'qbank_viewquestionname', 'qbank_viewquestiontext', 'qbank_viewquestiontype', 'qbehaviour_adaptive', 'qbehaviour_adaptivenopenalty', 'qbehaviour_deferredcbm', 'qbehaviour_deferredfeedback', 'qbehaviour_immediatecbm', 'qbehaviour_immediatefeedback', 'qbehaviour_informationitem', 'qbehaviour_interactive', 'qbehaviour_interactivecountback', 'qbehaviour_manualgraded', 'qbehaviour_missing', 'qformat_aiken', 'qformat_blackboard_six', 'qformat_gift', 'qformat_missingword', 'qformat_multianswer', 'qformat_xhtml', 'qformat_xml', 'qtype_calculated', 'qtype_calculatedmulti', 'qtype_calculatedsimple', 'qtype_ddimageortext', 'qtype_ddmarker', 'qtype_ddwtos', 'qtype_description', 'qtype_essay', 'qtype_gapselect', 'qtype_match', 'qtype_missingtype', 'qtype_multianswer', 'qtype_multichoice', 'qtype_numerical', 'qtype_ordering', 'qtype_random', 'qtype_randomsamatch', 'qtype_shortanswer', 'qtype_truefalse', 'question', 'question_preview', 'quiz', 'quiz_grading', 'quiz_overview', 'quiz_responses', 'quiz_statistics', 'quizaccess_delaybetweenattempts', 'quizaccess_ipaddress', 'quizaccess_numattempts', 'quizaccess_offlineattempts', 'quizaccess_openclosedate', 'quizaccess_password', 'quizaccess_seb', 'quizaccess_securewindow', 'quizaccess_timelimit', 'recent', 'report_backups', 'report_competency', 'report_completion', 'report_configlog', 'report_courseoverview', 'report_eventlist', 'report_infectedfiles', 'report_insights', 'report_log', 'report_loglive', 'report_outline', 'report_participation', 'report_performance', 'report_progress', 'report_questioninstances', 'report_security', 'report_stats', 'report_status', 'report_themeusage', 'report_usersessions', 'repository_areafiles', 'repository_contentbank', 'repository_coursefiles', 'repository_dropbox', 'repository_equella', 'repository_filesystem', 'repository_flickr', 'repository_flickr_public', 'repository_googledocs', 'repository_local', 'repository_merlot', 'repository_nextcloud', 'repository_onedrive', 'repository_recent', 'repository_s3', 'repository_upload', 'repository_url', 'repository_user', 'repository_webdav', 'repository_wikimedia', 'repository_youtube', 'resource', 'restore', 'scorm', 'scormreport_basic', 'scormreport_graphs', 'scormreport_interactions', 'scormreport_objectives', 'search_simpledb', 'search_solr', 'smsgateway_aws', 'theme_boost', 'theme_classic', 'tiny_accessibilitychecker', 'tiny_aiplacement', 'tiny_autosave', 'tiny_equation', 'tiny_h5p', 'tiny_html', 'tiny_link', 'tiny_media', 'tiny_noautolink', 'tiny_premium', 'tiny_recordrtc', 'tool_admin_presets', 'tool_analytics', 'tool_availabilityconditions', 'tool_behat', 'tool_brickfield', 'tool_capability', 'tool_cohortroles', 'tool_componentlibrary', 'tool_customlang', 'tool_dataprivacy', 'tool_dbtransfer', 'tool_filetypes', 'tool_generator', 'tool_httpsreplace', 'tool_installaddon', 'tool_langimport', 'tool_licensemanager', 'tool_log', 'tool_lp', 'tool_lpimportcsv', 'tool_lpmigrate', 'tool_messageinbound', 'tool_mfa', 'tool_mobile', 'tool_monitor', 'tool_moodlenet', 'tool_multilangupgrade', 'tool_oauth2', 'tool_phpunit', 'tool_policy', 'tool_profiling', 'tool_recyclebin', 'tool_replace', 'tool_spamcleaner', 'tool_task', 'tool_templatelibrary', 'tool_unsuproles', 'tool_uploadcourse', 'tool_uploaduser', 'tool_usertours', 'tool_xmldb', 'upload', 'url', 'user', 'webservice_rest', 'webservice_soap', 'wikimedia', 'workshop', 'workshopallocation_manual', 'workshopallocation_random', 'workshopallocation_scheduled', 'workshopeval_best', 'workshopform_accumulative', 'workshopform_comments', 'workshopform_numerrors', 'workshopform_rubric'  ) GROUP BY p.plugin ORDER BY p.plugin"  > ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_AUTOBACKUP_DIR}/plugins-list.txt
 
 bkp_plugins_install:
 	- docker exec -u www-data -w /var/www/html/ ${STACK_NAME}_web bash -c "moosh plugin-list";
-	- while IFS= read -r plugin; do docker exec -u www-data -w /var/www/html/ ${STACK_NAME}_web bash -c "moosh plugin-install $$plugin"; done < ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/plugins-list.txt
+	- while IFS= read -r plugin; do docker exec -u www-data -w /var/www/html/ ${STACK_NAME}_web bash -c "moosh plugin-install $$plugin"; done < ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_AUTOBACKUP_DIR}/plugins-list.txt
 
 bkp_plugins_uninstall:
-	- while IFS= read -r plugin; do docker exec -u www-data -w /var/www/html/ ${STACK_NAME}_web bash -c "moosh plugin-uninstall $$plugin"; done < ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/plugins-list.txt
+	- while IFS= read -r plugin; do docker exec -u www-data -w /var/www/html/ ${STACK_NAME}_web bash -c "moosh plugin-uninstall $$plugin"; done < ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_AUTOBACKUP_DIR}/plugins-list.txt
 
 
 bkp_tar:
 	- make --no-print-directory bkp_tgz_mkdir
-	- rm -f ${STACK_VOLUME_BKP}/compressed/${CURRENT_BACKUP_DIR}.tgz
-	- find ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR} -printf "%P\n" | tar -czf ${STACK_VOLUME_BKP}/compressed/${CURRENT_BACKUP_DIR}.tgz --no-recursion -C ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR} -T -
+	- rm -f ${STACK_VOLUME_BKP}/compressed/${CURRENT_AUTOBACKUP_DIR}.tgz
+	- find ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_AUTOBACKUP_DIR} -printf "%P\n" | tar -czf ${STACK_VOLUME_BKP}/compressed/${CURRENT_AUTOBACKUP_DIR}.tgz --no-recursion -C ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_AUTOBACKUP_DIR} -T -
 
 bkp_untar:
-	- tar -xzf ${STACK_VOLUME_BKP}/compressed/${CURRENT_BACKUP_DIR}.tgz -C ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}
+	- tar -xzf ${STACK_VOLUME_BKP}/compressed/${CURRENT_AUTOBACKUP_DIR}.tgz -C ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_AUTOBACKUP_DIR}
 
 
 ## CAREFUL: this will remove all backup files
@@ -472,23 +475,23 @@ bkp_dump:
 	make --no-print-directory bkp_tar
 
 bkp_dump_html:
-	- rm -Rf ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/html
-	- docker cp ${STACK_NAME}_web:/var/www/html ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/html
+	- rm -Rf ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_AUTOBACKUP_DIR}/html
+	- docker cp ${STACK_NAME}_web:/var/www/html ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_AUTOBACKUP_DIR}/html
 
 bkp_dump_moodledata:
-	- rm -Rf ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/moodledata
-	- docker cp ${STACK_NAME}_web:/var/www/moodledata ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/moodledata
+	- rm -Rf ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_AUTOBACKUP_DIR}/moodledata
+	- docker cp ${STACK_NAME}_web:/var/www/moodledata ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_AUTOBACKUP_DIR}/moodledata
 
 bkp_dump_mariadb:
-	- docker exec -u 0 ${STACK_NAME}_db mariadb-dump -u ${MARIADB_USER} -p${MARIADB_PASSWORD} ${MARIADB_DATABASE} > ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/data.sql
+	- docker exec -u 0 ${STACK_NAME}_db mariadb-dump -u ${MARIADB_USER} -p${MARIADB_PASSWORD} ${MARIADB_DATABASE} > ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_AUTOBACKUP_DIR}/data.sql
 
 # ini - this section needs be tested
 bkp_dump_mysql:
-	- docker exec -u 0 ${STACK_NAME}_db mysqldump -u ${MYSQL_USER} -p${MYSQL_PASSWORD} ${MYSQL_DATABASE} > ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/data.sql
+	- docker exec -u 0 ${STACK_NAME}_db mysqldump -u ${MYSQL_USER} -p${MYSQL_PASSWORD} ${MYSQL_DATABASE} > ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_AUTOBACKUP_DIR}/data.sql
 
 bkp_dump_pgsql:
 	- docker exec -u 0 ${STACK_NAME}_db bash -c "PGPASSWORD=${POSTGRES_PASSWORD} pg_dump -U ${POSTGRES_USER} -d ${POSTGRES_DB} -F c -f /backup/data.sql"
-	- docker cp ${STACK_NAME}_db:/backup/data.sql ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/data.sql
+	- docker cp ${STACK_NAME}_db:/backup/data.sql ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_AUTOBACKUP_DIR}/data.sql
 # end - this section needs be tested
 
 
@@ -518,11 +521,11 @@ bkp_restore_body:
 	make --no-print-directory bkp_restore_moodledata
 
 bkp_restore_html:
-	- sudo rsync -a --delete "${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/html/." ${STACK_SRC}/
+	- sudo rsync -a --delete "${STACK_VOLUME_BKP}/uncompressed/${CURRENT_AUTOBACKUP_DIR}/html/." ${STACK_SRC}/
 	make --no-print-directory perm_html
 
 bkp_restore_moodledata:
-	- sudo rsync -a --delete "${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/moodledata/." ${STACK_VOLUME_WEB}/moodle/data/
+	- sudo rsync -a --delete "${STACK_VOLUME_BKP}/uncompressed/${CURRENT_AUTOBACKUP_DIR}/moodledata/." ${STACK_VOLUME_WEB}/moodle/data/
 	make --no-print-directory perm_moodledata
 
 bkp_restore_mariadb:
@@ -538,7 +541,7 @@ bkp_restore_mariadb:
 
 bkp_restore_mariadb_import:
 	docker exec -u 0 ${STACK_NAME}_db mkdir -p /backup
-	docker cp ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/data.sql ${STACK_NAME}_db:/backup/data.sql
+	docker cp ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_AUTOBACKUP_DIR}/data.sql ${STACK_NAME}_db:/backup/data.sql
 
 	docker exec -u 0 ${STACK_NAME}_db chown root:root -R /backup
 	docker exec -u 0 ${STACK_NAME}_db chmod 640 -R /backup
@@ -554,7 +557,7 @@ bkp_restore_mysql:
 	make --no-print-directory rmdir_db
 	make --no-print-directory up
 	docker exec -u 0 ${STACK_NAME}_db mkdir -p /backup
-	docker cp ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/data.sql ${STACK_NAME}_db:/backup/data.sql
+	docker cp ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_AUTOBACKUP_DIR}/data.sql ${STACK_NAME}_db:/backup/data.sql
 	docker exec -u 0 ${STACK_NAME}_db chown root:root -R /backup
 	docker exec -u 0 ${STACK_NAME}_db chmod 640 -R /backup
 	sleep 1
@@ -565,13 +568,13 @@ bkp_restore_pgsql:
 	make --no-print-directory rm
 	make --no-print-directory rmdir_db
 	make --no-print-directory up
-	- docker cp ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/data.sql ${STACK_NAME}_db:/backup/data.sql
+	- docker cp ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_AUTOBACKUP_DIR}/data.sql ${STACK_NAME}_db:/backup/data.sql
 	- docker exec -u 0 ${STACK_NAME}_db bash -c "PGPASSWORD=${POSTGRES_PASSWORD} pg_restore -U ${POSTGRES_USER} -d ${POSTGRES_DB} --clean /backup/data.sql"
 # end - this section needs be tested
 
 
 bkp_rmdir:
-	- sudo rm -Rf ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}
+	- sudo rm -Rf ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_AUTOBACKUP_DIR}
 
 bkp_tgz_mkdir:
 	mkdir -p ${STACK_VOLUME_BKP}/compressed
@@ -580,11 +583,11 @@ bkp_tgz_mkdir:
 	- sudo chmod 0640 ${STACK_VOLUME_BKP}/compressed/*.tgz
 
 bkp_tgz_rm:
-	- sudo rm -Rf ${STACK_VOLUME_BKP}/compressed/${CURRENT_BACKUP_DIR}.tgz
+	- sudo rm -Rf ${STACK_VOLUME_BKP}/compressed/${CURRENT_AUTOBACKUP_DIR}.tgz
 
 
 remote_bkp_to_tgz:
-	- sudo scp -P ${TO_SSH_PORT} ${STACK_VOLUME_BKP}/compressed/${CURRENT_BACKUP_DIR}.tgz ${TO_SSH_USER}@${TO_SSH_HOST}:${TO_SSH_TGZ_DIR}
+	- sudo scp -P ${TO_SSH_PORT} ${STACK_VOLUME_BKP}/compressed/${CURRENT_AUTOBACKUP_DIR}.tgz ${TO_SSH_USER}@${TO_SSH_HOST}:${TO_SSH_TGZ_DIR}
 
 remote_bkp_from_tgz:
 	- sudo scp -P ${FROM_SSH_PORT} ${FROM_SSH_USER}@${FROM_SSH_HOST}:${FROM_SSH_TGZ_PATH} ${STACK_VOLUME_BKP}/
@@ -605,21 +608,21 @@ remote_bkp_from_flow:
 
 remote_bkp_from_html:
 	@make --no-print-directory remote_bkp_from_requirements
-	- sudo rsync -avz --delete --progress -e "ssh -p ${FROM_SSH_PORT}" "${FROM_SSH_USER}@${FROM_SSH_HOST}:${FROM_SSH_DIR_HTML}/" ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/html/
+	- sudo rsync -avz --delete --progress -e "ssh -p ${FROM_SSH_PORT}" "${FROM_SSH_USER}@${FROM_SSH_HOST}:${FROM_SSH_DIR_HTML}/" ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_AUTOBACKUP_DIR}/html/
 
 remote_bkp_from_moodledata:
 	@make --no-print-directory remote_bkp_from_requirements
-	- sudo rsync -avz --delete --progress -e "ssh -p ${FROM_SSH_PORT}" "${FROM_SSH_USER}@${FROM_SSH_HOST}:${FROM_SSH_DIR_MOODLEDATA}/" ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/moodledata/
+	- sudo rsync -avz --delete --progress -e "ssh -p ${FROM_SSH_PORT}" "${FROM_SSH_USER}@${FROM_SSH_HOST}:${FROM_SSH_DIR_MOODLEDATA}/" ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_AUTOBACKUP_DIR}/moodledata/
 
 remote_bkp_from_mariadb_external_port:
 	@make --no-print-directory remote_bkp_from_requirements
 	mysqldump -P ${FROM_DB_MARIADB_PORT} -h ${FROM_DB_MARIADB_HOST} -u${FROM_DB_MARIADB_USER} -p${FROM_DB_MARIADB_PASSWORD} \
-	${FROM_DB_MARIADB_DATABASE} > ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/data.sql
+	${FROM_DB_MARIADB_DATABASE} > ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_AUTOBACKUP_DIR}/data.sql
 
 remote_bkp_from_mariadb_ssh:
 	ssh -p "${FROM_DB_SSH_PORT}" "${FROM_DB_SSH_USER}@${FROM_DB_SSH_HOST}" \
-	"mysqldump -P ${FROM_DB_SSH_MARIADB_PORT} --protocol=socket --no-tablespaces -u${FROM_DB_SSH_MARIADB_USER} -p${FROM_DB_SSH_MARIADB_PASSWORD} ${FROM_DB_SSH_MARIADB_DATABASE}" > ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/data.sql
-# 	scp -P ${FROM_DB_SSH_PORT} ${FROM_DB_SSH_USER}@${FROM_DB_SSH_HOST}:${FROM_DB_SSH_MARIADB_DATABASE_TEMP_FOLDER}/data.sql ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/data.sql
+	"mysqldump -P ${FROM_DB_SSH_MARIADB_PORT} --protocol=socket --no-tablespaces -u${FROM_DB_SSH_MARIADB_USER} -p${FROM_DB_SSH_MARIADB_PASSWORD} ${FROM_DB_SSH_MARIADB_DATABASE}" > ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_AUTOBACKUP_DIR}/data.sql
+# 	scp -P ${FROM_DB_SSH_PORT} ${FROM_DB_SSH_USER}@${FROM_DB_SSH_HOST}:${FROM_DB_SSH_MARIADB_DATABASE_TEMP_FOLDER}/data.sql ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_AUTOBACKUP_DIR}/data.sql
 # 	ssh -p ${FROM_DB_SSH_PORT} ${FROM_DB_SSH_USER}@${FROM_DB_SSH_HOST} "rm ${FROM_DB_SSH_MARIADB_DATABASE_TEMP_FOLDER}/data.sql"
 
 # the url_replace command are for migration from http to https
@@ -674,10 +677,10 @@ certbot_init:
 
 certbot_bkp:
 # certbot_bkp must be without the - to avoid remove the certificate if restart the container
-	mkdir -p ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/certbot/live/${DOMAIN}
-	mkdir -p ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/certbot/archive/${DOMAIN}
-	mkdir -p ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/certbot/renewal/
-	docker cp ${STACK_NAME}_certbot:/etc/letsencrypt/. ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/certbot/
+	mkdir -p ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_AUTOBACKUP_DIR}/certbot/live/${DOMAIN}
+	mkdir -p ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_AUTOBACKUP_DIR}/certbot/archive/${DOMAIN}
+	mkdir -p ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_AUTOBACKUP_DIR}/certbot/renewal/
+	docker cp ${STACK_NAME}_certbot:/etc/letsencrypt/. ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_AUTOBACKUP_DIR}/certbot/
 
 maintenance_on:
 	- docker exec -u www-data -w /var/www/html/ ${STACK_NAME}_web php admin/cli/maintenance.php --enable
@@ -721,10 +724,10 @@ mariadb_rebuild_slave:
 	make --no-print-directory bkp_perm
 	make --no-print-directory maintenance_on
 	docker exec -u 0 ${STACK_NAME}_db mariadb -u root -p${MARIADB_ROOT_PASSWORD} -e "GRANT RELOAD ON *.* TO '${MARIADB_USER}'@'%'; FLUSH PRIVILEGES;"
-	docker exec -u 0 ${STACK_NAME}_db mysqldump --all-databases --single-transaction --master-data=2 --flush-logs --hex-blob --triggers --routines --events -u${MARIADB_USER} -p${MARIADB_PASSWORD} > ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/dump-rebuild-slave.sql
+	docker exec -u 0 ${STACK_NAME}_db mysqldump --all-databases --single-transaction --master-data=2 --flush-logs --hex-blob --triggers --routines --events -u${MARIADB_USER} -p${MARIADB_PASSWORD} > ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_AUTOBACKUP_DIR}/dump-rebuild-slave.sql
 	make --no-print-directory perm_db_slave
-	docker cp ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/dump-rebuild-slave.sql ${STACK_NAME}_db_slave:/dump-rebuild-slave.sql
-	rm -f ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/dump-rebuild-slave.sql
+	docker cp ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_AUTOBACKUP_DIR}/dump-rebuild-slave.sql ${STACK_NAME}_db_slave:/dump-rebuild-slave.sql
+	rm -f ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_AUTOBACKUP_DIR}/dump-rebuild-slave.sql
 	docker exec -u 0 ${STACK_NAME}_db_slave mysql -u root -p${MARIADB_ROOT_PASSWORD} -e "DROP DATABASE IF EXISTS ${MARIADB_DATABASE};"
 	docker exec -u 0 ${STACK_NAME}_db_slave bash -c "mysql -u root -p${MARIADB_ROOT_PASSWORD} < /dump-rebuild-slave.sql"
 	docker exec -u 0 ${STACK_NAME}_db_slave rm -f /dump-rebuild-slave.sql
@@ -749,10 +752,10 @@ mysql_rebuild_slave:
 	make --no-print-directory bkp_perm
 	make --no-print-directory maintenance_on
 	docker exec -u 0 ${STACK_NAME}_db mysql -u root -p${MYSQL_ROOT_PASSWORD} -e "GRANT RELOAD, REPLICATION CLIENT, REPLICATION SLAVE, PROCESS ON *.* TO '${MYSQL_USER}'@'%'; FLUSH PRIVILEGES;"
-	docker exec -u 0 ${STACK_NAME}_db mysqldump --all-databases --single-transaction --source-data=2 --flush-logs --hex-blob --triggers --routines --events -uroot -p${MYSQL_ROOT_PASSWORD} > ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/dump-rebuild-slave.sql
+	docker exec -u 0 ${STACK_NAME}_db mysqldump --all-databases --single-transaction --source-data=2 --flush-logs --hex-blob --triggers --routines --events -uroot -p${MYSQL_ROOT_PASSWORD} > ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_AUTOBACKUP_DIR}/dump-rebuild-slave.sql
 	make --no-print-directory perm_db_slave
-	docker cp ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/dump-rebuild-slave.sql ${STACK_NAME}_db_slave:/dump-rebuild-slave.sql
-	rm -f ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/dump-rebuild-slave.sql
+	docker cp ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_AUTOBACKUP_DIR}/dump-rebuild-slave.sql ${STACK_NAME}_db_slave:/dump-rebuild-slave.sql
+	rm -f ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_AUTOBACKUP_DIR}/dump-rebuild-slave.sql
 	docker exec -u 0 ${STACK_NAME}_db_slave mysql -u root -p${MYSQL_ROOT_PASSWORD} -e "DROP DATABASE IF EXISTS ${MYSQL_DATABASE};"
 	docker exec -u 0 ${STACK_NAME}_db_slave bash -c "mysql -u root -p${MYSQL_ROOT_PASSWORD} < /dump-rebuild-slave.sql"
 	docker exec -u 0 ${STACK_NAME}_db_slave rm -f /dump-rebuild-slave.sql
@@ -778,11 +781,11 @@ mysql_slave_config:
 # 	make --no-print-directory bkp_perm
 # 	make --no-print-directory maintenance_on
 # 	# Dump de todos os bancos do master
-# 	docker exec -u 0 ${STACK_NAME}_db pg_dumpall -U ${POSTGRES_USER} > ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/dump-rebuild-slave.sql
+# 	docker exec -u 0 ${STACK_NAME}_db pg_dumpall -U ${POSTGRES_USER} > ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_AUTOBACKUP_DIR}/dump-rebuild-slave.sql
 # 	# Copia dump para o slave
-# 	docker cp ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/dump-rebuild-slave.sql ${STACK_NAME}_db_slave:/dump-rebuild-slave.sql
+# 	docker cp ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_AUTOBACKUP_DIR}/dump-rebuild-slave.sql ${STACK_NAME}_db_slave:/dump-rebuild-slave.sql
 # 	# Remove dump local
-# 	rm -f ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_BACKUP_DIR}/dump-rebuild-slave.sql
+# 	rm -f ${STACK_VOLUME_BKP}/uncompressed/${CURRENT_AUTOBACKUP_DIR}/dump-rebuild-slave.sql
 # 	# Restaura no slave (dropando db existente)
 # 	docker exec -u 0 ${STACK_NAME}_db_slave bash -c "psql -U ${POSTGRES_USER} -c \"DROP DATABASE IF EXISTS ${POSTGRES_DB};\""
 # 	docker exec -u 0 ${STACK_NAME}_db_slave bash -c "psql -U ${POSTGRES_USER} -f /dump-rebuild-slave.sql"
@@ -801,10 +804,10 @@ mysql_slave_config:
 # 	docker restart ${STACK_NAME}_db_slave
 
 make_test_course_XS:
-	docker exec -u 0 ${STACK_NAME}_web php admin/tool/generator/cli/maketestcourse.php --shortname=SIZE_XS--size=XS
+	docker exec -u www-data ${STACK_NAME}_web php admin/tool/generator/cli/maketestcourse.php --shortname=SIZE_XS --size=XS
 
 make_test_course_L:
-	docker exec -u 0 ${STACK_NAME}_web php admin/tool/generator/cli/maketestcourse.php --shortname=SIZE_L --size=L
+	docker exec -u www-data ${STACK_NAME}_web php admin/tool/generator/cli/maketestcourse.php --shortname=SIZE_L --size=L
 
 brcli_backup:
 	docker exec -u 0 ${STACK_NAME}_web mkdir -p /backup

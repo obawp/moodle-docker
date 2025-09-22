@@ -1,7 +1,7 @@
 services:
   web:
     runtime: runc
-    image: ${REPO}-${WEBSERVER}
+    image: ${DOCKERHUB_REPO}-${WEBSERVER}
     container_name: ${STACK_NAME}_web_report
     restart: always
     ports:
